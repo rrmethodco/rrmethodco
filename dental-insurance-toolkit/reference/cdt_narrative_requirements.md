@@ -1,126 +1,208 @@
-# CDT Narrative Evidence Requirements
+# CDT Narrative Evidence Requirements (Endodontics)
 
-> Required clinical evidence elements per high-pre-auth-volume CDT code. Used by `pre_auth_narrative.md` Step 2 (required-evidence checklist).
+> Required clinical evidence elements per high-pre-auth-volume endodontic CDT code. Used by `pre_auth_narrative.md` Step 2 (required-evidence checklist).
 
 ---
 
-## D2740 — Crown, Porcelain/Ceramic
+## D3310 — Endodontic Therapy, Anterior Tooth
 
 **Required elements:**
 - Tooth number
-- Extent of structural compromise (one or more of: decay involving ≥2 surfaces + cusp, fracture/craze line documented, prior restoration covering >50% of tooth, post-endodontic)
-- Diagnostic radiograph reference (PA or BWX dated)
-- Remaining tooth structure description
-- Prognosis without crown (e.g., "tooth at risk of cuspal fracture under occlusal load")
-
-**Common denial trigger:** crown on tooth with only moderate decay and no fracture/endo history — must show structural necessity, not just decay.
-
-**Replacement crown additional requirements:**
-- Date of original crown placement
-- Reason for failure (recurrent decay at margin, fracture, open margin, esthetic failure with documented function loss)
-- Most carriers require 5+ years since original placement
-
----
-
-## D2750 — Crown, Porcelain Fused to High Noble Metal
-
-Same as D2740, plus:
-- Justification for material choice (typically posterior tooth with heavy occlusal forces, or patient with documented metal allergy precluding non-noble alternatives)
-
----
-
-## D2950 — Core Buildup, Including Pins
-
-**Required elements:**
-- Tooth number
-- Amount of remaining tooth structure (e.g., "less than 50% of coronal tooth structure remains following caries excavation")
-- Necessity for retention of subsequent restoration
-- Reference to companion crown procedure (D2740/D2750) if applicable
-
-**Common denial trigger:** carriers frequently bundle D2950 into the crown payment, claiming buildup is included. Narrative must explicitly state that the buildup is a separate procedure required for crown retention, not merely filling a small defect.
-
----
-
-## D3310 / D3320 / D3330 — Endodontic Therapy
-
-**Required elements:**
-- Tooth number
-- Pulpal diagnosis (irreversible pulpitis, necrotic pulp, previously treated)
-- Periapical diagnosis (normal apical tissues, symptomatic apical periodontitis, asymptomatic apical periodontitis, acute apical abscess, chronic apical abscess)
-- Diagnostic test results (cold test, percussion, palpation, EPT if performed)
+- Pulpal diagnosis (irreversible pulpitis / necrotic pulp / previously treated / previously initiated therapy)
+- Periapical diagnosis (normal apical tissues / symptomatic apical periodontitis / asymptomatic apical periodontitis / acute apical abscess / chronic apical abscess)
+- Diagnostic test results (cold test, EPT if performed, percussion, palpation)
 - Periapical radiograph reference, dated
-- Restorability assessment (tooth must be restorable post-endo)
+- Restorability assessment
+
+**Common denial trigger:** carriers occasionally challenge endo on teeth with vital pulps (irreversible pulpitis) without strong symptom documentation. Narrative should cite specific symptom history (lingering response to cold, spontaneous pain, exacerbation by heat).
 
 ---
 
-## D4341 — Periodontal Scaling and Root Planing, 4+ teeth per quadrant
+## D3320 — Endodontic Therapy, Premolar Tooth
+
+Same as D3310 with attention to canal anatomy:
+- Premolars frequently have 2 canals (especially maxillary first premolars); narrative may need to document additional canals located if billing additional codes
+- Reduced acceptance for premolars when restorability is questionable
+
+---
+
+## D3330 — Endodontic Therapy, Molar Tooth
+
+**Required elements:** as D3310, with additions:
+- Molars typically have 3-4 canals; CBCT findings (if obtained) supporting canal anatomy
+- For maxillary molars: notation of MB2 location attempt (industry standard)
+- For mandibular molars: notation of additional canal evaluation
+- Restorability is heightened concern for molars; explicit statement of remaining tooth structure post-access
+
+**Common denial trigger:** restorability concerns. If tooth has extensive caries or large existing restoration, narrative must affirm restorability with cuspal coverage planned (typically by referring GP).
+
+---
+
+## D3331 — Treatment of Root Canal Obstruction
 
 **Required elements:**
-- Quadrant designation (UR, UL, LR, LL)
-- List of teeth involved (must be ≥4)
-- Pocket depths for each involved tooth (must show ≥4mm pockets for most carriers; ≥5mm for stricter carriers like Delta in some states)
-- Bleeding on probing status
-- Radiographic evidence of bone loss (BWX or PA showing horizontal or vertical bone loss)
-- Periodontal diagnosis (ADA staging if available — Stage I-IV)
+- Tooth number + canal(s) involved
+- Specific obstruction encountered (separated instrument, ledge, calcified canal, perforation, post that required removal)
+- Method of management (ultrasonic removal, bypass, microscope-assisted negotiation)
+- Time/skill investment required beyond standard endodontic therapy
+- Diagnostic imaging — pre-op PA showing obstruction, intra-op films, CBCT if used
 
-**Common denial trigger:** insufficient pocket depths documented. Some carriers also require radiographs taken within 12 months.
+**Common denial trigger:** carriers bundle D3331 into D3310/D3320/D3330. Narrative MUST explicitly state:
+1. The specific obstruction encountered (with location — coronal, middle, or apical third)
+2. That this represents a complication beyond routine endodontic therapy
+3. That ADA CDT identifies D3331 as separately reportable
 
----
-
-## D4342 — Periodontal Scaling and Root Planing, 1-3 teeth per quadrant
-
-Same as D4341 but for limited involvement. Often denied if carrier deems prophy (D1110) more appropriate. Narrative must distinguish: "Patient presents with localized periodontitis at teeth #X, #Y with [pocket depths] and bone loss; D1110 prophylaxis is insufficient because [specific reason]."
-
----
-
-## D4910 — Periodontal Maintenance
-
-**Required elements:**
-- Date of completion of active periodontal therapy (D4341/D4342/D4260/D4261)
-- Current periodontal status (pocket depths maintained or improved)
-- Frequency justification if more than 2x/year (typical carrier maximum)
-
-**Common denial trigger:** carriers default to allowing 2x/year and downgrading additional visits to D1110. Narrative for 3-4x/year must cite ongoing pocket depth concerns or systemic risk factors (diabetes, smoking, immunocompromise) requiring closer monitoring.
+**Strongest narrative examples:**
+- Separated instrument removed from MB canal of #14, mid-root, ultrasonic technique, microscope-assisted, ~30 minutes additional procedural time
+- Calcified DB canal of #3 negotiated with ultrasonic and hand files under 16x magnification
+- Ledge bypass in apical third of palatal canal of #14
 
 ---
 
-## D5110 / D5120 — Complete Denture (Maxillary / Mandibular)
-
-**Required elements:**
-- Edentulous status documentation
-- Date of last extraction (must be sufficient healing time, typically 6-12 weeks for conventional, immediate dentures handled separately)
-- Prior denture history (if replacement: date of prior, reason for replacement)
-- Most carriers require 5-7+ years since last denture for replacement
-
----
-
-## D7140 / D7210 — Extractions
+## D3346 — Retreatment of Previous Root Canal Therapy, Anterior
 
 **Required elements:**
 - Tooth number
-- Reason for extraction (non-restorable caries, advanced perio with hopeless prognosis, fracture, orthodontic, supernumerary)
-- Diagnostic radiograph reference
-- For D7210 specifically: documentation that bone removal or sectioning was required (not just a difficult forceps extraction)
+- Date of original endodontic therapy (or "approximately X years ago" if unknown — flag MEDIUM confidence)
+- Original treating provider (if known) — sometimes "outside provider"
+- **Evidence of failure of prior treatment** (this is the critical element):
+  - Persistent or new periapical radiolucency (size in mm if possible)
+  - Persistent or recurrent symptoms
+  - Inadequate obturation length on prior radiograph (specify mm short of apex, or extruded)
+  - Missed canal anatomy (especially relevant for premolars/molars; may need CBCT)
+  - Recurrent caries or coronal leakage compromising prior treatment
+  - Post-and-core failure with recontamination
+- Pulpal/periapical diagnosis (typically "previously treated" + relevant periapical diagnosis)
+- Restorability assessment
 
-**Common denial trigger:** D7210 downgraded to D7140. Narrative must explicitly state bone removal or tooth sectioning was performed.
+**Common denial trigger:** "Original treatment still serviceable" — narrative MUST include explicit radiographic or clinical evidence that prior treatment has failed.
 
 ---
 
-## D9944 — Occlusal Guard, Hard Appliance, Full Arch
+## D3347 — Retreatment of Previous Root Canal Therapy, Premolar
+
+Same as D3346, with attention to:
+- Multiple canal anatomy (especially maxillary first premolar)
+- Common scenario: missed canal in original treatment now visible on CBCT
+
+---
+
+## D3348 — Retreatment of Previous Root Canal Therapy, Molar
+
+Same as D3346, with heightened scrutiny:
+- This is the most-denied endo retreatment code
+- CBCT findings frequently essential — missed MB2 in maxillary molars, missed second mesial canal in mandibular molars
+- Failure of prior treatment evidence must be unambiguous
+- Restorability of molar post-retreatment must be affirmed
+
+**Common denial trigger:** "Conservative options not exhausted." Best preempted by clear radiographic evidence of failure + explicit restorability statement.
+
+---
+
+## D3410 — Apicoectomy, Anterior
 
 **Required elements:**
-- Diagnosis (bruxism, clenching, TMD with parafunctional habit, post-orthodontic retention is NOT covered)
-- Clinical evidence (wear facets documented on specific teeth, masseter hypertrophy, patient-reported nocturnal grinding, fractured restorations attributable to parafunction)
-- Why a hard appliance specifically is indicated (vs. soft guard)
-- Statement of medical necessity (protection of dentition from documented parafunctional damage)
+- Tooth number
+- Pulpal/periapical diagnosis (typically "previously treated" + symptomatic or asymptomatic apical periodontitis)
+- Pre-operative imaging — PA AND ideally CBCT for surgical planning
+- **Why surgical intervention over orthograde retreatment** (this is the critical element):
+  - Post and core that cannot be removed without compromising tooth structure
+  - Two prior orthograde attempts already performed
+  - Anatomical factors precluding non-surgical retreatment (severe curvature, calcification beyond bypass)
+  - Iatrogenic factors (separated instrument that cannot be bypassed, perforation that cannot be repaired non-surgically)
+  - Cyst/lesion requiring biopsy
+- Restorability assessment
 
-**Common denial trigger:** classified as "non-covered preventive" by many carriers. When covered, requires explicit medical necessity language — never use "patient grinds at night" alone.
+**Common denial trigger:** "Conservative options not exhausted" — narrative MUST explicitly justify surgery over retreatment.
+
+---
+
+## D3421 — Apicoectomy, Premolar (First Root)
+
+Same as D3410, with attention to:
+- Premolar root anatomy
+- Number of roots being addressed (D3426 for additional roots)
+
+---
+
+## D3425 — Apicoectomy, Molar (First Root)
+
+Same as D3410, with heightened narrative requirements:
+- Most surgical-endo denials happen here
+- CBCT essentially required for narrative support
+- Surgical access considerations (proximity to mental foramen, sinus, IAN)
+- Number of roots planned for surgery (additional roots billed under D3426)
+
+---
+
+## D3426 — Apicoectomy, Each Additional Root
+
+**Required elements:**
+- Tooth number + specific additional root being treated
+- Reference to primary apicoectomy code on same tooth
+- Brief justification that the additional root requires separate surgical management
+
+**Common denial trigger:** bundling. Carriers want explicit notation that this is a distinct surgical site. Include statement: "Additional root [name] addressed via [same/separate] surgical access; separately reportable per ADA CDT."
+
+---
+
+## D0367 — Cone Beam CT, Both Jaws
+
+**Required elements:**
+- Specific clinical question that PA imaging cannot answer:
+  - Suspected vertical root fracture
+  - Missed canal anatomy assessment (e.g., MB2 in maxillary molar, second mesial canal in mandibular molar)
+  - Periapical pathology not visualized on PA
+  - Surgical planning for apicoectomy (proximity to anatomical structures: mental foramen, sinus, IAN, lingual nerve)
+  - Assessment of resorption (internal vs. external)
+  - Pre-retreatment evaluation — extent of prior treatment, missed anatomy
+- Diagnostic statement of what PA imaging showed vs. what CBCT was needed to clarify
+
+**Common denial trigger:** "Imaging not medically necessary" — CBCT is denied without strong narrative because carriers default to PA-only sufficiency.
+
+**Strongest narrative pattern:** "PA imaging dated [X] demonstrated [finding] but was inconclusive for [specific clinical question]. CBCT was indicated to evaluate [specific clinical question] which directly impacts treatment planning for [planned procedure]."
+
+---
+
+## D9248 — Non-IV Conscious Sedation (Oral Conscious)
+
+**Required elements:**
+- Medical necessity factors (one or more):
+  - Documented severe dental anxiety with prior failed treatment attempts
+  - Long/complex procedure (apicoectomy, retreatment, multi-rooted molar endo)
+  - Patient medical history precluding repeated appointments (cardiac, neurological)
+  - Severe gag reflex documented
+  - Pediatric or special needs patient
+- Documentation of pre-op evaluation (vitals, ASA classification)
+- Drug, dose, time of administration
+- Monitoring during procedure
+
+**Common denial trigger:** "Sedation not medically necessary" — narrative must cite specific factor justifying sedation.
+
+---
+
+## D2950 — Core Buildup, Including Pins (sometimes done by endo before referral back)
+
+**Required elements:**
+- Tooth number
+- Amount of remaining tooth structure post-endo access ("less than 50% of coronal tooth structure remains following caries excavation and endodontic access")
+- Necessity for retention of subsequent crown (typically placed by referring GP)
+
+**Common denial trigger:** bundled with crown payment. Narrative must state the buildup is required for retention, separate from coronal access closure.
+
+---
+
+## D2954 — Prefabricated Post and Core in Addition to Crown
+
+**Required elements:**
+- Tooth number
+- Reference to completed endodontic therapy (date)
+- Need for post for retention (insufficient coronal structure remaining)
+- Type of post used
 
 ---
 
 ## Format for Adding New Codes
-
-When adding new CDT codes to this reference:
 
 ```markdown
 ## D[CODE] — [Description]
@@ -132,6 +214,6 @@ When adding new CDT codes to this reference:
 
 **Common denial trigger:** [What carriers typically push back on, and how to preempt it]
 
-**[Special situation, if applicable] additional requirements:**
+**[Special situation, if applicable]:**
 - [Additional elements]
 ```

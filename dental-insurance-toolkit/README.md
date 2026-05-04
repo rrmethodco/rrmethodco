@@ -1,10 +1,14 @@
-# Dental Insurance Recovery Toolkit
+# Endodontic Practice Automation Toolkit
 
-> Two AI-powered automations for general dental practices using Denticon: pre-authorization narrative generation and claim appeal letter drafting. Designed as a sellable productized service for the GP-dentist niche.
+> An autonomous AI agent platform for endodontic practices. Three high-volume workflows automated end-to-end: insurance pre-authorizations, claim appeals, and referral letters. Designed first for a 4-endodontist group practice on PBS Endo (mom's practice), with a productization path to the broader US endodontic market (~5,500 practices).
 
-## What This Is
+## Why Endodontics
 
-A complete starter kit for building, testing, and selling an "Insurance Recovery System" to general dental practices. Pilot designed for a GP practice on Denticon; transferable to Dentrix, Eaglesoft, Open Dental, and Curve with minor context adjustments.
+- **Concentrated workflow:** ~20 CDT codes vs. 100+ for GPs. Agent gets dramatically smarter per code with focused repetition.
+- **Concentrated PMS market:** PBS Endo, TDO, and Endovision dominate ~80% of practices. Three integrations vs. eight for GP.
+- **Tight specialist community:** ~5,500 endodontists nationally — small enough for word-of-mouth dominance via the AAE, study clubs, and residency networks.
+- **High per-procedure values:** retreatment $1,000-$1,500, apicoectomy $1,200-$2,000, CBCT $300-$400. Insurance denials hurt more in absolute dollars, making AI ROI more obvious.
+- **Three high-volume workflows in one practice:** pre-auths, appeals, AND referral letters — a single deployment hits 100+ events per week.
 
 ## What's In Here
 
@@ -13,110 +17,212 @@ dental-insurance-toolkit/
 ├── README.md                              ← you are here
 │
 ├── context/
-│   └── practice_context.md                ← shared context: practice profile, carrier mix, codes, voice, HIPAA posture
+│   └── practice_context.md                ← shared context: 4-endo group, PBS Endo, endo codes, voice, HIPAA
 │
 ├── skills/
-│   ├── pre_auth_narrative.md              ← skill: generate pre-auth narratives
-│   └── claim_appeal_letter.md             ← skill: generate appeal letters
+│   ├── pre_auth_narrative.md              ← skill 1: pre-auth narratives (15-25/week)
+│   ├── claim_appeal_letter.md             ← skill 2: appeal letters (8-15/week)
+│   └── referral_letter.md                 ← skill 3: referral letters (80-160/week — highest volume)
 │
 ├── reference/
-│   ├── cdt_narrative_requirements.md      ← per-CDT-code evidence requirements
-│   ├── carrier_intelligence.md            ← carrier-specific narrative preferences and denial patterns
-│   └── denial_playbook.md                 ← denial classification + rebuttal frameworks
+│   ├── cdt_narrative_requirements.md      ← per-endo-code evidence requirements
+│   ├── carrier_intelligence.md            ← carrier-specific endo denial patterns
+│   └── denial_playbook.md                 ← endo denial classification + rebuttal frameworks
 │
 ├── samples/
-│   ├── sample_pre_auth_inputs.md          ← 5 de-identified test cases for pre-auth skill
-│   └── sample_appeal_inputs.md            ← 5 de-identified test cases for appeal skill
+│   ├── sample_pre_auth_inputs.md          ← 5 de-identified test cases
+│   ├── sample_appeal_inputs.md            ← 5 de-identified test cases
+│   └── sample_referral_inputs.md          ← 5 de-identified test cases (one per letter type)
 │
 └── templates/
-    ├── discovery_interview.md             ← 60-90 min client discovery script
-    └── measurement_tracker.md             ← baseline + ongoing metrics for case study
+    ├── discovery_interview.md             ← 60-90 min script for mom + office manager
+    └── measurement_tracker.md             ← baseline + ongoing case-study capture
 ```
 
-## Build Order (2-Week Sprint)
+## Pilot Setup (Confirmed)
 
-### Week 1 — Foundation
+Mom's practice — confirmed via discovery questions:
 
-| Day | Task |
-|-----|------|
-| 1 | Run `templates/discovery_interview.md` with dad + office manager. Collect 10 sample pre-auths + 10 sample EOBs, top 6 carriers, top 30 CDT codes used. |
-| 2 | Fill in `context/practice_context.md` with real data. Update `reference/carrier_intelligence.md` with practice-specific patterns. |
-| 3 | Run baseline week: track every pre-auth and appeal with current process. Capture in `templates/measurement_tracker.md`. |
-| 4-5 | Build & test pre-auth skill against the 5 cases in `samples/sample_pre_auth_inputs.md`. Refine until 4/5 pass. |
+| Factor | Status | Implication |
+|--------|--------|-------------|
+| Mom's role | **Owner, full authorization, on board** | No procurement cycle. Decisions made in working sessions. |
+| Practice size | **4 endodontist group** | Significant volume (~100+ events/week). Multi-doc voice variation built in from day 1. |
+| Billing model | **In-house** | Buyer is mom + office manager, no outsourced billing service to displace |
+| Mom's engagement | **Full participant** | Real-time clinical validation, voice authenticity, and downstream AAE network access |
 
-### Week 2 — Iteration & Live Test
+This is the best-case design partner profile. Most AI startups would pay $100K+ for it.
 
-| Day | Task |
-|-----|------|
-| 6-7 | Build & test appeal skill against 5 cases in `samples/sample_appeal_inputs.md`. Refine until 4/5 pass + Sample 3 correctly flags DO NOT APPEAL. |
-| 8-9 | Live pilot: office manager runs both skills on real (de-identified) cases for 2 days. Track friction. |
-| 10 | Refinement pass. Lock v1. Schedule 30-day measurement check-in. |
+## Build Plan: Three-Phase
+
+### Phase 1 — Knowledge Layer (Weeks 1-2)
+
+**Output:** All three skills validated against 15 sample cases (5 each), tuned to mom's voice and her practice's top 6 carriers. Mom confirms output quality.
+
+**Mom's time:** ~4 hours total — discovery interview (90 min), narrative review session (60 min), sample case validation (60 min), follow-up Q&A (30 min).
+
+**Mode:** Manual (paste inputs into a text interface, get outputs back). No integration yet. Goal: prove the brain works.
+
+### Phase 2 — Productivity Tool Lite (Weeks 3-4)
+
+**Output:** Web app deployed at mom's practice. Office manager logs in, pastes clinical info, gets generated narrative/letter, copies to PBS Endo. Audit logs, basic dashboard, BAA in place.
+
+**What changes:** real users (the office manager + 4 endodontists), real measurement, real testimonial-quality data starts accumulating.
+
+**Why this phase exists:** sellable to other endo practices in parallel. Phase 2 funds Phase 3.
+
+### Phase 3 — Full Agentic System (Weeks 5-12)
+
+**Output:** Autonomous agent that:
+- Watches PBS Endo for triggers (new TX plan with pre-auth code, new EOB with denial, treatment completed)
+- Pulls clinical data automatically
+- De-identifies, processes, generates outputs
+- Queues for one-click human approval
+- Submits via clearinghouse / uploads to Document Center
+- Tracks lifecycle from submission → approval/denial → appeal → resolution
+- Learns carrier patterns over time across customer base
+
+**What we need to build:**
+- Backend service (Python/Node)
+- PBS Endo integration (API if available, RPA or scheduled exports as fallback — confirm with PBS Endo support during Phase 1)
+- eClaims clearinghouse integration (whichever mom's practice uses — confirm during discovery)
+- Web dashboard (review queue + KPIs)
+- Multi-tenancy from day 1 (one tenant initially, but designed for N)
+- HIPAA-compliant infrastructure with BAAs across the stack
+
+## V1 Architecture (target for end of Phase 3)
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  TRIGGERS                                                    │
+│  • PBS Endo poller: new TX plan w/ pre-auth code            │
+│  • PBS Endo poller: new EOB with denial code                │
+│  • PBS Endo poller: treatment completed (referral letter)   │
+│  • Schedule: daily morning sweep for missed items           │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+┌──────────────────────▼──────────────────────────────────────┐
+│  ORCHESTRATOR AGENT (Claude)                                 │
+│  • Classifies the trigger                                   │
+│  • Pulls relevant clinical data                             │
+│  • De-identifies before processing                          │
+│  • Routes to correct sub-skill                              │
+└──────────────────────┬──────────────────────────────────────┘
+                       │
+       ┌───────────────┼───────────────┐
+       ▼               ▼               ▼
+┌──────────┐   ┌──────────┐   ┌──────────┐
+│ Pre-Auth │   │ Appeal   │   │ Referral │
+│ Skill    │   │ Skill    │   │ Letter   │
+└────┬─────┘   └────┬─────┘   └────┬─────┘
+     │              │              │
+     └──────────────┴──────────────┘
+                    ▼
+┌──────────────────────────────────────────────────────────────┐
+│  REVIEW QUEUE (web dashboard for office manager)             │
+│  • Generated output + confidence rating                      │
+│  • Source clinical evidence cited                            │
+│  • One-click: APPROVE & SEND  /  EDIT  /  REJECT             │
+│  • LOW confidence auto-flagged for endodontist review        │
+└──────────────────────┬───────────────────────────────────────┘
+                       │ on approval
+                       ▼
+┌──────────────────────────────────────────────────────────────┐
+│  SUBMISSION AGENT                                            │
+│  • Insurance: submits via eClaims clearinghouse              │
+│  • Referral: emails / faxes to referring GP                  │
+│  • All: uploads to PBS Endo Document Center                  │
+│  • Logs submission ID, timestamp, recipient                  │
+└──────────────────────┬───────────────────────────────────────┘
+                       │
+                       ▼
+┌──────────────────────────────────────────────────────────────┐
+│  LIFECYCLE TRACKER                                           │
+│  • Watches for response EOB / GP feedback                    │
+│  • Insurance approved → log win, update carrier intelligence │
+│  • Insurance denied → trigger appeal flow                    │
+│  • Reports: weekly KPIs auto-generated for mom               │
+└──────────────────────────────────────────────────────────────┘
+```
 
 ## HIPAA Setup (DO BEFORE TOUCHING PHI)
 
 1. **BAA with Anthropic** — Use Claude API with a signed Business Associate Agreement (Enterprise / Claude for Work tier). Without this, no PHI may be processed.
 2. **Local de-identification step** — Strip patient name, DOB, ID#, full address, contact info before sending any clinical data to Claude. Re-attach identifiers locally during final document assembly only.
-3. **Practice-side BAA** — You sign a BAA with the practice. Their HIPAA officer signs off.
-4. **Audit logging** — Every generation produces a record: timestamp, user, inputs (de-identified), output, confidence rating. Stored locally on practice infrastructure.
-5. **No PHI in non-BAA tools** — Do not route through Gmail, Slack, or generic file-sharing without separate BAA confirmation.
+3. **Practice-side BAA** — Sign a BAA with mom's practice. Her HIPAA officer signs off.
+4. **Audit logging** — Every generation produces a record: timestamp, user, inputs (de-identified), output, confidence rating. Stored on practice infrastructure.
+5. **No PHI in non-BAA tools** — No Gmail, no Slack, no consumer cloud storage without separate BAA confirmation. AWS / GCP both offer BAAs; Vercel does not.
 
-## Selling This (after pilot success)
+## Pricing (target — refine post-pilot)
 
-### Package: "Insurance Recovery System"
+### Insurance Recovery + Communications System (full package)
 
-**Deliverables:**
-- 90-min discovery interview
-- Customized context file + carrier intelligence for the practice's mix
-- Both skills (pre-auth + appeal), tuned to their top 6 carriers
-- HIPAA-compliant local deployment + BAA paperwork
-- 2-week testing and refinement on real cases
-- Office manager training (1 hour)
-- Documentation handoff
-- 30 days of post-launch support
+**Build:** $7,500-$15,000 one-time (per practice, depending on integration complexity)
+**Maintenance:** $1,000-$2,000/month (refines skills, adds carriers/codes, monitors performance)
 
-**Pricing:** $5,000 one-time build + $750/month maintenance (refines skills, adds new carriers, adds new CDT codes as the practice grows)
+**ROI math (target for 4-endo group):**
+- Time saved: 15+ hrs/week × $50/hr fully-loaded = $750/week = $36K/year
+- Pre-auth approval lift: 75% → 90% × 20/wk × $1,200 avg = $3,600/week = $187K/year
+- Appeal recovery: $5,000-$10,000/month additional = $60K-$120K/year
+- Referral letter compliance lift: long-term referral growth → compounding revenue
+- **Total annual value: $250K-$350K+**
+- **Payback: <1 month**
 
-**ROI math (for the sales conversation):**
-- Avg GP practice: 30 pre-auths/week + 10 appeals/week
-- Pre-auth time saved: ~10 hrs/week
-- Appeal time saved: ~5 hrs/week
-- Approval rate lift: 70% → 87% = ~5 additional approvals/week × $800 avg = $4,000/week
-- Recovered write-off appeals: typically $2,000-$5,000/month
-- **Total monthly value: $15,000-$20,000+**
-- Payback period: <1 month
+### Target client profile (post-mom)
 
-### Target client profile
+- Endodontic specialty practice
+- 1-6 endodontists
+- $1.5M+ annual production
+- Uses PBS Endo, TDO, or Endovision
+- 50%+ PPO mix
+- Office manager who is competent and cooperative
 
-- General dental practice
-- 2+ providers (more = more insurance volume)
-- $700K-$2M annual production
-- 50%+ PPO mix (FFS practices have less denial pain)
-- Office manager who is competent and cooperative (not the bottleneck)
+### Where to find them (after mom's case study)
 
-### Where to find them (after dad's case study)
+1. **Mom's network** — AAE colleagues, residency classmates, dental school program contacts, study club. Highest-velocity channel.
+2. **AAE annual meeting** — every endodontist in the country shows up. Booth + sponsored content.
+3. **Endo-specific online communities** — AAE Connect, Roots Summit attendees, Endodontic Practice US subscribers.
+4. **PBS Endo / TDO partnerships** — once we have integration, the PMS vendors themselves are a distribution channel.
+5. **State endodontic society meetings** — every state has one; small, tight communities.
 
-1. Dad's study club / alumni network → warm intros
-2. State dental association events
-3. Local dental societies (most cities have monthly meetings)
-4. Dental practice management Facebook groups (lots of office managers)
-5. LinkedIn outreach to "Dental Office Manager" titles in the metro area
+### The hook (use mom's metrics)
 
-### The hook (use dad's metrics)
+> "I built an autonomous AI system for a 4-endodontist group on PBS Endo. They recovered $X,XXX in their first month, cut their office manager's insurance and letter-writing time from N hours to Y hours per week, and started getting referrals back from GPs faster than ever. Open to a 15-minute call to see if this would work for your practice?"
 
-> "I built an insurance automation system for a GP practice in [state] that recovered $X,XXX in their first month and gave their office manager 12 hours per week back. Open to a 15-minute call to see if something similar would work for your office?"
+## Roadmap
 
-## What's Next After v1
+### Phase 1 (Weeks 1-2): Knowledge layer
+- ✅ Toolkit drafted (this directory)
+- ⏭ Run discovery interview with mom + office manager
+- ⏭ Validate all 15 sample cases against mom's voice
+- ⏭ Tune carrier intelligence to her actual top 6 carriers
 
-Once you have 3-5 paying GP clients:
+### Phase 2 (Weeks 3-4): Productivity tool lite
+- ⏭ Build Next.js + Supabase web app with three skill interfaces
+- ⏭ Sign BAAs (Anthropic + Supabase + practice)
+- ⏭ Deploy at mom's practice with audit logging
+- ⏭ Train office manager + 4 endodontists
+- ⏭ Begin live measurement (vs. baseline week)
 
-1. **Productize:** the same skills work for any GP practice with minimal customization. Build a "carrier pack" library covering the top 30 dental carriers nationally.
-2. **Adjacent skills:** add the third- and fourth-most-painful workflows (treatment plan presentations, recall reactivation campaigns) as expansion sells to existing clients.
-3. **Vertical expansion:** specialty practices (perio, endo, OS) have similar but specialty-specific insurance patterns. Same pattern, different code library.
-4. **Recurring revenue:** $750/month maintenance × 10 clients = $7,500 MRR. Plus 2 new builds/month at $5K = $17,500/month.
+### Phase 3 (Weeks 5-12): Full agentic system
+- ⏭ Confirm PBS Endo integration approach (API / RPA / exports)
+- ⏭ Confirm clearinghouse integration target
+- ⏭ Build orchestrator agent + sub-skill routing
+- ⏭ Build trigger watchers
+- ⏭ Build submission agent
+- ⏭ Build lifecycle tracker
+- ⏭ Deploy autonomous version at mom's practice
+- ⏭ 60-day measurement → case study
 
-## Notes for Maintainer
+### Beyond V1
+- ⏭ Productize: per-carrier-pack library covering top 30 dental carriers
+- ⏭ Expand: TDO and Endovision integrations
+- ⏭ Adjacent: 6-month/1-year recall scheduler, post-op communication automation
+- ⏭ Scale: 10 paying endo practices = $300K+ ARR
 
-- This toolkit is a starting point, not finished software. Every section in `[BRACKETS]` needs to be filled in for the specific practice.
-- Update `reference/carrier_intelligence.md` quarterly — carrier behavior changes with policy updates.
-- Update `reference/cdt_narrative_requirements.md` annually when ADA publishes new CDT codes.
-- Anonymize and reuse the most successful narratives as exemplars in `reference/` over time — this is how the system gets smarter per practice.
+## What's Next Right Now
+
+1. **Schedule the discovery interview** with mom + her office manager (use `templates/discovery_interview.md`). Block 90 min, in person if possible.
+2. **Sign the BAA with Anthropic** (Claude for Work / Enterprise tier).
+3. **Run the baseline measurement week** (use `templates/measurement_tracker.md`) before deploying anything. Without "before" numbers, the "after" numbers are just claims.
+
+When mom signals green light on the build path, the next deliverable is the Phase 2 web app architecture + repo scaffolding.

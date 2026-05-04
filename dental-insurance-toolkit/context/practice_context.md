@@ -1,25 +1,28 @@
-# Practice Context — General Dental Practice
+# Practice Context — Endodontic Practice
 
-> Shared context file used by both the Pre-Auth Narrative Generator and the Claim Appeal Letter skills. Update the values in `[BRACKETS]` during the discovery interview.
+> Shared context file used by the Pre-Auth Narrative Generator, Claim Appeal Letter, and Referral Letter skills. Update the values in `[BRACKETS]` during the discovery interview.
 
 ---
 
 ## 1. Practice Profile
 
 - **Practice name:** [PRACTICE NAME]
-- **Specialty:** General Dentistry
+- **Specialty:** Endodontics
 - **State:** [STATE — affects state insurance commissioner appeals + state-specific dental board language]
 - **Years in operation:** [YEARS]
-- **Number of providers:** [# dentists, # hygienists]
-- **Average monthly claim volume:** [# claims/month]
+- **Number of providers:** [# endodontists, # assistants]
+- **Average monthly procedure volume:** [# RCTs, # retreatments, # apicoectomies, # CBCT scans]
 - **Average monthly pre-auth volume:** [# pre-auths/month]
-- **Practice management software:** Denticon (Planet DDS, cloud-based)
-- **In-network vs. out-of-network mix:** [% PPO / % FFS / % HMO]
+- **Average monthly referrals received:** [# referrals/month]
+- **Practice management software:** PBS Endo (specialty-specific, by PBS Endo Inc.)
+- **Imaging system integration:** [e.g., Carestream, Sirona/Schick, J. Morita CBCT — confirm during discovery]
+- **In-network vs. out-of-network mix:** [% PPO / % FFS]
+- **Referral base:** [# referring GPs, top referral sources]
 - **Office manager / billing lead name:** [NAME] — primary user of this system
 
 ## 2. Carrier Mix (top 6 by claim volume)
 
-Update during discovery. Each carrier has different narrative preferences; the system tunes language per carrier.
+Update during discovery. Each carrier has different narrative preferences; the system tunes language per carrier. Note: endo-specific denial patterns differ from GP — see `reference/carrier_intelligence.md`.
 
 | Rank | Carrier | Approx % of claims | Notes |
 |------|---------|--------------------|-------|
@@ -30,78 +33,73 @@ Update during discovery. Each carrier has different narrative preferences; the s
 | 5 | [e.g., UnitedHealthcare] | [%] | [notes] |
 | 6 | [e.g., Guardian] | [%] | [notes] |
 
-## 3. Common Procedures Submitted (GP-specific CDT codes)
+## 3. Common Procedures Submitted (Endodontic CDT codes)
 
-The 30-50 codes this practice actually submits. Drives narrative templates.
+The 15-20 codes this practice actually submits. Drives narrative templates. Endo has a dramatically narrower code set than GP — this is part of why endo is a strong AI niche.
 
 ### Diagnostic
-- D0150 — Comprehensive oral evaluation (new/established)
-- D0210 — Intraoral complete series radiographs
-- D0220 / D0230 — Periapical radiographs
-- D0274 — Bitewings, four films
-- D0330 — Panoramic radiograph
+- D0150 — Comprehensive oral evaluation
+- D0220 — Periapical radiograph, first
+- D0230 — Periapical radiograph, each additional
+- D0367 — Cone beam CT, mandible & maxilla with both jaws ⭐ frequent denial; needs strong narrative
+- D0140 — Limited oral evaluation, problem-focused (consultation/emergency)
 
-### Preventive
-- D1110 — Adult prophylaxis
-- D1120 — Child prophylaxis
-- D1206 / D1208 — Fluoride varnish / topical fluoride
-- D1351 — Sealant per tooth
+### Endodontic Therapy (primary procedures)
+- D3310 — Endodontic therapy, anterior tooth (excluding final restoration)
+- D3320 — Endodontic therapy, premolar tooth (excluding final restoration)
+- D3330 — Endodontic therapy, molar tooth (excluding final restoration) ⭐ highest volume
+- D3331 — Treatment of root canal obstruction (separated instrument removal, ledge bypass, calcified canal) ⭐ frequent bundling denial
+- D3332 — Incomplete endodontic therapy; inoperable, unrestorable, or fractured tooth
+- D3333 — Internal root repair of perforation defects
 
-### Restorative
-- D2140-D2161 — Amalgam restorations (1-4+ surfaces)
-- D2330-D2394 — Composite restorations, anterior & posterior
-- D2740 — Crown, porcelain/ceramic ⭐ high pre-auth volume
-- D2750 — Crown, porcelain fused to high noble metal
-- D2950 — Core buildup, including any pins ⭐ frequent denial
-- D2954 — Prefabricated post and core
-- D2980 — Crown repair
+### Endodontic Retreatment
+- D3346 — Retreatment of previous root canal therapy, anterior ⭐ frequent denial
+- D3347 — Retreatment of previous root canal therapy, premolar ⭐ frequent denial
+- D3348 — Retreatment of previous root canal therapy, molar ⭐ frequent denial — needs strongest narrative
 
-### Endodontics
-- D3310 — Endodontic therapy, anterior
-- D3320 — Endodontic therapy, bicuspid
-- D3330 — Endodontic therapy, molar
-- D3346 / D3347 / D3348 — Retreatment
+### Apexification / Apexogenesis
+- D3351 — Apexification/recalcification, initial visit
+- D3352 — Apexification/recalcification, interim medication replacement
+- D3353 — Apexification/recalcification, final visit
 
-### Periodontics
-- D4341 — Periodontal scaling and root planing, 4+ teeth per quadrant ⭐ high pre-auth volume
-- D4342 — Periodontal scaling and root planing, 1-3 teeth per quadrant
-- D4910 — Periodontal maintenance ⭐ frequent frequency-limitation denial
-
-### Prosthodontics (removable)
-- D5110 / D5120 — Complete denture maxillary / mandibular
-- D5213 / D5214 — Maxillary / mandibular partial denture
-- D5410-D5422 — Adjustments
-- D5750 / D5751 — Reline, complete denture
-
-### Oral Surgery (GP-scope)
-- D7140 — Extraction, erupted tooth or exposed root
-- D7210 — Surgical removal of erupted tooth requiring removal of bone
+### Surgical Endodontics (Apicoectomy)
+- D3410 — Apicoectomy, anterior ⭐ frequent denial — "should attempt retreatment first"
+- D3421 — Apicoectomy, premolar (first root)
+- D3425 — Apicoectomy, molar (first root)
+- D3426 — Apicoectomy, each additional root
+- D3430 — Retrograde filling, per root
+- D3450 — Root amputation, per root
+- D3920 — Hemisection (including any root removal), not including endo
 
 ### Adjunctive
-- D9110 — Palliative emergency treatment
-- D9223 — Deep sedation/general anesthesia, each 15-minute increment
-- D9944 — Occlusal guard, hard appliance, full arch ⭐ medical-necessity narrative needed
 - D9230 — Inhalation of nitrous oxide
+- D9248 — Non-IV conscious sedation (oral conscious)
+
+### Restorative (sometimes done by endo before referral back)
+- D2950 — Core buildup, including pins
+- D2954 — Prefabricated post and core in addition to crown
 
 ## 4. Voice and Tone
 
-- **Person:** Third person, clinical ("The patient presents with…")
+- **Person:** Third person, clinical ("Tooth #19 presents with…")
 - **Tense:** Present tense for findings, past tense for prior treatment
 - **Tone:** Clinical, factual, evidence-based — never emotional, never patient-narrative
-- **Avoid:** "Patient comfort," "patient prefers," "for cosmetic reasons," "patient wants" — these get denials
-- **Use:** "Functional necessity," "structurally compromised," "non-restorable without," "medically indicated due to"
-- **Length:** 3-6 sentences for pre-auths, 2-4 paragraphs for appeals
-- **Reading level:** Written for a dental insurance reviewer (DDS or trained claims reviewer) — assume clinical literacy
+- **Avoid:** "Patient comfort," "patient prefers," "for cosmetic reasons," "patient wants"
+- **Use:** "Functional necessity," "non-restorable without treatment," "medically indicated due to," "standard of endodontic care," "diagnostic findings consistent with"
+- **Length:** 4-7 sentences for endo pre-auths (more clinical specificity required than GP), 3-4 paragraphs for appeals, 2-3 paragraphs for referral letters
+- **Reading level:** Written for a dental insurance reviewer (DDS or trained claims reviewer; for endo cases, often the carrier's dental director given complexity)
+- **Endo-specific terminology:** use ADA-standard pulpal and periapical diagnostic terminology — irreversible pulpitis, necrotic pulp, symptomatic apical periodontitis, asymptomatic apical periodontitis, acute apical abscess, chronic apical abscess
 
 ## 5. Quality Standards (the "good narrative" bar)
 
 Every narrative must:
-1. ✅ Reference the specific tooth/quadrant/arch
-2. ✅ State the clinical finding (decay extent, fracture, perio measurements, bone loss)
-3. ✅ State the diagnostic evidence (radiograph type + finding, perio chart values, photo)
-4. ✅ State the prognosis without treatment
-5. ✅ State why the proposed code is the most conservative appropriate option
-6. ✅ Match what is actually documented in the chart (no fabrication — flag gaps instead)
+1. ✅ Reference the specific tooth + canal anatomy when relevant
+2. ✅ State the pulpal diagnosis AND periapical diagnosis (endo-specific — both required)
+3. ✅ State diagnostic test results (cold test, EPT, percussion, palpation, periodontal probing)
+4. ✅ State diagnostic imaging evidence (PA dated, CBCT findings if obtained, working length film)
+5. ✅ State restorability assessment (tooth must be restorable post-endo or pre-surgical case)
+6. ✅ State prognosis without treatment
+7. ✅ Match what is actually documented in the chart (no fabrication — flag gaps instead)
 
 ## 6. Compliance Guardrails (HARD RULES)
 
@@ -110,18 +108,37 @@ Every narrative must:
 - **NEVER include PHI in outputs sent to non-BAA tools.** Patient names, DOBs, SSNs, full addresses are stripped before processing and only re-attached locally at the final document assembly step.
 - **NEVER promise insurance approval.** The system improves the odds; it does not guarantee outcomes.
 - **NEVER recommend treatment.** This is a documentation tool, not a clinical decision tool.
+- **NEVER override the endodontist's clinical judgment.** If the chart and treatment plan disagree, halt and flag.
 
 ## 7. HIPAA Posture for This Engagement
 
 - Anthropic API used under signed BAA (required before processing any PHI).
 - Local de-identification step before any data leaves the office network.
-- All outputs stored on practice-controlled storage (Denticon document attachments or local network drive).
+- All outputs stored on practice-controlled storage (PBS Endo document attachments or local network drive).
 - No outputs routed through Gmail, Slack, or other tools without separate BAA confirmation.
 - Audit log maintained: every narrative generated has a record of inputs (de-identified) + output + user + timestamp.
 
-## 8. Denticon-Specific Workflow Notes
+## 8. PBS Endo-Specific Workflow Notes
 
-- Treatment plans export from Denticon as PDF or via the **Treatment Plan report** → use as input
-- EOBs arrive in Denticon's **eClaims** inbox → exported as PDF for appeal processing
-- Final narratives and appeal letters get uploaded back to the patient's **Document Center** in Denticon
-- Pre-auths submitted via Denticon's eClaims module with the narrative pasted into the "Remarks" field or attached as a separate document depending on carrier
+> Verify these specifics during discovery — PBS Endo capabilities vary by version and configuration. Confirm with mom and (if needed) PBS Endo support.
+
+- Treatment plans created within PBS Endo's TX planning module → export as PDF or printed report
+- PBS Endo has integrated **eClaims** functionality for submission to clearinghouses
+- Imaging integration: PBS Endo connects with most major sensor systems and CBCT (Carestream, Schick/Sirona, J. Morita) — radiograph references are typically by date/exam
+- Document Center / attachments: narratives and appeal letters get uploaded back to the patient's record in PBS Endo
+- Referral letters: PBS Endo has a referral letter template module, but most practices we've seen still write each one manually — high-leverage automation target
+- EOBs: import via clearinghouse or scanned in; pulled for appeal processing
+- Reporting: PBS Endo's reports module exports treatment, claim, and production data — useful for baseline metrics and ongoing measurement
+
+## 9. Referral Network Context (endo-specific)
+
+Endodontists work primarily on referral. Communication with referring GPs is high-volume and high-leverage:
+
+- **Inbound:** patient is referred by GP for diagnosis, treatment, or both
+- **Outbound communications expected:**
+  1. Acknowledgment letter when referral received (within 24-48h)
+  2. Diagnostic findings letter (after consultation)
+  3. Post-treatment summary letter (after RCT/retreatment/apicoectomy)
+  4. Follow-up letter at 6 months / 1 year (recall confirmation)
+- **Volume:** roughly 2-4 letters per patient × patient volume = 20-40 referral letters per week for a typical solo endo practice
+- **Tone for referral letters:** collegial, clinically detailed, brief — referring GPs are colleagues, not insurance reviewers. Different voice than insurance narratives.

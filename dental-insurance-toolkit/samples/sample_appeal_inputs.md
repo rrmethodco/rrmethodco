@@ -1,88 +1,104 @@
-# Sample Appeal Inputs (for testing)
+# Sample Appeal Inputs (Endodontics — for testing)
 
-> 5 fully de-identified denial scenarios for testing the `claim_appeal_letter.md` skill. Covers the most common GP-practice denial types.
-
----
-
-## Sample 1 — Posterior composite downgraded to amalgam
-
-**Original claim:** D2392 — Resin-based composite, two surfaces, posterior — tooth #19, MO
-**DOS:** [date]
-**Billed:** $245
-**Paid:** $145 (alternate benefit at D2150 amalgam rate)
-**Carrier:** Cigna DPPO
-**Denial code/text:** "Alternate benefit applied — service paid at D2150 rate per plan provisions."
-
-**Original clinical evidence:**
-> #19 MO carious lesion. Patient has documented amalgam allergy (reported on medical history; consultation with PCP confirmed mercury sensitivity in 2019). Composite material used was the only clinically appropriate option for this restoration. Adjacent #18 was previously restored with composite; mixed-metal contact contraindicated.
-
-**Expected output:** HIGH recoverability. Letter cites documented metal allergy as clinical reason composite was required, not preference. Requests reprocessing at D2392 rate.
+> 5 fully de-identified denial scenarios for testing the `claim_appeal_letter.md` skill. Covers the most common endo-practice denial types.
 
 ---
 
-## Sample 2 — Buildup bundled with crown
+## Sample 1 — Retreatment denied as "original treatment serviceable"
 
-**Original claims:**
-- D2950 — Core buildup, including pins — tooth #14
-- D2740 — Crown, porcelain/ceramic — tooth #14
-
+**Original claim:** D3348 — Retreatment of previous root canal therapy, molar — tooth #14
 **DOS:** [date]
-**Billed:** $290 (D2950) + $1,450 (D2740) = $1,740 total
-**Paid:** $1,160 (D2740 only; D2950 denied as inclusive)
+**Billed:** $1,450
+**Paid:** $0
 **Carrier:** Delta Dental PPO
-**Denial code/text:** "D2950 included in payment for D2740 — buildup considered part of crown procedure."
+**Denial code/text:** "Original endodontic treatment determined to be serviceable. Retreatment not medically necessary."
 
 **Original clinical evidence:**
-> #14 presented with extensive recurrent caries beneath existing MOD amalgam restoration. Following caries excavation, less than 40% of coronal tooth structure remained, with M and D walls absent. Buildup with composite material and 1 pin placed to restore tooth contour and provide retentive structure for crown. Clinical photos and pre-op PA on file demonstrate extent of structural loss.
+> Pulpal diagnosis: previously treated. Periapical diagnosis: chronic apical abscess. PA #14 dated [DOS-7] demonstrates 5mm periapical radiolucency at MB root, expanded from prior PA dated 3 years ago showing 1mm radiolucency. CBCT dated [DOS-7] confirms periapical lesion AND identifies untreated MB2 canal. Patient reports persistent intermittent swelling over 8 months. Tooth is restorable; existing crown intact, access made through crown.
 
-**Expected output:** HIGH recoverability. Letter cites ADA CDT distinction between D2740 and D2950, references the specific finding (<40% remaining structure), and requests reprocessing of D2950 as a separately reportable procedure.
+**Expected output:** HIGH recoverability. Letter cites:
+- Radiographic progression (1mm → 5mm)
+- Missed MB2 canal on CBCT (the critical finding)
+- Persistent symptoms with timeline
+- Restorability
+Recommend peer-to-peer as escalation if denied.
 
 ---
 
-## Sample 3 — Frequency limitation on perio maintenance (legitimately deniable)
+## Sample 2 — Apicoectomy denied as "conservative options not exhausted"
 
-**Original claim:** D4910 — Periodontal maintenance — DOS [date]
-**Billed:** $135
+**Original claim:** D3425 — Apicoectomy, molar (first root) — tooth #30
+**DOS:** [date]
+**Billed:** $1,675
 **Paid:** $0
 **Carrier:** MetLife
-**Denial code/text:** "Frequency limitation — service exceeds plan maximum of 2 per calendar year."
-
-**Patient context:**
-> Patient had D4910 visits on Jan 15, May 20, and current claim is for Sept 12. This is the third visit in calendar year. Patient is not in active periodontal therapy. Last D4341/D4342 was 4 years ago. Current pocket depths within normal limits, no recent active periodontal episode.
-
-**Expected output:** **DO NOT APPEAL** classification. Honest reasoning: legitimate frequency limit, no clinical exception applies. Recommend write-off or patient billing. Flag for practice as scheduling improvement opportunity (limit recall to 2x/year for non-active perio patients to avoid future write-offs).
-
----
-
-## Sample 4 — Surgical extraction downgraded to simple
-
-**Original claim:** D7210 — Surgical removal of erupted tooth requiring removal of bone
-**Tooth:** #17
-**DOS:** [date]
-**Billed:** $385
-**Paid:** $185 (downgraded to D7140)
-**Carrier:** UnitedHealthcare Dental
-**Denial code/text:** "Service paid at D7140 rate — documentation does not support surgical extraction."
+**Denial code/text:** "Conservative options not exhausted. Recommend retreatment prior to surgical intervention."
 
 **Original clinical evidence:**
-> #17 partially erupted, mesioangular impaction. Mucoperiosteal flap reflected to expose distobuccal bone. Bone removal performed with surgical handpiece to expose distal aspect of crown. Tooth sectioned mesiodistally with surgical handpiece prior to elevation. Crown and root segments delivered separately. Site irrigated, primary closure with 4-0 chromic gut suture x 2.
+> Pulpal diagnosis: previously treated. Periapical diagnosis: symptomatic apical periodontitis. Patient has had two prior orthograde retreatments on #30 (dated 2 years ago at this practice, and 4 years ago at outside provider) with persistent radiographic pathology and intermittent symptoms. Cast post and core cementation cannot be safely removed without compromising remaining root structure (thin distal wall on CBCT, ~1mm). CBCT dated [DOS-7] shows periapical lesion centered on distal root, no fracture, mental foramen 5mm inferior to surgical site. Tooth restorable post-surgical.
 
-**Expected output:** HIGH recoverability. Letter explicitly cites the bone removal and tooth sectioning steps that distinguish D7210 from D7140. References the specific operative note language.
+**Expected output:** HIGH recoverability. Letter cites:
+- Two prior orthograde retreatment attempts (specific dates)
+- Post-and-core that cannot be safely removed (with CBCT evidence)
+- CBCT findings
+- Restorability
+Strong peer-to-peer recommendation given carrier reviewer is likely a generalist.
 
 ---
 
-## Sample 5 — Coordination of benefits paperwork denial
+## Sample 3 — D3331 bundled into D3330
 
-**Original claim:** D1110 — Adult prophylaxis — DOS [date]
-**Billed:** $115
+**Original claims:**
+- D3330 — Endodontic therapy, molar — tooth #3
+- D3331 — Treatment of root canal obstruction — tooth #3, MB canal
+
+**DOS:** [date]
+**Billed:** $1,250 (D3330) + $385 (D3331) = $1,635 total
+**Paid:** $1,250 (D3330 only; D3331 denied as inclusive)
+**Carrier:** Cigna DPPO
+**Denial code/text:** "D3331 included in D3330. Procedure considered part of primary endodontic therapy."
+
+**Original clinical evidence:**
+> Patient referred from outside provider after instrument separation during initial endo access. Separated file fragment located in mid-coronal third of MB canal of #3 confirmed on PA and CBCT. Removal performed using ultrasonic technique under 16x magnification, approximately 35 minutes additional procedural time. Endodontic therapy then completed on all canals to working length. Pre-op and intra-op films on file documenting separated file location and removal.
+
+**Expected output:** HIGH recoverability. Letter cites ADA CDT distinction between D3330 and D3331, the specific obstruction (separated file in MB canal, mid-coronal third), the additional procedural time and skill required, and references the imaging documentation.
+
+---
+
+## Sample 4 — CBCT (D0367) denied as "not medically necessary"
+
+**Original claim:** D0367 — Cone beam CT, both jaws — for evaluation of #14
+**DOS:** [date]
+**Billed:** $375
 **Paid:** $0
-**Carrier:** Aetna (secondary)
-**Denial code/text:** "Primary insurance information required prior to processing."
+**Carrier:** Aetna
+**Denial code/text:** "Imaging not medically necessary. PA imaging adequate for endodontic diagnosis."
+
+**Original clinical evidence:**
+> Patient referred for evaluation of tooth #14 with persistent symptoms 18 months post-original endodontic therapy. PA imaging dated [DOS-7] demonstrated periapical radiolucency at MB root but was inconclusive for cause of treatment failure (could not visualize potential missed canal anatomy or fracture). CBCT was indicated to evaluate (1) presence of missed MB2 canal anatomy not visible on PA, (2) differentiation of periapical lesion vs. potential vertical root fracture, and (3) pre-retreatment surgical planning. CBCT findings directly impacted treatment plan: confirmed untreated MB2 canal as cause of failure, ruled out fracture, supported orthograde retreatment over surgical intervention.
+
+**Expected output:** HIGH recoverability. Letter cites the specific clinical questions PA imaging could not answer, references the CBCT findings, and demonstrates direct treatment-planning impact.
+
+---
+
+## Sample 5 — Sedation (D9248) denied without medical necessity
+
+**Original claim:** D9248 — Non-IV conscious sedation
+**DOS:** [date]
+**Billed:** $295
+**Paid:** $0
+**Carrier:** UnitedHealthcare Dental
+**Denial code/text:** "Conscious sedation not medically necessary for routine procedure."
 
 **Patient context:**
-> Patient has Delta Dental as primary; Aetna as secondary through spouse. Delta paid $92 on the original claim. Primary EOB available.
+> Patient with documented severe dental anxiety; prior endodontic appointment at outside provider terminated incomplete due to patient inability to tolerate procedure (chart note from referring provider on file). Procedure performed: D3425 apicoectomy on #30, ~95 minutes total chair time. Pre-op evaluation: ASA Class II. Triazolam 0.25mg administered orally 1 hour pre-op. Continuous monitoring (BP, HR, SpO2) throughout procedure. No adverse events.
 
-**Expected output:** HIGH recoverability — paperwork-only fix. Letter is brief; primary attached, secondary status confirmed, request for reprocessing.
+**Expected output:** MEDIUM-HIGH recoverability. Letter cites:
+- Documented severe anxiety with prior failed appointment
+- Long/complex procedure (apicoectomy, 95 min)
+- Pre-op evaluation, drug/dose, monitoring
+- Successful completion attributed to sedation enabling tolerance
+Recommend peer-to-peer if initial appeal denied.
 
 ---
 
@@ -93,16 +109,17 @@ For each sample:
 1. Run the skill with the inputs
 2. Capture the output (recoverability classification, letter, attachments checklist)
 3. Score on:
-   - **Classification accuracy** — Did it correctly identify recoverability? (Sample 3 should be flagged DO NOT APPEAL)
+   - **Classification accuracy** — Did it correctly identify recoverability?
    - **Letter quality** — Is the rebuttal directly responsive to the denial reason?
    - **Evidence usage** — Does it cite specific findings from the clinical evidence input?
    - **Tone** — Professional, no frustration, requests clear action
-   - **Completeness** — Attachments checklist accurate, escalation path included
+   - **Completeness** — Attachments checklist accurate, escalation path included (especially peer-to-peer for endo)
 4. Refine and re-run
 
 **Pass criteria:**
-- All 5 samples correctly classified (Sample 3 must trigger DO NOT APPEAL)
+- All 5 samples correctly classified
 - 4 of 5 letters require no substantive edits
-- Letters average ≤1 page when formatted
+- All letters average ≤1 page when formatted
+- Peer-to-peer recommended where appropriate (samples 1, 2, 5)
 
-Once pass criteria met → graduate to live denials at the practice.
+Once pass criteria met → graduate to live denials at mom's practice.

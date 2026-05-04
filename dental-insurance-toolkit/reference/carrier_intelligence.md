@@ -1,66 +1,68 @@
-# Carrier Intelligence
+# Carrier Intelligence (Endodontics)
 
-> Carrier-specific narrative preferences, denial patterns, and submission tips. Used by both skills during Step 3 (carrier-specific tuning).
+> Carrier-specific narrative preferences, denial patterns, and submission tips — endo-specific. Used by all three skills during Step 3 (carrier-specific tuning).
 >
-> **Important:** This is general industry guidance compiled from public-facing carrier policies and common practice experience. Confirm specifics during discovery — carrier behavior varies by plan, state, and contract year. Update entries as the practice's office manager observes patterns over time.
+> **Important:** This is general industry guidance compiled from public-facing carrier policies and common practice experience in endodontic practices. Confirm specifics during discovery — carrier behavior varies by plan, state, and contract year. Update entries as the practice's office manager observes patterns over time.
 
 ---
 
 ## Delta Dental (PPO + Premier)
 
-**Narrative preferences:**
-- Quantify decay extent ("decay extending to mid-coronal pulpal third")
-- Use ADA-standard terminology only — avoid colloquialisms
-- Lead with the diagnostic finding, follow with the treatment justification
+**Endo narrative preferences:**
+- Lead with pulpal AND periapical diagnoses explicitly
+- Specific radiographic findings with dates
+- For retreatments: explicit failure-of-prior-treatment evidence is essential
 - Bullet-style clinical findings often accepted
 
-**Common denial patterns:**
-- Crowns on teeth with <50% structural compromise — must explicitly cite cusp involvement, fracture, or prior endo
-- D2950 buildups frequently bundled into crown payment unless explicitly justified as separate procedure
-- D4341 SRP requires documented pocket depths ≥4mm in ≥4 teeth per quadrant; some plans require ≥5mm
-- Replacement crowns require documentation of date of original AND reason for failure
+**Common endo denial patterns:**
+- D3346/D3347/D3348 retreatments denied as "original treatment still serviceable" — must show radiographic evidence of failure
+- D3331 (separated instrument, calcified canal) bundled into primary endo therapy code
+- D0367 (CBCT) denied without explicit medical necessity narrative
+- Apicoectomies (D3410-D3426) denied as "conservative options not exhausted"
 
 **Submission tips:**
-- Pre-auth narratives go in the Remarks field on the eClaims submission
-- Attach radiographs as separate uploads (do not embed)
-- Delta processes pre-auths in 10-15 business days typically
-- Appeals: must be submitted within 180 days of EOB; Delta-specific appeal form often required
+- Pre-auth narratives go in the Remarks field on eClaims submission
+- Attach pre-op PA AND any CBCT screenshots as separate uploads
+- Delta processes endo pre-auths in 10-15 business days
+- Appeals: must be submitted within 180 days of EOB; Delta-specific appeal form often required for surgical endo
 
-**Peer-to-peer:** available on appeal denial; request through provider services line
+**Peer-to-peer:** available on appeal denial; for endo cases, often a generalist or oral surgeon at carrier — endodontist-to-clinical-director conversations frequently reverse denials
 
 ---
 
 ## MetLife
 
-**Narrative preferences:**
+**Endo narrative preferences:**
 - Prose narrative preferred over bullets
-- Include diagnostic test results explicitly (cold test results, EPT readings, percussion findings)
-- Conservative-alternative-considered language strongly recommended ("D2391 composite was considered but is contraindicated due to [reason]")
+- Diagnostic test results required explicitly (cold test result, EPT readings, percussion, palpation)
+- Restorability statements front-loaded
+- Conservative-alternative-considered language for surgical endo
 
-**Common denial patterns:**
-- Strict on D9944 occlusal guards — often denied as non-covered preventive even with strong narrative
-- D4910 perio maintenance frequently downgraded to D1110 if frequency exceeds 2x/year without active perio justification
-- Crown narratives require explicit prognosis statement
+**Common endo denial patterns:**
+- Strict on D3331 — frequently bundled
+- D9248 sedation often denied without strong medical necessity
+- Retreatment denials with sparse failure documentation
 
 **Submission tips:**
 - MetLife's online portal accepts narratives directly; faster turnaround than fax (5-10 business days)
 - Pre-auths valid for 12 months from approval
 
-**Peer-to-peer:** available; clinical reviewer is typically a DDS
+**Peer-to-peer:** available; clinical reviewer typically a DDS
 
 ---
 
 ## Cigna (DPPO)
 
-**Narrative preferences:**
-- Wants explicit fracture documentation for crown narratives ("visible mesiodistal craze line, transillumination positive, bite-stick reproduces symptoms on functional cusp")
+**Endo narrative preferences:**
+- Wants specific anatomical detail (canal locations, working lengths post-treatment)
 - Specific date format preferred: MM/DD/YYYY
-- Restorability statements required for any endodontic narrative
+- Restorability statements required for all endo narratives
+- For surgical endo: explicit sequence of prior conservative attempts
 
-**Common denial patterns:**
-- Most aggressive on alternate benefit downgrades for posterior composites — narrative must cite structural reason for composite over amalgam
-- Frequency limitations strictly enforced (uses calendar year, not 12-month rolling)
-- Coordination of benefits denials common — verify primary/secondary status before submitting
+**Common endo denial patterns:**
+- Aggressive on retreatment denials; require strongest failure evidence
+- Frequency limitations on consultations (D0140) when patient has had multiple recent visits
+- Coordination of benefits denials on endo claims
 
 **Submission tips:**
 - Cigna online portal is reliable; avoid fax
@@ -73,14 +75,15 @@
 
 ## Aetna
 
-**Narrative preferences:**
+**Endo narrative preferences:**
 - Concise prose (Aetna reviewers move fast — keep it tight)
 - Lead with the CDT code rationale, follow with clinical evidence
-- Specific tooth surfaces involved in narrative (M, O, D, B, L)
+- Specific tooth number + canals worked
 
-**Common denial patterns:**
-- Strict on missing tooth clause — denies replacement of teeth missing prior to plan effective date unless 2+ years of continuous coverage
+**Common endo denial patterns:**
+- Strict on missing tooth clause — rare in endo (tooth is usually present)
 - D3346-D3348 retreatments frequently denied without prior endo failure documentation (radiographic evidence of periapical pathology)
+- D0367 CBCT denied unless explicitly tied to a clinical question PA couldn't answer
 
 **Submission tips:**
 - Aetna's Availity portal handles pre-auths and appeals together
@@ -93,14 +96,15 @@
 
 ## UnitedHealthcare (UHC) Dental
 
-**Narrative preferences:**
-- Likes structured format: Diagnosis / Evidence / Treatment Rationale / Prognosis
-- Specific bone loss measurements for periodontal narratives (mm horizontal or vertical)
-- Photographic evidence weighted heavily — recommend including intraoral photos when available
+**Endo narrative preferences:**
+- Likes structured format: Diagnosis / Evidence / Treatment Rationale / Restorability
+- Specific imaging findings with measurements
+- Photographic evidence weighted heavily — recommend including intraoral photos for visible defects
 
-**Common denial patterns:**
-- D7210 surgical extractions frequently downgraded to D7140 — narrative must explicitly cite bone removal, sectioning, or flap reflection
-- Pre-existing condition exclusions on new policies (12-month wait common)
+**Common endo denial patterns:**
+- D3331 frequently bundled
+- Apicoectomies denied without explicit retreatment-contraindicated reasoning
+- Sedation denied without medical necessity
 
 **Submission tips:**
 - UHC accepts pre-auth narratives via portal upload as PDF
@@ -112,14 +116,14 @@
 
 ## Guardian
 
-**Narrative preferences:**
-- Detailed narratives expected (4-6 sentences minimum)
-- Periodontal narratives require ADA staging when possible (Stage I-IV)
-- Patient medical history relevant to dental treatment (diabetes, smoking, immunocompromise) strengthens appeals
+**Endo narrative preferences:**
+- Detailed narratives expected (5-7 sentences for endo)
+- Both pulpal AND periapical diagnoses required (uses ADA terminology strictly)
+- Patient medical history relevant to dental treatment strengthens appeals (diabetes, immunocompromise affecting healing)
 
-**Common denial patterns:**
-- Conservative on crown approvals — strong narrative essential
-- D4910 perio maintenance frequency tied to documented active periodontal therapy completion date
+**Common endo denial patterns:**
+- Conservative on retreatment approvals — strong narrative essential
+- Apicoectomy denials frequent
 
 **Submission tips:**
 - Guardian's electronic submission is reliable
@@ -133,12 +137,29 @@
 
 When the carrier is not in the practice's top-6 list, use the generic conservative approach:
 
-- 5-6 sentence prose narrative
-- Lead with tooth + finding
-- Cite at least one diagnostic evidence item with date
-- Include prognosis without treatment
-- Explicit conservative-alternative reasoning
+- 5-7 sentence prose narrative
+- Both pulpal AND periapical diagnoses
+- Diagnostic test results
+- Imaging finding with date
+- Restorability statement
+- For retreatment: failure documentation
+- For surgical: retreatment-contraindicated reasoning
 - Flag confidence as MEDIUM and recommend office manager review before submission
+
+---
+
+## Endo-Specific Carrier Behavior Notes
+
+**Why endo gets more scrutiny than GP procedures:**
+- Higher per-procedure dollar amounts ($1,000-$2,500 typical) attract more review
+- Retreatments and surgical endo trigger automatic clinical review at most carriers
+- Endo benefits often have lifetime maximums per tooth — carriers tracking these closely
+
+**The peer-to-peer advantage in endo:**
+- Carrier dental directors are often generalists or oral surgeons, not endodontists
+- An endodontist on the phone explaining the case to a generalist reviewer reverses many denials
+- Endodontist-to-clinical-director peer-to-peer is the highest-success escalation in dental insurance
+- Worth recommending peer-to-peer as primary escalation path more aggressively than for GP
 
 ---
 

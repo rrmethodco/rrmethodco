@@ -1,91 +1,130 @@
-# Sample Pre-Auth Inputs (for testing)
+# Sample Pre-Auth Inputs (Endodontics — for testing)
 
 > 5 fully de-identified sample cases for testing the `pre_auth_narrative.md` skill. All patient identifiers are placeholders. Replace with real (de-identified) cases from the practice during refinement.
 
 ---
 
-## Sample 1 — Crown on fractured molar (clean case)
+## Sample 1 — Routine RCT, molar (clean case)
 
-**Procedure:** D2740 — Crown, porcelain/ceramic
+**Procedure:** D3330 — Endodontic therapy, molar tooth
 **Tooth:** #19
 **DOS:** scheduled, [date]
 **Carrier:** Delta Dental PPO
 
-**Clinical findings (pasted from chart, de-identified):**
-> 35yo patient presents for evaluation of #19 following lingering cold sensitivity x 2 weeks. Clinical exam reveals visible mesiodistal craze line on occlusal surface of #19. Bite-stick testing on mesiolingual cusp reproduces patient symptoms. Tooth has existing MOD amalgam restoration covering approximately 60% of coronal surface, placed >10 years ago per patient. Cold test +/normal, percussion negative, palpation negative, periodontal probing WNL.
+**Pulpal diagnosis:** Irreversible pulpitis
+**Periapical diagnosis:** Symptomatic apical periodontitis
 
-**Diagnostic evidence:** PA radiograph of #19 dated [DOS-7], BWX dated [DOS-7]
-**Prior treatment on tooth:** MOD amalgam, date unknown, >10 years per patient
+**Diagnostic test results:**
+> Cold test: prolonged response (lingering >30 sec) on #19; normal response on adjacent teeth. EPT: not performed. Percussion: positive on #19. Palpation: WNL.
 
-**Expected output:** HIGH confidence narrative; references craze line, bite-stick reproduction, large existing restoration, prognosis of cuspal fracture without crown coverage.
+**Imaging available:** PA #19 dated [DOS-7], BWX dated [DOS-7]
+
+**Restorability:** Restorable. Patient referred back to GP for cuspal coverage post-RCT.
+
+**Prior treatment on tooth:** MOD composite, recent placement (~2 years per patient)
+
+**Expected output:** HIGH confidence narrative. Cites pulpal + periapical diagnoses, cold test result, percussion finding, PA reference, restorability statement.
 
 ---
 
-## Sample 2 — Crown with evidence gap (should flag)
+## Sample 2 — Retreatment with strong failure evidence
 
-**Procedure:** D2740 — Crown, porcelain/ceramic
+**Procedure:** D3348 — Retreatment of previous root canal therapy, molar
 **Tooth:** #14
 **DOS:** scheduled, [date]
 **Carrier:** Cigna DPPO
 
-**Clinical findings:**
-> Patient requests crown on #14 due to old filling. Tooth is asymptomatic. DO composite present.
+**Pulpal diagnosis:** Previously treated
+**Periapical diagnosis:** Asymptomatic apical periodontitis
 
-**Diagnostic evidence:** PA radiograph dated [DOS-30]
-**Prior treatment on tooth:** DO composite, date unknown
+**Diagnostic test results:**
+> Percussion: mildly positive on #14. Palpation: WNL. Periodontal probing: WNL. Cold/EPT: N/A (previously treated).
 
-**Expected output:** Evidence gap flagged. Missing: extent of structural compromise, fracture documentation, justification for crown over replacement composite. Skill should NOT generate the narrative — should return gap list with guidance: "Document remaining tooth structure %, presence/absence of fracture or craze line, prior endo or post status, occlusal load considerations."
+**Imaging available:** PA #14 dated [DOS-14] showing 4mm periapical radiolucency at MB root, expanded from prior PA dated [DOS-3 years] showing 2mm radiolucency. CBCT dated [DOS-7] reveals untreated MB2 canal.
+
+**Restorability:** Restorable. Existing crown intact; access can be made through crown.
+
+**Prior treatment:** Original endo therapy approximately 4 years ago (outside provider). Patient reports intermittent discomfort starting 6 months ago.
+
+**Expected output:** HIGH confidence. Strong failure evidence (expanding lesion + missed MB2 on CBCT). Narrative cites both radiographic progression and CBCT finding.
 
 ---
 
-## Sample 3 — Buildup + crown on endo-treated tooth
+## Sample 3 — Apicoectomy with retreatment-contraindicated reasoning
 
-**Procedures:** D2950 + D2740
+**Procedure:** D3425 — Apicoectomy, molar (first root)
 **Tooth:** #30
 **DOS:** scheduled, [date]
 **Carrier:** MetLife
 
-**Clinical findings:**
-> Patient presents for definitive restoration of #30 following completion of endodontic therapy on [DOS-21]. Access opening sealed with temporary restoration. Clinical exam: less than 40% of coronal tooth structure remains following caries excavation and access preparation. Walls intact on M, L, D; B wall absent. Tooth restorable with buildup and crown coverage.
+**Pulpal diagnosis:** Previously treated
+**Periapical diagnosis:** Symptomatic apical periodontitis (chronic)
 
-**Diagnostic evidence:** Post-endo PA dated [DOS-21], pre-treatment PA dated [DOS-45]
-**Prior treatment on tooth:** Endo therapy [DOS-21]; multi-surface amalgam, history of recurrent decay
+**Diagnostic test results:**
+> Percussion: positive on #30. Palpation: tenderness over distobuccal apex. Patient reports persistent throbbing discomfort over 8 months.
 
-**Expected output:** Single narrative covering both procedures. Justifies buildup as separate from crown (insufficient retentive structure for crown alone). References post-endo restorability, missing buccal wall, structural compromise. Notes attached: post-endo PA, pre-treatment PA.
+**Imaging available:** PA dated [DOS-7] showing 5mm periapical radiolucency at distal root. CBCT dated [DOS-7] confirms periapical lesion centered on distal root, no evidence of fracture, mental foramen 4mm inferior to surgical site.
+
+**Restorability:** Restorable post-surgical. Existing crown and post-and-core intact.
+
+**Prior treatment:**
+- Original endo therapy 6 years ago (outside provider)
+- Orthograde retreatment attempted 18 months ago at this practice — persistent symptoms and radiographic pathology
+- Cast post and core in place; removal would compromise remaining tooth structure given thin distal wall observed on CBCT
+
+**Expected output:** HIGH confidence. Letter explicitly cites prior retreatment attempt with persistent failure AND post-and-core that cannot be safely removed. CBCT findings on surgical anatomy. Strong narrative.
 
 ---
 
-## Sample 4 — Periodontal SRP, 4 teeth UR quadrant
+## Sample 4 — D3331 with separated instrument (bundling-prevention narrative)
 
-**Procedure:** D4341 — Periodontal scaling and root planing, 4+ teeth UR quadrant
-**Quadrant:** Upper Right (teeth #2, #3, #4, #5)
+**Procedure:** D3330 + D3331 — Endodontic therapy, molar + Treatment of root canal obstruction
+**Tooth:** #3
 **DOS:** scheduled, [date]
 **Carrier:** Aetna
 
-**Clinical findings:**
-> Patient presents for periodontal evaluation. Periodontal charting reveals: #2: 5,6,4 / 5,6,5; #3: 5,6,5 / 5,7,5; #4: 4,5,4 / 4,5,4; #5: 5,5,4 / 4,5,4. BOP +at all sites listed. Generalized moderate plaque and supragingival calculus, heavy subgingival calculus on facial and lingual aspects of #2 and #3. BWX [DOS-14] demonstrates horizontal bone loss approximately 20-30% of root length on #2-#5. Patient reports no prior periodontal treatment. Diagnosis: Generalized periodontitis, Stage II, Grade B.
+**Pulpal diagnosis:** Necrotic pulp
+**Periapical diagnosis:** Chronic apical abscess
 
-**Diagnostic evidence:** Periodontal chart dated [DOS-7], BWX series dated [DOS-14]
-**Prior treatment on quadrant:** None
+**Diagnostic test results:**
+> Cold test: no response on #3. EPT: no response. Percussion: positive. Palpation: tenderness with sinus tract draining buccal to #3.
 
-**Expected output:** HIGH confidence. Strong narrative with pocket depths, BOP, radiographic bone loss, ADA staging, and clear distinction from prophylaxis.
+**Imaging available:** PA dated [DOS-7] showing 3mm periapical radiolucency at MB root with separated file fragment in mid-coronal third of MB canal (referred from outside provider after instrument separation during initial access). CBCT dated [DOS-7] confirms file location and periapical lesion.
+
+**Restorability:** Restorable. Tooth has full coverage temporary; will need definitive crown post-RCT.
+
+**Prior treatment:** Patient referred from outside provider after instrument separation during initial endo access ~3 weeks ago. Outside provider placed temporary, prescribed antibiotics, and referred for completion.
+
+**Expected output:** HIGH confidence with strong bundling-prevention language. Narrative explicitly identifies the obstruction (separated file in MB canal mid-coronal third), the additional procedural requirement (ultrasonic removal under microscope), and ADA CDT support for separately reportable D3331.
 
 ---
 
-## Sample 5 — Occlusal guard, medical necessity
+## Sample 5 — Evidence gap (should flag, not generate)
 
-**Procedure:** D9944 — Occlusal guard, hard appliance, full arch
-**Arch:** Maxillary
+**Procedure:** D3348 — Retreatment of previous root canal therapy, molar
+**Tooth:** #18
 **DOS:** scheduled, [date]
 **Carrier:** Guardian
 
-**Clinical findings:**
-> Patient reports nocturnal bruxism, witnessed by partner, ongoing >2 years. Clinical exam reveals significant attritional wear on incisal edges of #6-#11 and occlusal cusp tips of #2, #3, #14, #15. Recent fracture of mesial-lingual cusp of #15 attributed to parafunctional load (occurred 3 weeks prior, restored with onlay). Masseter palpation reveals hypertrophy bilaterally with mild tenderness. No TMJ clicking or limited opening noted. Hard appliance indicated for protection of restored dentition and to mitigate risk of further fractures.
+**Pulpal diagnosis:** Previously treated
+**Periapical diagnosis:** [NOT PROVIDED in input]
 
-**Diagnostic evidence:** Intraoral photos of wear facets [DOS-14], clinical exam findings
-**Prior treatment:** Recent restoration of #15 fracture [DOS-21]
+**Diagnostic test results:** [NONE PROVIDED in input — only patient symptoms reported: "patient says it hurts"]
 
-**Expected output:** HIGH confidence with medical necessity framing. Cites specific wear evidence, recent attributable fracture, masseter findings. Avoids "patient comfort" language; leads with protection of dentition from documented parafunctional damage.
+**Imaging available:** PA dated [DOS-30]
+
+**Restorability:** [NOT ASSESSED]
+
+**Prior treatment:** Patient reports prior endo "a long time ago" — no specific date or evidence of failure documented in chart.
+
+**Expected output:** Evidence gap flagged. Skill should NOT generate the narrative — should return gap list:
+- Missing periapical diagnosis (required for D3348)
+- Missing diagnostic test results (need percussion, palpation at minimum)
+- Missing failure-of-prior-treatment evidence (most critical for retreatment denials — radiographic comparison or CBCT findings needed)
+- Missing restorability assessment
+- Recommend chart review before submission
+
+This is the expected behavior — a low-quality input should produce a "stop, please document more" response, NOT a fabricated narrative.
 
 ---
 
@@ -103,6 +142,6 @@ For each sample:
 4. Refine the skill file based on observed gaps
 5. Re-run all 5 samples to confirm refinements didn't regress earlier cases
 
-**Pass criteria:** 4 of 5 samples produce HIGH-confidence narratives requiring no substantive edits, AND Sample 2 correctly flags evidence gaps without generating a narrative.
+**Pass criteria:** 4 of 5 samples produce HIGH-confidence narratives requiring no substantive edits, AND Sample 5 correctly flags evidence gaps without generating a narrative.
 
-Once pass criteria met → graduate to live testing on real (de-identified) cases from the practice.
+Once pass criteria met → graduate to live testing on real (de-identified) cases from mom's practice.
