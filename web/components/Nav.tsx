@@ -11,38 +11,49 @@ import {
   History,
   Settings,
   Stethoscope,
+  Briefcase,
+  BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MOCK_QUEUE } from "@/lib/mock-data";
+import { activeCases } from "@/lib/cases";
 
 const navSections = [
   {
-    label: "Overview",
+    label: "Work",
     items: [
+      { href: "/inbox", label: "Inbox", icon: Inbox, badgeKey: "inbox" as const },
+      { href: "/cases", label: "Cases", icon: Briefcase, badgeKey: "cases" as const },
       { href: "/", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/queue", label: "Review queue", icon: Inbox, badgeKey: "queue" as const },
     ],
   },
   {
-    label: "Generate",
+    label: "Knowledge",
+    items: [
+      { href: "/playbook", label: "Carrier Playbook", icon: BookOpen },
+      { href: "/history", label: "History", icon: History },
+    ],
+  },
+  {
+    label: "Generate manually",
     items: [
       { href: "/generate/pre-auth", label: "Pre-auth narrative", icon: ClipboardList },
       { href: "/generate/appeal", label: "Appeal letter", icon: FileText },
       { href: "/generate/referral", label: "Referral letter", icon: Send },
     ],
   },
-  {
-    label: "Records",
-    items: [
-      { href: "/history", label: "History", icon: History },
-      { href: "/settings", label: "Settings", icon: Settings },
-    ],
-  },
 ];
 
 export function Nav() {
   const pathname = usePathname();
-  const queueCount = MOCK_QUEUE.filter((q) => q.status === "pending").length;
+  const inboxCount = MOCK_QUEUE.filter((q) => q.status === "pending").length;
+  const casesCount = activeCases().length;
+
+  const badgeFor = (key?: string) => {
+    if (key === "inbox") return inboxCount;
+    if (key === "cases") return casesCount;
+    return 0;
+  };
 
   return (
     <aside className="hidden w-64 shrink-0 border-r border-slate-200 bg-white md:block">
@@ -70,7 +81,8 @@ export function Nav() {
                       ? pathname === "/"
                       : pathname.startsWith(item.href);
                   const Icon = item.icon;
-                  const showBadge = "badgeKey" in item && item.badgeKey === "queue" && queueCount > 0;
+                  const badgeCount = "badgeKey" in item ? badgeFor(item.badgeKey) : 0;
+                  const showBadge = badgeCount > 0;
                   return (
                     <li key={item.href}>
                       <Link
@@ -86,7 +98,7 @@ export function Nav() {
                         <span className="flex-1">{item.label}</span>
                         {showBadge && (
                           <span className="rounded-full bg-brand-700 px-2 py-0.5 text-xs font-semibold text-white">
-                            {queueCount}
+                            {badgeCount}
                           </span>
                         )}
                       </Link>
@@ -96,6 +108,21 @@ export function Nav() {
               </ul>
             </div>
           ))}
+
+          <div className="mt-6 border-t border-slate-100 pt-4">
+            <Link
+              href="/settings"
+              className={cn(
+                "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                pathname.startsWith("/settings")
+                  ? "bg-brand-50 text-brand-800"
+                  : "text-slate-600 hover:bg-slate-50"
+              )}
+            >
+              <Settings size={16} className={pathname.startsWith("/settings") ? "text-brand-700" : "text-slate-400"} />
+              Settings
+            </Link>
+          </div>
         </nav>
 
         <div className="border-t border-slate-200 px-6 py-4">

@@ -1,23 +1,31 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Filter, CheckCheck, Inbox } from "lucide-react";
+import { Filter, CheckCheck, Inbox, Sparkles } from "lucide-react";
 import { QueueItem } from "@/components/QueueItem";
 import { MOCK_QUEUE } from "@/lib/mock-data";
 import type { GenerationKind, QueueItem as QueueItemType } from "@/lib/types";
+import { isMultiEventPatient } from "@/lib/patients";
 import { cn } from "@/lib/utils";
 
-export default function QueuePage() {
+export default function InboxPage() {
   const [items, setItems] = useState<QueueItemType[]>(MOCK_QUEUE);
-  const [filter, setFilter] = useState<GenerationKind | "all">("all");
+  const [filter, setFilter] = useState<GenerationKind | "all" | "insurance" | "peer-comms">("all");
   const [confidenceFilter, setConfidenceFilter] = useState<"all" | "HIGH-only">("all");
 
   const filtered = useMemo(() => {
     return items
       .filter((i) => i.status === "pending")
-      .filter((i) => filter === "all" || i.kind === filter)
+      .filter((i) => {
+        if (filter === "all") return true;
+        if (filter === "insurance") return i.kind === "pre-auth" || i.kind === "appeal";
+        if (filter === "peer-comms") return i.kind === "referral";
+        return i.kind === filter;
+      })
       .filter((i) => confidenceFilter === "all" || i.confidence === "HIGH");
   }, [items, filter, confidenceFilter]);
+
+  const allPatientIds = items.map((i) => i.patientId).filter((id): id is string => !!id);
 
   const handleApprove = (id: string) => {
     setItems((prev) => prev.map((i) => (i.id === id ? { ...i, status: "approved" } : i)));
@@ -33,6 +41,7 @@ export default function QueuePage() {
 
   const handleBulkApprove = () => {
     const highIds = filtered.filter((i) => i.confidence === "HIGH").map((i) => i.id);
+    if (!confirm(`Approve ${highIds.length} HIGH-confidence items? They will be submitted to clearinghouse + saved to PBS Endo Document Center.`)) return;
     setItems((prev) =>
       prev.map((i) => (highIds.includes(i.id) ? { ...i, status: "approved" } : i))
     );
@@ -42,18 +51,23 @@ export default function QueuePage() {
 
   const filterButtons: { value: typeof filter; label: string }[] = [
     { value: "all", label: "All" },
-    { value: "pre-auth", label: "Pre-auths" },
-    { value: "appeal", label: "Appeals" },
-    { value: "referral", label: "Referral letters" },
+    { value: "insurance", label: "Insurance" },
+    { value: "peer-comms", label: "Peer comms" },
   ];
 
   return (
     <div className="space-y-6">
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Review queue</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            {filtered.length} pending · auto-triggered from PBS Endo events · awaiting approval
+          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-slate-400">
+            <Sparkles size={14} className="text-brand-700" />
+            Inbox
+          </div>
+          <h1 className="mt-1 text-2xl font-semibold text-slate-900">
+            {filtered.length} drafted by Restore, awaiting approval
+          </h1>
+          <p className="mt-1 max-w-prose text-sm text-slate-500">
+            Restore watches PBS Endo for new TX plans, EOBs, and completed treatments — drafts the response automatically and queues it here for one-click review.
           </p>
         </div>
         {highCount > 1 && (
@@ -99,9 +113,9 @@ export default function QueuePage() {
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
             <Inbox size={20} />
           </div>
-          <h3 className="text-sm font-semibold text-slate-900">Queue is empty</h3>
+          <h3 className="text-sm font-semibold text-slate-900">Inbox is empty</h3>
           <p className="mt-1 max-w-sm text-xs text-slate-500">
-            Auto-triggered items appear here when new TX plans, EOBs, or completed treatments are detected in PBS Endo.
+            Restore drafts items as PBS Endo events fire (new TX plans, EOBs, completed treatments). Nothing pending right now.
           </p>
         </div>
       ) : (
@@ -110,6 +124,7 @@ export default function QueuePage() {
             <QueueItem
               key={item.id}
               item={item}
+              multiCasePatient={item.patientId ? isMultiEventPatient(item.patientId, allPatientIds) : false}
               onApprove={handleApprove}
               onReject={handleReject}
               onEdit={handleEdit}

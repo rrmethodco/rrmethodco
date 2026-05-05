@@ -8,6 +8,8 @@ export const MOCK_KPI_THIS_WEEK: KPIWindow = {
   dollarsRecovered: 4280,
   approvalRate: 0.89,
   appealWinRate: 0.73,
+  doNotAppealCount: 3,
+  doNotAppealDollarsAvoided: 1180,
 };
 
 export const MOCK_KPI_BASELINE: KPIWindow = {
@@ -18,6 +20,8 @@ export const MOCK_KPI_BASELINE: KPIWindow = {
   dollarsRecovered: 0,
   approvalRate: 0.74,
   appealWinRate: 0.51,
+  doNotAppealCount: 0,
+  doNotAppealDollarsAvoided: 0,
 };
 
 export const MOCK_QUEUE: QueueItem[] = [
@@ -33,6 +37,8 @@ export const MOCK_QUEUE: QueueItem[] = [
     estimatedDollars: 1450,
     triggeredBy: "auto-trigger",
     triggerSource: "TX plan finalized in PBS Endo · 4 min ago",
+    patientId: "pt_a31f",
+    caseId: "case_001",
     body: "Tooth #14 presents with persistent symptoms following endodontic therapy completed approximately 4 years ago at an outside provider. Pulpal diagnosis is previously treated; periapical diagnosis is asymptomatic apical periodontitis. Periapical radiograph dated 04/27/2026 demonstrates a 4mm periapical radiolucency at the mesiobuccal root, expanded from 2mm radiolucency on prior PA dated 03/2023. CBCT dated 04/27/2026 reveals an untreated MB2 canal consistent with treatment failure due to missed canal anatomy. Clinical examination reveals mildly positive percussion; periodontal probing within normal limits. The tooth is restorable with the existing crown intact, providing access through the crown to complete retreatment. D3348 is the standard of endodontic care for previously treated teeth with documented radiographic and anatomical evidence of treatment failure.",
     evidence: [
       { label: "Pulpal diagnosis", present: true },
@@ -41,12 +47,30 @@ export const MOCK_QUEUE: QueueItem[] = [
       { label: "Evidence of failure of prior treatment", present: true },
       { label: "Restorability assessment", present: true },
     ],
+    confidenceRationale: {
+      evidenceCompletePct: 1.0,
+      carrierPattern: {
+        carrier: "Cigna DPPO",
+        procedureCode: "D3348",
+        matchingHistoricalCases: 24,
+        historicalApprovalRatePct: 92,
+      },
+      practiceHistory: { similarCasesWon: 17, similarCasesLost: 1 },
+      positiveSignals: [
+        "Quantified radiolucency progression (2mm → 4mm with dated PAs)",
+        "CBCT cited with explicit MB2 finding (Cigna's preferred specificity)",
+        "Restorability assessment front-loaded — Cigna preference",
+      ],
+    },
     attachments: [
       { label: "Pre-op periapical radiograph #14, dated 04/27/2026" },
       { label: "Prior PA dated 03/2023 (for radiographic comparison)" },
       { label: "CBCT screenshots showing untreated MB2 canal" },
     ],
-    notes: ["Cigna prefers explicit fracture/failure documentation — narrative leads with progression of lesion."],
+    notes: [
+      "Cigna-tuned: anatomical specificity emphasized, restorability front-loaded.",
+      "Cigna prefers explicit fracture/failure documentation — narrative leads with progression of lesion.",
+    ],
   },
   {
     id: "q-002",
@@ -59,7 +83,17 @@ export const MOCK_QUEUE: QueueItem[] = [
     status: "pending",
     triggeredBy: "auto-trigger",
     triggerSource: "Treatment marked complete in PBS Endo · 12 min ago",
+    patientId: "pt_a31f", // same patient as q-001 — patient thread demo
     body: "Dear Dr. Patel,\n\nThe patient returned for treatment on 05/04/2026. We completed endodontic therapy on tooth #14. Four canals were located and obturated to working length: MB1 (21mm), MB2 (20mm, located via ultrasonic troughing under microscope), DB (21.5mm), and palatal (22mm). Obturation was performed using warm vertical compaction with AH Plus sealer. Working length film and post-op PA on file confirm adequate length and density of obturation.\n\nA temporary restoration (Cavit + IRM) has been placed. We recommend definitive cuspal-coverage restoration (onlay or crown) within 2-4 weeks to protect the tooth from coronal fracture. The patient has been provided with post-operative instructions and is scheduled for 6-month follow-up at our practice.\n\nThank you for the referral and for entrusting us with your patient's care. Please feel free to reach out with any questions.\n\nBest regards,\n[Endodontist], DDS",
+    confidenceRationale: {
+      evidenceCompletePct: 1.0,
+      practiceHistory: { similarCasesWon: 41, similarCasesLost: 0 },
+      positiveSignals: [
+        "MB2 location detail noted (referring GPs appreciate this evidence of thorough treatment)",
+        "Restorative recommendation specific (cuspal coverage, 2-4 week window)",
+        "Recall scheduling explicit",
+      ],
+    },
     notes: ["MB2 location noted — referring GPs frequently appreciate this detail as evidence of thorough treatment."],
   },
   {
@@ -75,7 +109,23 @@ export const MOCK_QUEUE: QueueItem[] = [
     estimatedDollars: 385,
     triggeredBy: "auto-trigger",
     triggerSource: 'EOB received with denial code "bundled into primary procedure" · 38 min ago',
-    body: "Re: Claim #DC-2026-04488\nDate of Service: 04/22/2026\nPatient: [Patient ID redacted in draft]\nProvider: [Endodontist], DDS\n\nDear Delta Dental Claims Review,\n\nWe respectfully request reconsideration of the denial of CDT code D3331 (treatment of root canal obstruction) on the above-referenced claim.\n\nThe denial states that D3331 is included in payment for D3330 (endodontic therapy, molar). We disagree. The ADA Code on Dental Procedures and Nomenclature (CDT) explicitly identifies D3331 as a separately reportable procedure when an obstruction in the root canal system is encountered and managed during endodontic treatment.\n\nDuring treatment of tooth #3 on 04/22/2026, a separated file fragment was located in the mid-coronal third of the MB canal, originating from a prior treatment attempt at an outside provider. Removal was performed using ultrasonic technique under 16x magnification, requiring approximately 35 minutes of additional procedural time beyond standard endodontic therapy. Pre-op and intra-op films documenting the separated file location and successful removal are attached. The standard endodontic therapy on all canals (D3330) was performed as a separate procedural step.\n\nPlease review the attached documentation and reprocess the D3331 charge. If the denial is upheld, please advise of the peer-to-peer review process and timeline.\n\nSincerely,\n[Endodontist], DDS",
+    patientId: "pt_h27k",
+    body: "Re: Claim #DC-2026-04488\nDate of Service: 04/22/2026\nPatient: [Patient ID — re-attached at final assembly]\nProvider: [Endodontist], DDS\n\nDear Delta Dental Claims Review,\n\nWe respectfully request reconsideration of the denial of CDT code D3331 (treatment of root canal obstruction) on the above-referenced claim.\n\nThe denial states that D3331 is included in payment for D3330 (endodontic therapy, molar). We disagree. The ADA Code on Dental Procedures and Nomenclature (CDT) explicitly identifies D3331 as a separately reportable procedure when an obstruction in the root canal system is encountered and managed during endodontic treatment.\n\nDuring treatment of tooth #3 on 04/22/2026, a separated file fragment was located in the mid-coronal third of the MB canal, originating from a prior treatment attempt at an outside provider. Removal was performed using ultrasonic technique under 16x magnification, requiring approximately 35 minutes of additional procedural time beyond standard endodontic therapy. Pre-op and intra-op films documenting the separated file location and successful removal are attached. The standard endodontic therapy on all canals (D3330) was performed as a separate procedural step.\n\nPlease review the attached documentation and reprocess the D3331 charge. If the denial is upheld, please advise of the peer-to-peer review process and timeline.\n\nSincerely,\n[Endodontist], DDS",
+    confidenceRationale: {
+      evidenceCompletePct: 1.0,
+      carrierPattern: {
+        carrier: "Delta Dental PPO",
+        procedureCode: "D3331",
+        matchingHistoricalCases: 31,
+        historicalApprovalRatePct: 92,
+      },
+      practiceHistory: { similarCasesWon: 8, similarCasesLost: 1 },
+      positiveSignals: [
+        "Delta's D3331 bundling denial reverses ~92% of the time on first appeal with proper file-fragment documentation",
+        "Intra-op films documenting separated file are on record",
+        "ADA CDT descriptor language cited verbatim",
+      ],
+    },
     attachments: [
       { label: "Original EOB" },
       { label: "Original claim form" },
@@ -97,6 +147,8 @@ export const MOCK_QUEUE: QueueItem[] = [
     estimatedDollars: 1675,
     triggeredBy: "auto-trigger",
     triggerSource: "TX plan finalized in PBS Endo · 1h ago",
+    patientId: "pt_c19a",
+    caseId: "case_003",
     body: "Tooth #30 presents with persistent throbbing discomfort over the past 8 months following prior endodontic therapy and orthograde retreatment. Pulpal diagnosis: previously treated. Periapical diagnosis: chronic symptomatic apical periodontitis. Periapical radiograph dated 04/27/2026 demonstrates a 5mm periapical radiolucency at the distal root. CBCT dated 04/27/2026 confirms periapical lesion centered on the distal root, no evidence of vertical root fracture, with the mental foramen 4mm inferior to the planned surgical site. Surgical intervention is indicated because cast post and core cementation cannot be safely removed without compromising remaining root structure (thin distal wall observed on CBCT, ~1mm), and prior orthograde retreatment performed 18 months ago at this practice has resulted in persistent radiographic pathology and symptoms. The tooth is restorable post-surgical with the existing crown and post-and-core intact. D3425 is the standard of endodontic care for previously treated teeth with documented retreatment failure and orthograde contraindications.",
     evidence: [
       { label: "Pulpal diagnosis", present: true },
@@ -110,6 +162,23 @@ export const MOCK_QUEUE: QueueItem[] = [
         guidance: "Original endo (6 years ago, outside provider) date is approximate per patient. MetLife may want documented date.",
       },
     ],
+    confidenceRationale: {
+      evidenceCompletePct: 0.83,
+      carrierPattern: {
+        carrier: "MetLife",
+        procedureCode: "D3425",
+        matchingHistoricalCases: 14,
+        historicalApprovalRatePct: 71,
+      },
+      practiceHistory: { similarCasesWon: 4, similarCasesLost: 2 },
+      redFlags: [
+        "Original endo date is approximate ('~6 years ago per patient'). MetLife often requests documented date.",
+      ],
+      positiveSignals: [
+        "Prior retreatment from THIS practice — strong contraindication evidence",
+        "CBCT cited with anatomical specificity (mental foramen distance, distal wall thickness)",
+      ],
+    },
     attachments: [
       { label: "Pre-op periapical radiograph #30, dated 04/27/2026" },
       { label: "CBCT screenshots of distal root + mental foramen" },
@@ -131,7 +200,17 @@ export const MOCK_QUEUE: QueueItem[] = [
     status: "pending",
     triggeredBy: "auto-trigger",
     triggerSource: "Consultation completed in PBS Endo · 1h 35min ago",
+    patientId: "pt_e56b",
     body: "Dear Dr. Chen,\n\nThank you for referring the patient for evaluation of tooth #19. We saw the patient on 05/04/2026. Chief complaint: lingering cold sensitivity over the past 3 weeks with exacerbation on chewing. Diagnostic testing revealed: prolonged response (>30 sec lingering) on cold; EPT vital response with elevated threshold vs. control; positive percussion on #19; palpation within normal limits. Periapical radiograph dated 05/04/2026 demonstrates widened PDL apical to the distal root with no discrete radiolucency. **Pulpal diagnosis: irreversible pulpitis. Periapical diagnosis: symptomatic apical periodontitis.**\n\nRecommended treatment: D3330 endodontic therapy on #19. Treatment is scheduled for 05/11/2026. The tooth is restorable; we recommend cuspal coverage post-RCT given the existing MOD restoration and structural compromise.\n\nWe will provide a post-treatment summary following completion. Please feel free to reach out with any questions or to discuss the case.\n\nBest regards,\n[Endodontist], DDS",
+    confidenceRationale: {
+      evidenceCompletePct: 1.0,
+      practiceHistory: { similarCasesWon: 38, similarCasesLost: 0 },
+      positiveSignals: [
+        "Specific cuspal coverage recommendation (useful for GP's restorative planning)",
+        "Diagnostic test results quantified (cold response duration, EPT threshold)",
+        "Treatment + recall plan explicit",
+      ],
+    },
     notes: ["Includes specific cuspal coverage recommendation for the GP — useful for restorative planning."],
   },
 ];
@@ -148,6 +227,8 @@ export const MOCK_HISTORY: GenerationOutput[] = [
     status: "approved",
     estimatedDollars: 1250,
     body: "Approved & submitted via PBS Endo eClaims · Aetna Availity portal · Confirmation #PA-26-04488.",
+    patientId: "pt_e56b",
+    caseId: "case_005",
   },
   {
     id: "h-002",
@@ -161,6 +242,8 @@ export const MOCK_HISTORY: GenerationOutput[] = [
     recoverability: "HIGH",
     estimatedDollars: 1450,
     body: "Approved & submitted · Delta Dental claims portal.",
+    patientId: "pt_b72d",
+    caseId: "case_002",
   },
   {
     id: "h-003",
@@ -172,6 +255,8 @@ export const MOCK_HISTORY: GenerationOutput[] = [
     confidence: "HIGH",
     status: "approved",
     body: "Approved & emailed to Dr. Wang.",
+    patientId: "pt_g11h",
+    caseId: "case_008",
   },
   {
     id: "h-004",
@@ -185,6 +270,8 @@ export const MOCK_HISTORY: GenerationOutput[] = [
     recoverability: "MEDIUM",
     estimatedDollars: 295,
     body: "Edited by office manager (added prior failed appointment note) before submission.",
+    patientId: "pt_d04e",
+    caseId: "case_004",
   },
   {
     id: "h-005",

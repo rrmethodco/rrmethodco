@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Check,
   Edit2,
@@ -10,10 +11,14 @@ import {
   Send,
   Copy,
   CheckCheck,
+  Briefcase,
 } from "lucide-react";
 import { ConfidenceBadge, RecoverabilityBadge } from "./ConfidenceBadge";
+import { ConfidenceRationale } from "./ConfidenceRationale";
 import { EvidenceChecklist } from "./EvidenceChecklist";
+import { PatientChip } from "./PatientChip";
 import { formatDollars } from "@/lib/utils";
+import { getPatient } from "@/lib/patients";
 import type { GenerationOutput } from "@/lib/types";
 
 interface OutputDisplayProps {
@@ -86,8 +91,29 @@ export function OutputDisplay({ output, onApprove, onReject, onEdit, layout = "w
         <div className="flex flex-col items-end gap-1">
           <ConfidenceBadge value={output.confidence} />
           {output.recoverability && <RecoverabilityBadge value={output.recoverability} />}
+          {output.patientId && (
+            <PatientChip patient={getPatient(output.patientId)} className="mt-1" />
+          )}
+          {output.caseId && (
+            <Link
+              href={`/cases/${output.caseId}`}
+              className="mt-1 inline-flex items-center gap-1 rounded bg-slate-50 px-1.5 py-0.5 font-mono text-[11px] text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-100"
+            >
+              <Briefcase size={10} />
+              {output.caseId}
+            </Link>
+          )}
         </div>
       </div>
+
+      {output.confidenceRationale && (
+        <div className="border-b border-slate-200 px-6 pb-4 pt-3">
+          <ConfidenceRationale
+            confidence={output.confidence}
+            rationale={output.confidenceRationale}
+          />
+        </div>
+      )}
 
       <div className={layout === "compact" ? "space-y-6 p-6" : "grid gap-6 p-6 lg:grid-cols-[1fr_280px]"}>
         <div>
