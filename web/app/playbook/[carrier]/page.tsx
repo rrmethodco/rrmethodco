@@ -12,8 +12,9 @@ const RECOVERABILITY_TONE: Record<string, string> = {
   "DO NOT APPEAL": "bg-slate-100 text-slate-700 ring-slate-600/20",
 };
 
-export default function CarrierDetailPage({ params }: { params: { carrier: string } }) {
-  const carrier = decodeURIComponent(params.carrier);
+export default async function CarrierDetailPage({ params }: { params: Promise<{ carrier: string }> }) {
+  const { carrier: carrierParam } = await params;
+  const carrier = decodeURIComponent(carrierParam);
   const intel = getCarrierPlaybook(carrier);
   if (!intel) notFound();
 

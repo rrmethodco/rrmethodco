@@ -15,8 +15,9 @@ const TONE_PILL = {
   neutral: "bg-slate-100 text-slate-700 ring-slate-600/20",
 } as const;
 
-export default function CaseDetailPage({ params }: { params: { id: string } }) {
-  const c = getCase(params.id);
+export default async function CaseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const c = getCase(id);
   if (!c) notFound();
 
   const patient = getPatient(c.patientId);
