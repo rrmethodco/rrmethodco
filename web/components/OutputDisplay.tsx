@@ -21,9 +21,10 @@ interface OutputDisplayProps {
   onApprove?: () => void;
   onReject?: () => void;
   onEdit?: (newBody: string) => void;
+  layout?: "wide" | "compact";
 }
 
-export function OutputDisplay({ output, onApprove, onReject, onEdit }: OutputDisplayProps) {
+export function OutputDisplay({ output, onApprove, onReject, onEdit, layout = "wide" }: OutputDisplayProps) {
   const [editing, setEditing] = useState(false);
   const [draftBody, setDraftBody] = useState(output.body);
   const [copied, setCopied] = useState(false);
@@ -88,7 +89,7 @@ export function OutputDisplay({ output, onApprove, onReject, onEdit }: OutputDis
         </div>
       </div>
 
-      <div className="grid gap-6 p-6 lg:grid-cols-[1fr_280px]">
+      <div className={layout === "compact" ? "space-y-6 p-6" : "grid gap-6 p-6 lg:grid-cols-[1fr_280px]"}>
         <div>
           <div className="mb-3 flex items-center justify-between">
             <h4 className="text-sm font-semibold text-slate-900">
@@ -138,7 +139,7 @@ export function OutputDisplay({ output, onApprove, onReject, onEdit }: OutputDis
           )}
         </div>
 
-        <div className="space-y-6">
+        <div className={layout === "compact" ? "grid gap-6 sm:grid-cols-2" : "space-y-6"}>
           {output.evidence && output.evidence.length > 0 && (
             <EvidenceChecklist items={output.evidence} />
           )}

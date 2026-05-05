@@ -3,9 +3,9 @@ import "./globals.css";
 import { Nav } from "@/components/Nav";
 
 export const metadata: Metadata = {
-  title: "Endo Automation — Insurance & Communications",
+  title: "Restore — Dental Insurance & Communications",
   description:
-    "AI agent for endodontic practices: pre-authorizations, claim appeals, and referral letters.",
+    "Restore — AI for dental specialty practices. Insurance pre-authorizations, claim appeals, and referral letters, generated in under 90 seconds.",
 };
 
 export default function RootLayout({

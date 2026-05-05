@@ -52,7 +52,7 @@ export function Nav() {
             <Stethoscope size={18} />
           </div>
           <div>
-            <div className="text-sm font-semibold text-slate-900">Endo Automation</div>
+            <div className="text-sm font-semibold text-slate-900">Restore</div>
             <div className="text-xs text-slate-500">Mom&apos;s Practice · 4 endodontists</div>
           </div>
         </div>

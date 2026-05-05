@@ -176,7 +176,7 @@ export default function ReferralPage() {
               </p>
             </div>
           )}
-          {!loading && output && <OutputDisplay output={output} onApprove={() => {}} onReject={() => {}} onEdit={() => {}} />}
+          {!loading && output && <OutputDisplay output={output} onApprove={() => {}} onReject={() => {}} onEdit={() => {}} layout="compact" />}
         </div>
       </div>
     </div>

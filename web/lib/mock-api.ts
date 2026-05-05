@@ -141,8 +141,19 @@ export async function generatePreAuth(
       isSurgical
         ? `Surgical intervention is indicated based on documented retreatment-contraindicated factors. `
         : ""
-    }The tooth is ${input.restorability.toLowerCase()}. ${procedureCode} is the standard of endodontic care for this presentation.\n\n[${carrierTone}]\n\n[Patient identifiers stripped during processing; will be re-attached locally at final document assembly.]`;
+    }The tooth is ${input.restorability.toLowerCase()}. ${procedureCode} is the standard of endodontic care for this presentation.`;
   }
+
+  const carrierTuningNote =
+    confidence === "HIGH"
+      ? input.carrier === "Cigna DPPO"
+        ? "Cigna-tuned: anatomical specificity emphasized, restorability front-loaded."
+        : input.carrier === "Delta Dental PPO"
+        ? "Delta-tuned: quantified findings, ADA-standard terminology."
+        : input.carrier === "MetLife"
+        ? "MetLife-tuned: prose narrative, conservative-alternative-considered language."
+        : null
+      : null;
 
   return {
     id: generateId(),
@@ -164,7 +175,10 @@ export async function generatePreAuth(
       ? ["MEDIUM confidence — review evidence gaps before submitting. Consider adding noted documentation."]
       : confidence === "LOW"
       ? ["LOW confidence — system declined to generate. Resolve evidence gaps and retry."]
-      : [`${input.carrier} typically processes endo pre-auths in 7-15 business days.`],
+      : [
+          ...(carrierTuningNote ? [carrierTuningNote] : []),
+          `${input.carrier} typically processes endo pre-auths in 7-15 business days.`,
+        ],
     status: "pending",
   };
 }
@@ -201,7 +215,7 @@ export async function generateAppeal(
   } else if (classification.confidence === "LOW") {
     body = `Insufficient clinical evidence provided to generate a strong appeal letter. Please paste the clinical notes, imaging findings, and other supporting documentation that justified the original claim. Without specific clinical evidence, the appeal will not address the carrier's stated reason for denial and is unlikely to succeed.`;
   } else {
-    body = `Re: Claim for ${input.procedure}\nDate of Service: ${input.dos}\nPatient: [Patient ID redacted in draft]\nProvider: [Endodontist], DDS\n\nDear ${input.carrier} Claims Review,\n\nWe respectfully request reconsideration of the denial of the above-referenced claim.\n\nThe denial states: "${input.denialReasonText.slice(0, 200)}${input.denialReasonText.length > 200 ? "..." : ""}" We disagree with this determination based on the clinical evidence on file.\n\n${input.clinicalEvidence.slice(0, 600)}${input.clinicalEvidence.length > 600 ? "..." : ""}\n\nGiven the documented clinical findings and standard of endodontic care, we believe ${input.procedure} was appropriately performed and billed. Please review the attached documentation and reprocess this claim. If the denial is upheld, please advise of the peer-to-peer review process and timeline.\n\nSincerely,\n[Endodontist], DDS\n\n[Carrier-specific tuning applied for ${input.carrier}.]`;
+    body = `Re: Claim for ${input.procedure}\nDate of Service: ${input.dos}\nPatient: [Patient ID — re-attached at final assembly]\nProvider: [Endodontist], DDS\n\nDear ${input.carrier} Claims Review,\n\nWe respectfully request reconsideration of the denial of the above-referenced claim.\n\nThe denial states: "${input.denialReasonText.slice(0, 200)}${input.denialReasonText.length > 200 ? "..." : ""}" We disagree with this determination based on the clinical evidence on file.\n\n${input.clinicalEvidence.slice(0, 600)}${input.clinicalEvidence.length > 600 ? "..." : ""}\n\nGiven the documented clinical findings and standard of endodontic care, we believe ${input.procedure} was appropriately performed and billed. Please review the attached documentation and reprocess this claim. If the denial is upheld, please advise of the peer-to-peer review process and timeline.\n\nSincerely,\n[Endodontist], DDS`;
   }
 
   return {
