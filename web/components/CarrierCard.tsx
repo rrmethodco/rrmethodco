@@ -13,7 +13,7 @@ export function CarrierCard({ intel, practiceMixPct, className }: CarrierCardPro
   const lift = intel.approvalRatePct - intel.approvalRateBaselinePct;
   return (
     <Link
-      href={`/playbook/${encodeURIComponent(intel.carrier)}`}
+      href={`/practice/playbook/${encodeURIComponent(intel.carrier)}`}
       className={cn("card group block p-5 transition-shadow hover:shadow-md", className)}
     >
       <div className="flex items-start justify-between gap-3">

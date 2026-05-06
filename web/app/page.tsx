@@ -1,335 +1,296 @@
-"use client";
-
 import Link from "next/link";
-import { ArrowRight, Inbox, Zap, Clock, DollarSign, Briefcase, BookOpen, TrendingUp } from "lucide-react";
-import { StatCard } from "@/components/StatCard";
-import { ConfidenceBadge } from "@/components/ConfidenceBadge";
-import { DoNotAppealCallout } from "@/components/DoNotAppealCallout";
-import { ViewToggle, useDashboardView } from "@/components/ViewToggle";
-import { MOCK_KPI_THIS_WEEK, MOCK_KPI_BASELINE, MOCK_QUEUE, MOCK_HISTORY } from "@/lib/mock-data";
-import { activeCases, totalRecoveredAllTime, totalAtRiskInFlight, totalDoNotAppealAvoided, MOCK_CASES } from "@/lib/cases";
-import { CARRIER_PLAYBOOK } from "@/lib/carrier-intelligence";
-import { formatDollars, formatRelativeTime, cn } from "@/lib/utils";
+import {
+  Stethoscope,
+  ArrowRight,
+  Sparkles,
+  Briefcase,
+  BookOpen,
+  CheckCircle2,
+  Ban,
+  Github,
+} from "lucide-react";
 
-export default function DashboardPage() {
-  const { view, setView } = useDashboardView();
-  const kpi = MOCK_KPI_THIS_WEEK;
-  const baseline = MOCK_KPI_BASELINE;
-  const pendingCount = MOCK_QUEUE.filter((q) => q.status === "pending").length;
-  const recent = [...MOCK_HISTORY].slice(0, 5);
-
-  const approvalDelta = ((kpi.approvalRate - baseline.approvalRate) * 100).toFixed(1);
-  const winDelta = ((kpi.appealWinRate - baseline.appealWinRate) * 100).toFixed(1);
-
-  const lifetimeRecovered = totalRecoveredAllTime();
-  const inFlight = totalAtRiskInFlight();
-  const doNotAppealAvoided = totalDoNotAppealAvoided();
-  const activeCount = activeCases().length;
-
-  // Owner view: pull a 6-month projection (mock) and per-carrier breakdown
-  const monthlyRecovered = Math.round(kpi.dollarsRecovered * 4.33); // ~weeks/month
-  const annualRecovered = kpi.dollarsRecovered * 50;
-  const monthlySpend = 1500; // mock monthly subscription
-  const paybackDays = (monthlySpend / monthlyRecovered) * 30;
-
-  // Per-carrier wins (mock — in production this would aggregate from cases.ts)
-  const topCarriers = [...CARRIER_PLAYBOOK]
-    .sort((a, b) => b.totalSubmissionsTracked - a.totalSubmissionsTracked)
-    .slice(0, 3);
-
+export default function LandingPage() {
   return (
-    <div className="space-y-8">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Dashboard</h1>
-          <p className="mt-1 text-sm text-slate-500">
-            This week · 4-endodontist group · PBS Endo
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <ViewToggle value={view} onChange={setView} />
-          <Link href="/inbox" className="btn-secondary">
-            <Inbox size={16} />
-            Inbox
-            {pendingCount > 0 && (
-              <span className="ml-1 rounded-full bg-brand-700 px-2 py-0.5 text-xs font-semibold text-white">
-                {pendingCount}
-              </span>
-            )}
+    <div className="min-h-screen bg-white text-slate-900">
+      {/* ─── HEADER ───────────────────────────────────────────────────────── */}
+      <header className="border-b border-slate-100">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 md:px-8">
+          <Link href="/" className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-700 text-white">
+              <Stethoscope size={18} />
+            </div>
+            <span className="text-lg font-semibold tracking-tight text-slate-900">Restore</span>
           </Link>
+          <nav className="flex items-center gap-2 md:gap-4">
+            <a
+              href="https://github.com/rrmethodco/rrmethodco"
+              target="_blank"
+              rel="noreferrer"
+              className="hidden items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 sm:inline-flex"
+            >
+              <Github size={14} />
+              GitHub
+            </a>
+            <Link
+              href="/practice"
+              className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 md:px-4"
+            >
+              My Practice
+              <ArrowRight size={14} />
+            </Link>
+          </nav>
         </div>
       </header>
 
-      {view === "office-manager" ? (
-        /* ─── OFFICE MANAGER VIEW ───────────────────────────────────────── */
-        <>
-          <section>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">Your week</h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <StatCard
-                label="Hours saved"
-                value={`${kpi.hoursSaved}h`}
-                delta={{ direction: "up", text: "vs. baseline", positive: true }}
-                hint="Across pre-auths, appeals, and referral letters"
-              />
-              <StatCard label="Pre-auths drafted" value={String(kpi.preAuthsRun)} hint="Avg 90 sec per generation" />
-              <StatCard label="Appeals drafted" value={String(kpi.appealsRun)} hint="Avg 2 min per generation" />
-              <StatCard label="Referral letters" value={String(kpi.lettersRun)} hint="Avg 60 sec per generation" />
+      {/* ─── HERO ─────────────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-brand-50/50 via-white to-white" aria-hidden />
+        <div className="relative mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
+          <div className="max-w-3xl">
+            <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-800">
+              <Sparkles size={12} />
+              For dental specialty practices
             </div>
-          </section>
-
-          <section className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-            <div className="card overflow-hidden">
-              <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                <div className="flex items-center gap-2">
-                  <Zap size={16} className="text-brand-700" />
-                  <h3 className="text-sm font-semibold text-slate-900">In your inbox now</h3>
-                </div>
-                <Link href="/inbox" className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:text-brand-800">
-                  Review all
-                  <ArrowRight size={12} />
-                </Link>
-              </div>
-              <ul className="divide-y divide-slate-100">
-                {MOCK_QUEUE.slice(0, 4).map((item) => {
-                  const subtitle = item.kind === "referral" ? item.recipient : item.procedure;
-                  return (
-                    <li key={item.id} className="flex items-center gap-3 px-5 py-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="text-xs uppercase tracking-wide text-slate-400">
-                          {item.kind === "pre-auth" ? "Pre-auth" : item.kind === "appeal" ? "Appeal" : "Referral letter"}
-                        </div>
-                        <div className="mt-0.5 truncate text-sm text-slate-700">{subtitle}</div>
-                      </div>
-                      <ConfidenceBadge value={item.confidence} className="text-[10px]" />
-                      <span className="shrink-0 text-xs text-slate-400">{formatRelativeTime(item.createdAt)}</span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-
-            <div className="card overflow-hidden">
-              <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
-                <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-slate-500" />
-                  <h3 className="text-sm font-semibold text-slate-900">Recent activity</h3>
-                </div>
-                <Link href="/history" className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:text-brand-800">
-                  View history
-                  <ArrowRight size={12} />
-                </Link>
-              </div>
-              <ul className="divide-y divide-slate-100">
-                {recent.map((item) => (
-                  <li key={item.id} className="flex items-center gap-3 px-5 py-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="text-xs uppercase tracking-wide text-slate-400">
-                        {item.kind === "pre-auth" ? "Pre-auth" : item.kind === "appeal" ? "Appeal" : "Referral"} ·{" "}
-                        <span
-                          className={
-                            item.status === "approved"
-                              ? "text-emerald-600"
-                              : item.status === "rejected"
-                              ? "text-rose-600"
-                              : item.status === "edited"
-                              ? "text-amber-600"
-                              : "text-slate-500"
-                          }
-                        >
-                          {item.status}
-                        </span>
-                      </div>
-                      <div className="mt-0.5 truncate text-sm text-slate-700">
-                        {item.kind === "referral" ? item.recipient : item.procedure}
-                      </div>
-                    </div>
-                    {item.estimatedDollars !== undefined && (
-                      <span className="text-xs font-medium text-slate-500">{formatDollars(item.estimatedDollars)}</span>
-                    )}
-                    <span className="shrink-0 text-xs text-slate-400">{formatRelativeTime(item.createdAt)}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </section>
-
-          <DoNotAppealCallout count={kpi.doNotAppealCount ?? 0} dollarsAvoided={kpi.doNotAppealDollarsAvoided ?? 0} />
-
-          <section className="card p-5">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Briefcase size={16} className="text-slate-500" />
-                <h3 className="text-sm font-semibold text-slate-900">Active cases</h3>
-              </div>
-              <Link href="/cases" className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:text-brand-800">
-                See all cases
-                <ArrowRight size={12} />
-              </Link>
-            </div>
-            <p className="mt-1 text-xs text-slate-500">
-              {activeCount} cases currently in flight · {formatDollars(inFlight)} at stake
+            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-slate-900 md:text-6xl md:leading-[1.1]">
+              AI that wins dental claims back.
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-600 md:text-xl">
+              Restore watches your PMS, drafts every pre-auth narrative, claim appeal, and referral letter — and queues it up for one-click approval. Carrier intelligence that gets smarter every week.
             </p>
-            <div className="mt-3 grid grid-cols-2 gap-3 md:grid-cols-4">
-              {activeCases().slice(0, 4).map((c) => (
-                <Link
-                  key={c.id}
-                  href={`/cases/${c.id}`}
-                  className="rounded-md border border-slate-200 p-3 text-xs hover:bg-slate-50"
-                >
-                  <div className="font-mono text-[10px] text-slate-500">{c.id}</div>
-                  <div className="mt-1 truncate font-medium text-slate-800">{c.procedureCode} · Tooth {c.tooth}</div>
-                  <div className="mt-0.5 truncate text-slate-500">{c.carrier}</div>
-                  <div className="mt-1 font-semibold text-slate-900">{formatDollars(c.estimatedDollars)}</div>
-                </Link>
-              ))}
-            </div>
-          </section>
-        </>
-      ) : (
-        /* ─── OWNER VIEW ────────────────────────────────────────────────── */
-        <>
-          <section>
-            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-slate-500">ROI snapshot</h2>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-              <StatCard
-                label="Recovered all-time"
-                value={formatDollars(lifetimeRecovered)}
-                delta={{ direction: "up", text: "lifetime", positive: true }}
-                hint={`Across ${MOCK_CASES.length} closed/active cases`}
-              />
-              <StatCard
-                label="Annualized recovery"
-                value={formatDollars(annualRecovered)}
-                hint="This week's pace × 50 weeks"
-              />
-              <StatCard
-                label="Approval rate"
-                value={`${(kpi.approvalRate * 100).toFixed(0)}%`}
-                delta={{
-                  direction: "up",
-                  text: `+${approvalDelta}pp vs baseline`,
-                  positive: true,
-                }}
-                hint={`Baseline ${(baseline.approvalRate * 100).toFixed(0)}%`}
-              />
-              <StatCard
-                label="Appeal win rate"
-                value={`${(kpi.appealWinRate * 100).toFixed(0)}%`}
-                delta={{
-                  direction: "up",
-                  text: `+${winDelta}pp vs baseline`,
-                  positive: true,
-                }}
-                hint={`Baseline ${(baseline.appealWinRate * 100).toFixed(0)}%`}
-              />
-            </div>
-          </section>
-
-          <section className="card p-6">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                  <DollarSign size={16} className="text-emerald-600" />
-                  Payback math
-                </h2>
-                <p className="mt-1 text-xs text-slate-500">Restore subscription vs. new revenue recovered.</p>
-              </div>
-            </div>
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div>
-                <div className="text-xs font-medium text-slate-500">Monthly recovered</div>
-                <div className="text-2xl font-semibold text-emerald-700">{formatDollars(monthlyRecovered)}</div>
-                <div className="text-xs text-slate-400">From appeals + reduced write-offs</div>
-              </div>
-              <div>
-                <div className="text-xs font-medium text-slate-500">Monthly subscription</div>
-                <div className="text-2xl font-semibold text-slate-900">${monthlySpend.toLocaleString()}</div>
-                <div className="text-xs text-slate-400">Restore platform fee</div>
-              </div>
-              <div>
-                <div className="text-xs font-medium text-slate-500">Payback</div>
-                <div className="text-2xl font-semibold text-emerald-700">{paybackDays.toFixed(1)} days</div>
-                <div className="text-xs text-slate-400">Time to recover the monthly subscription</div>
-              </div>
-            </div>
-          </section>
-
-          <DoNotAppealCallout
-            count={kpi.doNotAppealCount ?? 0}
-            dollarsAvoided={kpi.doNotAppealDollarsAvoided ?? 0}
-            hint="Owners care about preserving carrier credibility — denying a frivolous appeal is a long-term asset. Restore tracks every avoided dead-end so the team's appeal credibility stays high for the cases that matter."
-          />
-
-          <section className="card p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BookOpen size={16} className="text-slate-500" />
-                <h3 className="text-sm font-semibold text-slate-900">Top carriers in your mix</h3>
-              </div>
-              <Link href="/playbook" className="inline-flex items-center gap-1 text-xs font-medium text-brand-700 hover:text-brand-800">
-                Open playbook
-                <ArrowRight size={12} />
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/practice"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-brand-700 px-6 py-3 text-base font-semibold text-white hover:bg-brand-800"
+              >
+                Open My Practice
+                <ArrowRight size={16} />
               </Link>
+              <a
+                href="#how-it-works"
+                className="inline-flex items-center justify-center gap-2 rounded-md border border-slate-200 bg-white px-6 py-3 text-base font-semibold text-slate-700 hover:bg-slate-50"
+              >
+                See how it works
+              </a>
             </div>
-            <p className="mt-1 text-xs text-slate-500">By approval rate lift since Restore went live.</p>
-            <div className="mt-3 space-y-2">
-              {topCarriers.map((c) => {
-                const lift = c.approvalRatePct - c.approvalRateBaselinePct;
-                return (
-                  <Link
-                    key={c.carrier}
-                    href={`/playbook/${encodeURIComponent(c.carrier)}`}
-                    className="flex items-center gap-4 rounded-md border border-slate-200 p-3 text-sm hover:bg-slate-50"
-                  >
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium text-slate-900">{c.carrier}</div>
-                      <div className="text-xs text-slate-500">
-                        {c.approvalRatePct}% approved · {c.avgProcessingDays}d avg processing · {c.totalSubmissionsTracked} tracked
-                      </div>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <div className="inline-flex items-center gap-1 text-sm font-semibold text-emerald-700">
-                        <TrendingUp size={12} />
-                        +{lift}pp
-                      </div>
-                      <div className="text-xs text-slate-400">vs. baseline</div>
-                    </div>
-                    <ArrowRight size={14} className="text-slate-300" />
-                  </Link>
-                );
-              })}
+            <div className="mt-10 grid grid-cols-2 gap-x-6 gap-y-3 text-sm text-slate-600 md:grid-cols-4">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={14} className="text-brand-700" />
+                BAA-grade
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={14} className="text-brand-700" />
+                PMS-native
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={14} className="text-brand-700" />
+                One-click approval
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 size={14} className="text-brand-700" />
+                &lt;1 month payback
+              </div>
             </div>
-          </section>
+          </div>
+        </div>
+      </section>
 
-          <section className="card p-5">
-            <div className="flex items-center gap-2">
-              <DollarSign size={16} className="text-emerald-600" />
-              <h3 className="text-sm font-semibold text-slate-900">Annualized impact (projected)</h3>
-            </div>
-            <p className="mt-1 text-xs text-slate-500">
-              Based on this week&apos;s pace, scaled to 50 weeks/year.
+      {/* ─── IMPACT BAR ───────────────────────────────────────────────────── */}
+      <section className="border-y border-slate-100 bg-slate-50">
+        <div className="mx-auto grid max-w-6xl grid-cols-2 gap-px bg-slate-100 px-0 md:grid-cols-4">
+          <div className="bg-slate-50 px-6 py-8 text-center md:py-10">
+            <div className="text-3xl font-bold text-slate-900 md:text-4xl">14.5h</div>
+            <div className="mt-2 text-xs font-medium uppercase tracking-wide text-slate-500">saved per week</div>
+          </div>
+          <div className="bg-slate-50 px-6 py-8 text-center md:py-10">
+            <div className="text-3xl font-bold text-emerald-700 md:text-4xl">$214K</div>
+            <div className="mt-2 text-xs font-medium uppercase tracking-wide text-slate-500">recovered annually</div>
+          </div>
+          <div className="bg-slate-50 px-6 py-8 text-center md:py-10">
+            <div className="text-3xl font-bold text-slate-900 md:text-4xl">+15pp</div>
+            <div className="mt-2 text-xs font-medium uppercase tracking-wide text-slate-500">approval rate lift</div>
+          </div>
+          <div className="bg-slate-50 px-6 py-8 text-center md:py-10">
+            <div className="text-3xl font-bold text-slate-900 md:text-4xl">+22pp</div>
+            <div className="mt-2 text-xs font-medium uppercase tracking-wide text-slate-500">appeal win rate lift</div>
+          </div>
+        </div>
+        <p className="mx-auto max-w-6xl px-4 py-3 text-center text-xs text-slate-400 md:px-8">
+          Pilot estimates · 4-endodontist group · validated against 90-day baseline
+        </p>
+      </section>
+
+      {/* ─── PROBLEM ─────────────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
+        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
+          <div>
+            <div className="text-xs font-semibold uppercase tracking-wide text-brand-700">The bleed</div>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+              Carriers deny 20-30% of valid claims. Most practices give up.
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-slate-600">
+              An office manager bills at $40/hr. A 90-minute appeal letter for a claim that <em>might</em> get paid in three months is a losing bet — so it doesn't get written. Five-figure endo claims get written off because no one has time to fight.
             </p>
-            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-              <div>
-                <div className="text-xs font-medium text-slate-500">Time saved</div>
-                <div className="text-xl font-semibold text-slate-900">{Math.round(kpi.hoursSaved * 50)}h</div>
-                <div className="text-xs text-slate-400">≈ {(kpi.hoursSaved * 50 / 40).toFixed(1)} FTE-weeks</div>
+            <p className="mt-4 text-lg leading-relaxed text-slate-600">
+              And generic "AI text generators" don't fix this. Every carrier wants a different narrative. Cigna wants anatomical specificity. Delta wants ADA-standard CDT terminology. MetLife wants conservative-alternatives-considered language. Without per-carrier intelligence, generic appeals lose 60-70% of the time.
+            </p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-6 md:p-8">
+            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">The math today</div>
+            <ul className="mt-4 space-y-4 text-sm text-slate-700">
+              <li className="flex items-start gap-3">
+                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span><strong className="text-slate-900">$500K–$2M</strong> annually written off per practice in justified revenue</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span><strong className="text-slate-900">90+ minutes</strong> of office-manager time per appeal letter — labor cost often exceeds expected recovery</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span><strong className="text-slate-900">35-50%</strong> success rate when practices draft appeals themselves — without carrier intelligence the math doesn't work</span>
+              </li>
+              <li className="flex items-start gap-3">
+                <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-rose-500" />
+                <span><strong className="text-slate-900">No learning loop</strong> — every appeal a practice writes loses its lessons the moment the case closes</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── HOW IT WORKS ─────────────────────────────────────────────────── */}
+      <section id="how-it-works" className="border-t border-slate-100 bg-slate-50/50">
+        <div className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
+          <div className="max-w-3xl">
+            <div className="text-xs font-semibold uppercase tracking-wide text-brand-700">How it works</div>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+              Watch. Draft. Approve. Done.
+            </h2>
+            <p className="mt-4 text-lg leading-relaxed text-slate-600">
+              Restore lives inside your PMS. When something happens that needs a response, we draft it. The office manager reviews and submits in one click. Submission to clearinghouse + PMS document center is autonomous.
+            </p>
+          </div>
+
+          <div className="mt-12 grid gap-6 md:grid-cols-3">
+            {[
+              {
+                num: "01",
+                title: "Trigger",
+                body: "PBS Endo / TDO / Endovision webhook fires. New TX plan ready for pre-auth, EOB lands with a denial code, treatment marked complete. Restore sees it in real time.",
+              },
+              {
+                num: "02",
+                title: "Draft",
+                body: "Restore reads the case context — clinical notes, prior history, what we know about that carrier — and drafts the appropriate response with a confidence rationale. Sometimes the right answer is DO NOT APPEAL.",
+              },
+              {
+                num: "03",
+                title: "Approve & submit",
+                body: "Office manager opens the inbox, reviews the draft, edits if needed, hits approve. Restore submits to the clearinghouse + saves a copy to the PMS document center. Audit logged.",
+              },
+            ].map((step) => (
+              <div key={step.num} className="rounded-xl border border-slate-200 bg-white p-6">
+                <div className="text-3xl font-bold text-brand-700">{step.num}</div>
+                <div className="mt-3 text-lg font-semibold text-slate-900">{step.title}</div>
+                <p className="mt-2 text-sm leading-relaxed text-slate-600">{step.body}</p>
               </div>
-              <div>
-                <div className="text-xs font-medium text-slate-500">Revenue recovered</div>
-                <div className="text-xl font-semibold text-emerald-700">{formatDollars(annualRecovered)}</div>
-                <div className="text-xs text-slate-400">From appeals + reduced write-offs</div>
-              </div>
-              <div>
-                <div className="text-xs font-medium text-slate-500">Approval rate lift</div>
-                <div className="text-xl font-semibold text-slate-900">+{approvalDelta}pp</div>
-                <div className="text-xs text-slate-400">{baseline.approvalRate * 100}% → {(kpi.approvalRate * 100).toFixed(0)}%</div>
-              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─── DIFFERENTIATION ─────────────────────────────────────────────── */}
+      <section className="mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
+        <div className="max-w-3xl">
+          <div className="text-xs font-semibold uppercase tracking-wide text-brand-700">The moat</div>
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+            Three things no one else pairs together.
+          </h2>
+        </div>
+
+        <div className="mt-12 grid gap-6 md:grid-cols-3">
+          <div className="rounded-xl border border-slate-200 bg-white p-6 md:p-8">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-brand-50 text-brand-700">
+              <BookOpen size={18} />
             </div>
-          </section>
-        </>
-      )}
+            <h3 className="mt-4 text-lg font-semibold text-slate-900">Carrier intelligence</h3>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              Per-carrier playbooks: denial patterns, narrative preferences, escalation paths, notes from the field. Updated continuously across the customer base. Every approved claim makes the next narrative smarter.
+            </p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-6 md:p-8">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-brand-50 text-brand-700">
+              <Briefcase size={18} />
+            </div>
+            <h3 className="mt-4 text-lg font-semibold text-slate-900">Case lifecycle threading</h3>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              Pre-auth → claim → EOB → appeal → resolution, threaded across the full 90-day arc. Same patient, three procedures, six months — Restore remembers. Nothing falls through.
+            </p>
+          </div>
+          <div className="rounded-xl border border-slate-200 bg-white p-6 md:p-8">
+            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-slate-100 text-slate-600">
+              <Ban size={18} />
+            </div>
+            <h3 className="mt-4 text-lg font-semibold text-slate-900">DO NOT APPEAL discipline</h3>
+            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+              Most automation tools push <em>more</em> appeals. Restore is honest about which to skip. Plan exclusions, exhausted caps, contractual limits — chasing them costs time AND degrades carrier credibility for the appeals that DO matter.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── DEMO CTA ─────────────────────────────────────────────────────── */}
+      <section className="border-t border-slate-100 bg-gradient-to-b from-slate-50 to-white">
+        <div className="mx-auto max-w-4xl px-4 py-16 text-center md:px-8 md:py-24">
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+            See it running.
+          </h2>
+          <p className="mx-auto mt-4 max-w-2xl text-lg leading-relaxed text-slate-600">
+            The full prototype is live. Browse the inbox, follow a case across its 90-day arc, open the carrier playbook for Cigna or Delta. Mock data, real workflow.
+          </p>
+          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+            <Link
+              href="/practice"
+              className="inline-flex items-center gap-2 rounded-md bg-brand-700 px-6 py-3 text-base font-semibold text-white hover:bg-brand-800"
+            >
+              Open My Practice
+              <ArrowRight size={16} />
+            </Link>
+            <Link
+              href="/practice/playbook"
+              className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-6 py-3 text-base font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Browse the Carrier Playbook
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ─── FOOTER ──────────────────────────────────────────────────────── */}
+      <footer className="border-t border-slate-100 bg-white">
+        <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-8 text-sm text-slate-500 md:flex-row md:items-center md:justify-between md:px-8">
+          <div className="flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-brand-700 text-white">
+              <Stethoscope size={14} />
+            </div>
+            <span className="font-semibold text-slate-700">Restore</span>
+            <span className="text-slate-400">· Dental insurance &amp; communications</span>
+          </div>
+          <div className="flex items-center gap-4">
+            <a
+              href="https://github.com/rrmethodco/rrmethodco"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 hover:text-slate-700"
+            >
+              <Github size={14} />
+              GitHub
+            </a>
+            <Link href="/practice" className="hover:text-slate-700">My Practice</Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

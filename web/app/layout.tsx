@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Nav } from "@/components/Nav";
 
 export const metadata: Metadata = {
-  title: "Restore — Dental Insurance & Communications",
+  title: "Restore — AI that wins dental claims back",
   description:
-    "Restore — AI for dental specialty practices. Insurance pre-authorizations, claim appeals, and referral letters, generated in under 90 seconds.",
+    "Restore is an AI agent for dental specialty practices. Pre-authorizations, claim appeals, and referral letters drafted from your PMS — approved in one click.",
 };
 
 export default function RootLayout({
@@ -15,14 +14,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">
-        <div className="flex min-h-screen">
-          <Nav />
-          <main className="flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-6xl px-8 py-8">{children}</div>
-          </main>
-        </div>
-      </body>
+      <body className="min-h-screen bg-slate-50 text-slate-900 antialiased">{children}</body>
     </html>
   );
 }

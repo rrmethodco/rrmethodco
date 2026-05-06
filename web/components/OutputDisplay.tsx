@@ -96,7 +96,7 @@ export function OutputDisplay({ output, onApprove, onReject, onEdit, layout = "w
           )}
           {output.caseId && (
             <Link
-              href={`/cases/${output.caseId}`}
+              href={`/practice/cases/${output.caseId}`}
               className="mt-1 inline-flex items-center gap-1 rounded bg-slate-50 px-1.5 py-0.5 font-mono text-[11px] text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-100"
             >
               <Briefcase size={10} />

@@ -28,7 +28,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/cases" className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700">
+        <Link href="/practice/cases" className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700">
           <ArrowLeft size={12} />
           All cases
         </Link>
@@ -63,7 +63,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
               </span>
               {playbook && (
                 <Link
-                  href={`/playbook/${encodeURIComponent(c.carrier)}`}
+                  href={`/practice/playbook/${encodeURIComponent(c.carrier)}`}
                   className="inline-flex items-center gap-1 rounded-md bg-slate-50 px-2 py-0.5 text-xs font-medium text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-100"
                 >
                   <BookOpen size={11} />
@@ -106,7 +106,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
                 {otherCases.map((x) => (
                   <li key={x.id}>
                     <Link
-                      href={`/cases/${x.id}`}
+                      href={`/practice/cases/${x.id}`}
                       className="block rounded-md border border-slate-200 p-3 text-xs hover:bg-slate-50"
                     >
                       <div className="font-mono text-slate-500">{x.id}</div>
@@ -128,7 +128,7 @@ export default async function CaseDetailPage({ params }: { params: Promise<{ id:
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-slate-900">{c.carrier}</h3>
                 <Link
-                  href={`/playbook/${encodeURIComponent(c.carrier)}`}
+                  href={`/practice/playbook/${encodeURIComponent(c.carrier)}`}
                   className="text-xs font-medium text-brand-700 hover:text-brand-800"
                 >
                   Playbook →

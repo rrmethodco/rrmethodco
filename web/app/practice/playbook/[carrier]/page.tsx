@@ -23,7 +23,7 @@ export default async function CarrierDetailPage({ params }: { params: Promise<{ 
   return (
     <div className="space-y-6">
       <div>
-        <Link href="/playbook" className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700">
+        <Link href="/practice/playbook" className="inline-flex items-center gap-1 text-xs font-medium text-slate-500 hover:text-slate-700">
           <ArrowLeft size={12} />
           All carriers
         </Link>

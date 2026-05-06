@@ -79,7 +79,7 @@ export function QueueItem({ item, multiCasePatient, onApprove, onReject, onEdit 
             {patient && <PatientChip patient={patient} multiCase={multiCasePatient} />}
             {item.caseId && (
               <Link
-                href={`/cases/${item.caseId}`}
+                href={`/practice/cases/${item.caseId}`}
                 onClick={(e) => e.stopPropagation()}
                 className="inline-flex items-center gap-1 rounded bg-slate-50 px-1.5 py-0.5 font-mono text-[11px] text-slate-600 ring-1 ring-inset ring-slate-200 hover:bg-slate-100"
               >

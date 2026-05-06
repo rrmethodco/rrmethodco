@@ -102,7 +102,7 @@ export default function CasesPage() {
           return (
             <li key={c.id}>
               <Link
-                href={`/cases/${c.id}`}
+                href={`/practice/cases/${c.id}`}
                 className="card group block p-5 transition-shadow hover:shadow-md"
               >
                 <div className="flex items-start justify-between gap-4">
