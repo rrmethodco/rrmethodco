@@ -21,10 +21,10 @@ export default function LandingPage() {
             </div>
             <span className="text-lg font-semibold tracking-tight text-slate-900">Restore</span>
           </Link>
-          <nav className="flex items-center gap-2 md:gap-4">
+          <nav className="flex items-center gap-3 md:gap-4">
             <Link
               href="/pitch"
-              className="hidden items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 sm:inline-flex"
+              className="inline-flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900"
             >
               Pitch deck
             </Link>
