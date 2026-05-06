@@ -23,11 +23,17 @@ export default function LandingPage() {
             <span className="text-lg font-semibold tracking-tight text-slate-900">Restore</span>
           </Link>
           <nav className="flex items-center gap-2 md:gap-4">
+            <Link
+              href="/pitch"
+              className="hidden items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 sm:inline-flex"
+            >
+              Pitch deck
+            </Link>
             <a
               href="https://github.com/rrmethodco/rrmethodco"
               target="_blank"
               rel="noreferrer"
-              className="hidden items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 sm:inline-flex"
+              className="hidden items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 md:inline-flex"
             >
               <Github size={14} />
               GitHub
