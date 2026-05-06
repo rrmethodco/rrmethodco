@@ -48,11 +48,7 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-brand-50/50 via-white to-white" aria-hidden />
         <div className="relative mx-auto max-w-6xl px-4 py-16 md:px-8 md:py-24">
           <div className="max-w-3xl">
-            <div className="inline-flex items-center gap-2 rounded-full border border-brand-200 bg-brand-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-brand-800">
-              <Sparkles size={12} />
-              For dental specialty practices
-            </div>
-            <h1 className="mt-6 text-4xl font-bold leading-tight tracking-tight text-slate-900 md:text-6xl md:leading-[1.1]">
+            <h1 className="text-4xl font-bold leading-tight tracking-tight text-slate-900 md:text-6xl md:leading-[1.1]">
               AI that wins dental claims back.
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-slate-600 md:text-xl">
