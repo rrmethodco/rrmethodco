@@ -1028,7 +1028,7 @@ function S13() {
               ["PMS API blocking", "Med", "Med", "Multi-PMS strategy (PBS/TDO/Endovision); no single dependency >40%; clearinghouse fallback."],
               ["Carrier pushback on AI appeals", "Med", "Med", "Office manager always in the loop; carrier-relations team M18; DO NOT APPEAL discipline preserves credibility."],
               ["Slow PMS adoption (specialist)", "Med", "Med", "PBS Endo ~33% of endo today; TDO + Endovision brings coverage to ~85% by Y2; manual upload fallback."],
-              ["Key-person dependency on founder", "High (early)", "High", "Method Co. resignation as closing condition. $150-250K founder cash at close. CTO pre-funded in Tranche 1. Key-person life insurance $2M."],
+              ["Key-person dependency on founder", "High (early)", "High", "Founder full-time transition as closing condition. $150-250K founder cash at close. CTO pre-funded in Tranche 1. Key-person life insurance $2M."],
               ["AI infra (Anthropic)", "Med", "Low-med", "Provider-agnostic prompt layer; OpenAI + Bedrock fallback tested; 3-month inference reserve."],
               ["Large incumbent builds this", "Med", "Med-high", "18-month head-start; defensibility math compounds with usage; founder-DSO relationships make incumbents acquirers, not competitors."],
             ].map((row, i) => (
@@ -1109,9 +1109,9 @@ function S15() {
             label: "FOUNDER · CEO",
             name: "Ross Richardson",
             bullets: [
-              "EVP Finance & Accounting, Method Co. (Philadelphia hospitality, 10 hotels + F&B; ~$200M+ revenue)",
+              "Operator background — finance + ops leadership at a multi-property hospitality group (~$200M revenue, 2,000+ employees)",
               "Led financial operations across 2,000+ employees; built automation tooling, vendor unit economics",
-              "Method Co. resignation conditional on round close. Personal cash injection: $150-250K common at close",
+              "Full-time transition from current operator role conditional on round close. Personal cash injection: $150-250K common at close",
               "0 prior healthcare startup experience = 0 dogma",
             ],
           },
@@ -1172,7 +1172,7 @@ function S16() {
                 ["Alternative", "Post-money SAFE, $10M cap, 20% disc"],
                 ["Option pool (post-close)", "10% pre-money"],
                 ["Founder cash injection", "$150-250K common at close"],
-                ["Founder commitment", "FT M3+ (Method resignation = condition)"],
+                ["Founder commitment", "FT M3+ (full-time transition = closing condition)"],
               ].map(([l, v]) => (
                 <tr key={l} className="border-b border-slate-200">
                   <td className="py-1 text-slate-500">{l}</td>
@@ -1317,7 +1317,7 @@ function S18() {
         </div>
         <div>
           <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-200/70">Code</div>
-          <div className="mt-0.5 font-mono">github.com/rrmethodco/rrmethodco</div>
+          <div className="mt-0.5 font-mono">restore-demo.vercel.app</div>
         </div>
         <div>
           <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-200/70">Founder</div>

@@ -3,20 +3,19 @@
 import { Stethoscope, Sparkles, Heart, Mail, Briefcase, BookOpen, CheckCircle2, ArrowRight } from "lucide-react";
 import { SlideDeck, SlideFrame, H1, H2, Lede, Bold } from "@/components/SlideDeck";
 
-const TOTAL = 10;
-const BRAND_FOOTER = "Restore · Friends & Family round · 2026";
+const TOTAL = 9;
+const BRAND_FOOTER = "Restore · Pitch deck · 2026";
 
 const TITLES = [
   "Title",
-  "The story",
+  "Why this exists",
   "The problem",
   "What we built",
   "How it works",
   "What it looks like",
   "Why it gets smarter",
   "Where we are",
-  "The ask",
-  "Thanks",
+  "Closing",
 ];
 
 export default function PitchFF() {
@@ -29,8 +28,7 @@ export default function PitchFF() {
     <S06 key={6} />,
     <S07 key={7} />,
     <S08 key={8} />,
-    <S09 key={9} />,
-    <S10 key={10} />,
+    <S10 key={9} />,
   ];
 
   return <SlideDeck slides={slides} titles={TITLES} pdfUrl="/restore-pitch-deck-ff.pdf" />;
@@ -43,7 +41,7 @@ function S01() {
   return (
     <div className="relative flex h-full w-full flex-col bg-gradient-to-br from-brand-800 via-brand-700 to-slate-900 px-6 py-8 text-white md:px-12 md:py-12 lg:px-20 lg:py-16">
       <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.18em] md:text-xs">
-        <span className="text-brand-200">Friends &amp; Family · 2026</span>
+        <span className="text-brand-200">Pitch deck · 2026</span>
         <span className="tabular-nums text-brand-200/60">01 / 10</span>
       </div>
       <div className="mt-auto">
@@ -57,13 +55,13 @@ function S01() {
           AI that wins<br />dental claims back.
         </h1>
         <p className="mt-6 max-w-3xl text-lg leading-relaxed text-brand-100 md:mt-8 md:text-xl lg:text-2xl">
-          The thing I'm building, in plain English — and how you can be part of it.
+          What Restore is, how it works, and what it changes for dental specialty practices.
         </p>
       </div>
       <div className="mt-auto grid gap-2 border-t border-white/10 pt-6 text-sm md:grid-cols-3 md:gap-6">
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-200/70">Founder</div>
-          <div className="mt-0.5 font-semibold">Ross Richardson</div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-200/70">Category</div>
+          <div className="mt-0.5 font-semibold">Insurance ops infrastructure</div>
         </div>
         <div>
           <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-200/70">Stage</div>
@@ -83,21 +81,21 @@ function S01() {
    ────────────────────────────────────────────────────────────────────── */
 function S02() {
   return (
-    <SlideFrame num={2} total={TOTAL} eyebrow="The story" brandFooter={BRAND_FOOTER}>
-      <H1>I started this because of my mom.</H1>
+    <SlideFrame num={2} total={TOTAL} eyebrow="Why this exists" brandFooter={BRAND_FOOTER}>
+      <H1>The insurance side of dental specialty is broken.</H1>
       <div className="mt-6 grid flex-1 gap-6 md:mt-10 md:grid-cols-[1.3fr_1fr]">
         <div className="space-y-5 text-base leading-relaxed text-slate-700 md:text-lg">
           <p>
-            Mom runs a 4-doctor endodontic practice. Endodontists are the dental specialists who do root canals. The work is technical, the cases are big, and the insurance side is brutal.
+            Endodontists do root canals. The work is technical, the cases are big — typical case value $1,200-$1,675 — and the insurance side is brutal.
           </p>
           <p>
-            Carriers deny <Bold>20-30% of valid claims</Bold> on first pass. Mom's office manager spends 90 minutes drafting a single appeal letter. When you do the math — $40/hr labor, 50% chance of winning — most appeals don't even break even. So practices write the money off. <Bold>$500K-$2M a year, gone.</Bold>
+            Carriers deny <Bold>20-30% of valid claims</Bold> on first pass. A typical office manager spends 90 minutes drafting a single appeal letter. With $40/hr labor and a 50% chance of winning, most appeals don't break even. So practices write the money off. <Bold>$500K-$2M a year, gone — per practice.</Bold>
           </p>
           <p>
-            I spent 7 years running financial operations at Method Co. (10 hotels, restaurants, ~$200M revenue). I'm an operator, not a healthcare insider. That's the unfair advantage: I see the workflow, not the medicine.
+            Restore is the tool an operator would build for that office. An AI agent that watches the practice's software, writes the insurance correspondence the office manager would otherwise write by hand, and queues it up for a one-click approval.
           </p>
           <p className="text-slate-900">
-            <Bold>I'm building the tool I'd want if I were running mom's office.</Bold> An AI that watches the practice's software, writes the insurance correspondence, and queues it up for a one-click approval.
+            <Bold>The lens is the workflow, not the medicine.</Bold> Restore is built for the office manager who has to ship 100+ documents a week, not for the clinician who's already done their job. That's the unfair advantage of operator-led product development in this category.
           </p>
         </div>
         <div className="rounded-2xl bg-brand-50 p-6 md:p-8">
@@ -106,13 +104,13 @@ function S02() {
             Design partner
           </div>
           <div className="mt-3 text-xl font-bold text-slate-900 md:text-2xl">
-            Allyson A. Abbott DMD PC
+            4-doctor endodontic group
           </div>
           <p className="mt-3 text-sm leading-relaxed text-slate-700 md:text-base">
-            Mom's practice is the design partner. She tells me in 30 seconds whether what I built actually works. She's not a cheerleader — she's switched dental software vendors three times in ten years when products didn't deliver.
+            Multi-decade specialty practice on PBS Endo, in-house billing, ~$3-5M annual production. Has switched dental software vendors three times when products didn't deliver — keeps the product team honest weekly.
           </p>
           <p className="mt-3 text-sm leading-relaxed text-slate-700 md:text-base">
-            The pilot kicks off next month.
+            Pilot kicks off next month.
           </p>
         </div>
       </div>
@@ -200,7 +198,7 @@ function S04() {
       <div className="mt-6 flex items-center gap-3 rounded-xl bg-brand-50 p-4 text-sm md:p-5 md:text-base">
         <Sparkles size={18} className="shrink-0 text-brand-700" />
         <div className="text-slate-700">
-          The agent watches for events in the practice management system (PBS Endo, the software mom uses). When something happens — a treatment plan finalized, an EOB landing, a procedure completed — Restore drafts the right document and queues it for review.
+          The agent watches for events in the practice management system (PBS Endo at pilot, with TDO + Endovision shipping in Phase 2). When something happens — a treatment plan finalized, an EOB landing, a procedure completed — Restore drafts the right document and queues it for review.
         </div>
       </div>
     </SlideFrame>
@@ -349,7 +347,7 @@ function S07() {
           {
             num: "03",
             title: "1 practice's lesson → 1,000 practices' edge",
-            body: "When mom's practice discovers that Cigna is bundling D3331 codes more aggressively than usual, every practice on Restore knows by tomorrow. That network effect is what no individual practice (and no generic AI) can replicate.",
+            body: "When one practice on Restore discovers that Cigna is bundling D3331 codes more aggressively than usual, every practice on Restore knows by tomorrow. That network effect is what no individual practice (and no generic AI) can replicate.",
           },
         ].map((s) => (
           <div key={s.num} className="flex flex-col rounded-xl border border-slate-200 bg-white p-5 md:p-6">
@@ -384,7 +382,7 @@ function S08() {
             <li className="flex gap-2"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-brand-700" /><span>Full prototype shipped at restore-demo.vercel.app</span></li>
             <li className="flex gap-2"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-brand-700" /><span>3 skills working: pre-auth, appeals, referrals</span></li>
             <li className="flex gap-2"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-brand-700" /><span>Carrier playbook for top 6 carriers</span></li>
-            <li className="flex gap-2"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-brand-700" /><span>Mom's practice signed as design partner</span></li>
+            <li className="flex gap-2"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-brand-700" /><span>Design partner signed (4-doc endo group)</span></li>
             <li className="flex gap-2"><CheckCircle2 size={14} className="mt-0.5 shrink-0 text-brand-700" /><span>Anthropic BAA executed (HIPAA cover)</span></li>
           </ul>
         </div>
@@ -392,7 +390,7 @@ function S08() {
           <div className="text-xs font-bold uppercase tracking-wide text-slate-500">Next 90 days</div>
           <h3 className="mt-2 text-lg font-bold text-slate-900 md:text-xl">Pilot live</h3>
           <ul className="mt-4 space-y-2 text-sm text-slate-700">
-            <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 shrink-0 text-brand-700" /><span>Pilot live at mom's 4-doc practice</span></li>
+            <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 shrink-0 text-brand-700" /><span>Pilot live at design-partner practice</span></li>
             <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 shrink-0 text-brand-700" /><span>First non-mom paying customer</span></li>
             <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 shrink-0 text-brand-700" /><span>Quantified pilot metrics (success rate vs. baseline)</span></li>
             <li className="flex gap-2"><ArrowRight size={14} className="mt-0.5 shrink-0 text-brand-700" /><span>3 LOIs in active conversation</span></li>
@@ -421,57 +419,6 @@ function S08() {
 /* ──────────────────────────────────────────────────────────────────────
    09 — THE ASK
    ────────────────────────────────────────────────────────────────────── */
-function S09() {
-  return (
-    <SlideFrame num={9} total={TOTAL} eyebrow="The ask" brandFooter={BRAND_FOOTER}>
-      <H2>$250K from friends &amp; family. SAFE. 6-month bridge.</H2>
-      <Lede>Friends-and-family rounds exist because the people who know you best want to back you before the institutional capital arrives. This is the cheapest price the company will ever raise at.</Lede>
-      <div className="mt-8 grid flex-1 gap-5 md:grid-cols-2">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 md:p-6">
-          <div className="text-xs font-bold uppercase tracking-wide text-slate-500">Round structure</div>
-          <table className="mt-3 w-full text-sm md:text-base">
-            <tbody>
-              {[
-                ["Round size", "$250K target"],
-                ["Instrument", "Post-money SAFE"],
-                ["Valuation cap", "$5M post-money"],
-                ["Discount", "20%"],
-                ["Minimum check", "$10K"],
-                ["Maximum check", "$50K (preserves seed for institutional)"],
-                ["Founder commitment", "Full-time at seed close · $150K personal cash"],
-              ].map(([l, v]) => (
-                <tr key={l} className="border-b border-slate-200">
-                  <td className="py-2 text-slate-500">{l}</td>
-                  <td className="py-2 text-right font-bold text-slate-900">{v}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p className="mt-3 text-xs text-slate-400">
-            SAFE converts at the institutional seed round. F&amp;F gets a 50% discount to that round's $10M cap (so $5M effective price), plus an additional 20% conversion discount. You're paying ~half what the seed investors will pay.
-          </p>
-        </div>
-        <div className="space-y-3 md:space-y-4">
-          <div className="rounded-2xl bg-brand-50 p-5 md:p-6">
-            <div className="text-xs font-bold uppercase tracking-wide text-brand-800">What it funds (next 6 months)</div>
-            <ul className="mt-3 space-y-1.5 text-sm md:text-base">
-              <li className="flex gap-2"><span className="text-brand-700">·</span><span><Bold>Pilot scale-up</Bold> — engineering contractor for PMS hardening, deeper carrier playbook</span></li>
-              <li className="flex gap-2"><span className="text-brand-700">·</span><span><Bold>Customer acquisition</Bold> — first 5 paid customers via study clubs + referrals</span></li>
-              <li className="flex gap-2"><span className="text-brand-700">·</span><span><Bold>Compliance setup</Bold> — HIPAA audit, BAA legal, SOC 2 scoping</span></li>
-              <li className="flex gap-2"><span className="text-brand-700">·</span><span><Bold>Founder transition</Bold> — bridge cost while resigning Method Co. role</span></li>
-            </ul>
-          </div>
-          <div className="rounded-2xl bg-slate-900 p-5 text-white md:p-6">
-            <div className="text-xs font-bold uppercase tracking-wide text-brand-300">Why this round, why now</div>
-            <p className="mt-3 text-sm leading-relaxed text-slate-200 md:text-base">
-              The institutional seed conversation is Q3 2026. Between now and then I need 6 months of runway to get from "1 design partner" to "5 paying customers." That milestone is what unlocks the seed round at a meaningfully higher valuation. F&amp;F money is the bridge.
-            </p>
-          </div>
-        </div>
-      </div>
-    </SlideFrame>
-  );
-}
 
 /* ──────────────────────────────────────────────────────────────────────
    10 — THANKS
@@ -480,35 +427,34 @@ function S10() {
   return (
     <div className="relative flex h-full w-full flex-col bg-gradient-to-br from-slate-900 via-brand-800 to-brand-700 px-6 py-8 text-white md:px-12 md:py-12 lg:px-20 lg:py-16">
       <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-[0.18em] md:text-xs">
-        <span className="text-brand-200">Thanks</span>
-        <span className="tabular-nums text-brand-200/60">10 / 10</span>
+        <span className="text-brand-200">Closing</span>
+        <span className="tabular-nums text-brand-200/60">09 / 09</span>
       </div>
       <div className="mt-auto">
         <h2 className="max-w-4xl text-3xl font-bold leading-[1.1] tracking-tight md:text-5xl lg:text-6xl">
-          A short, honest ask.
+          Restore is the operating system for dental specialty insurance.
         </h2>
         <div className="mt-6 max-w-3xl space-y-4 text-base leading-relaxed text-brand-100 md:mt-8 md:space-y-5 md:text-lg lg:text-xl">
           <p>
-            If you want to invest, talk to me. <Bold className="text-white">Minimum $10K, maximum $50K</Bold>, post-money SAFE at a $5M cap. Documents and process will be clean, simple, and lawyer-reviewed.
+            One product surface. Three high-volume skills. A carrier intelligence layer that compounds with every claim. Built for the office manager who actually has to ship the work.
           </p>
           <p>
-            If you can't or don't want to invest — that's totally fine. <Bold className="text-white">Please refer me to the next 5 endodontists or specialty practice owners you know.</Bold> The practices we close in the next 90 days determine the institutional valuation.
+            The wedge is endodontic specialty practices. The arc is dental specialty &rarr; general dentistry &rarr; DSO infrastructure &rarr; eventually carrier-side adjudication assistance. Each layer makes the next one stronger.
           </p>
           <p>
-            Either way, I appreciate you being here. Mom appreciates you being here. The endodontists who'll get paid faster because of this product appreciate you being here.
+            <Bold className="text-white">The product is live. The pilot starts next month. Everything else is execution.</Bold>
           </p>
         </div>
       </div>
-      <div className="mt-auto grid gap-3 border-t border-white/10 pt-6 text-sm md:grid-cols-3">
+      <div className="mt-auto grid gap-3 border-t border-white/10 pt-6 text-sm md:grid-cols-2">
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-200/70">Founder</div>
-          <div className="mt-0.5 font-semibold">Ross Richardson</div>
+          <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-200/70">Try it</div>
+          <div className="mt-0.5 font-mono text-xs md:text-sm">restore-demo.vercel.app</div>
         </div>
-        <div className="md:col-span-2">
+        <div>
           <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-brand-200/70">Get in touch</div>
-          <div className="mt-0.5 flex flex-col gap-1 font-mono text-xs md:flex-row md:gap-4 md:text-sm">
-            <span className="inline-flex items-center gap-1.5"><Mail size={12} />richardson112288@gmail.com</span>
-            <span>restore-demo.vercel.app</span>
+          <div className="mt-0.5 inline-flex items-center gap-1.5 font-mono text-xs md:text-sm">
+            <Mail size={12} />richardson112288@gmail.com
           </div>
         </div>
       </div>

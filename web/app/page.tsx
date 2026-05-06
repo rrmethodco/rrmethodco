@@ -7,7 +7,6 @@ import {
   BookOpen,
   CheckCircle2,
   Ban,
-  Github,
 } from "lucide-react";
 
 export default function LandingPage() {
@@ -29,15 +28,6 @@ export default function LandingPage() {
             >
               Pitch deck
             </Link>
-            <a
-              href="https://github.com/rrmethodco/rrmethodco"
-              target="_blank"
-              rel="noreferrer"
-              className="hidden items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-slate-900 md:inline-flex"
-            >
-              <Github size={14} />
-              GitHub
-            </a>
             <Link
               href="/practice"
               className="inline-flex items-center gap-1.5 rounded-md bg-slate-900 px-3 py-2 text-sm font-semibold text-white hover:bg-slate-800 md:px-4"
@@ -280,15 +270,7 @@ export default function LandingPage() {
             <span className="text-slate-400">· Dental insurance &amp; communications</span>
           </div>
           <div className="flex items-center gap-4">
-            <a
-              href="https://github.com/rrmethodco/rrmethodco"
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1.5 hover:text-slate-700"
-            >
-              <Github size={14} />
-              GitHub
-            </a>
+            <Link href="/pitch" className="hover:text-slate-700">Pitch deck</Link>
             <Link href="/practice" className="hover:text-slate-700">My Practice</Link>
           </div>
         </div>
