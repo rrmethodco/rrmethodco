@@ -82,7 +82,7 @@ export function Nav() {
         </div>
         <div className="min-w-0">
           <div className="text-sm font-semibold text-slate-900">Restore</div>
-          <div className="truncate text-xs text-slate-500">Mom&apos;s Practice · 4 endodontists</div>
+          <div className="truncate text-xs text-slate-500">Allyson A. Abbott DMD PC</div>
         </div>
       </div>
 
@@ -163,7 +163,7 @@ export function Nav() {
           </div>
           <div className="min-w-0">
             <div className="text-sm font-semibold leading-tight text-slate-900">Restore</div>
-            <div className="truncate text-[10px] leading-tight text-slate-500">Mom&apos;s Practice · 4 endodontists</div>
+            <div className="truncate text-[10px] leading-tight text-slate-500">Allyson A. Abbott DMD PC</div>
           </div>
         </Link>
         <button
