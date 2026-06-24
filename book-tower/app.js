@@ -1404,6 +1404,84 @@ function wireFbTotal(){
   root.querySelector('#fbtCollapseAll').addEventListener('click', ()=>{ Object.keys(fbTotalExpand).forEach(k=>fbTotalExpand[k]=false); renderFbTotal(); });
 }
 
+/* ==================== TTM BY OUTLET (Jun'25–May'26) ==================== */
+// Trailing-12-month totals by outlet: 2025 Periods 6–12 (Jun–Dec actual) +
+// 2026 Periods 1–5 (Jan–May actual), summed from each outlet's monthly P&L.
+// Revenue + the full salaried/hourly labor stack. ($; 2025 months reconcile to
+// each file's stated annual within source rounding.)
+const TTM_DATA = {
+  lsd:  {rev:7024417, mgmt:854955, foh:433468, boh:910804, ptb:505802, bonus:44979},
+  hs:   {rev:4107912, mgmt:555022, foh:245374, boh:556583, ptb:277499, bonus:19459},
+  kamp: {rev:2512963, mgmt:348058, foh:286775, boh:145491, ptb:174309, bonus:12843},
+  anth: {rev:4040130, mgmt:899077, foh:400335, boh:253672, ptb:230152, bonus:125295},
+};
+const TTM_COLS = [
+  {k:'lsd',label:'Le Supreme'},{k:'hs',label:'Hiroki-San'},{k:'kamp',label:'Kampers'},
+  {k:'anth',label:'Anthology'},{k:'comb',label:'Combined',cls:'grand'},
+];
+const TTM_ROWS = [
+  {k:'mgmt',  label:'Management salaried', chip:null,    note:'FOH + BOH + Sales leadership'},
+  {k:'foh',   label:'FOH hourly',          chip:'foh',   note:'bartenders, servers, hosts…'},
+  {k:'boh',   label:'BOH hourly',          chip:'boh',   note:'line, prep, pastry, dish'},
+  {k:'ptb',   label:'PT&amp;B',            chip:null,    note:'payroll tax &amp; benefits'},
+  {k:'bonus', label:'Bonus',               chip:null,    note:''},
+];
+function ttmModel(){
+  const D={}; ['lsd','hs','kamp','anth'].forEach(k=>D[k]=Object.assign({}, TTM_DATA[k]));
+  D.comb={rev:0,mgmt:0,foh:0,boh:0,ptb:0,bonus:0};
+  ['lsd','hs','kamp','anth'].forEach(k=>['rev','mgmt','foh','boh','ptb','bonus'].forEach(m=>D.comb[m]+=D[k][m]));
+  Object.keys(D).forEach(k=>{ D[k].labor=D[k].mgmt+D[k].foh+D[k].boh+D[k].ptb+D[k].bonus; });
+  return D;
+}
+function ttmCells(D, key, isRev){
+  return TTM_COLS.map(c=>{
+    const d=D[c.k], v=isRev?d.rev:d[key], x=c.cls?' '+c.cls:'';
+    return `<td class="d${x}">${usd(v)}</td><td class="p${x}">${isRev?'—':(d.rev?pct(v/d.rev):'—')}</td>`;
+  }).join('');
+}
+function renderTtm(){
+  const el=document.getElementById('view-ttm');
+  const D=ttmModel(), c=D.comb;
+  const head=`<thead>
+    <tr class="outlets"><th class="lab" rowspan="2">Metric</th>${TTM_COLS.map(x=>`<th class="outcol ${x.cls||''}" colspan="2">${x.label}</th>`).join('')}</tr>
+    <tr class="units">${TTM_COLS.map(x=>`<th class="d ${x.cls||''}">$</th><th class="p ${x.cls||''}">% rev</th>`).join('')}</tr></thead>`;
+  let body=`<tr class="revrow"><td class="lab">Revenue<span class="bnote">TTM basis for % of revenue</span></td>${ttmCells(D,'rev',true)}</tr>`;
+  TTM_ROWS.forEach(r=>{
+    body+=`<tr class="catrow"><td class="lab">${r.chip?`<span class="catchip ${r.chip}">${r.chip.toUpperCase()}</span>`:''}<span class="glab">${r.label}</span>${r.note?`<span class="bnote">${r.note}</span>`:''}</td>${ttmCells(D,r.k,false)}</tr>`;
+  });
+  body+=`<tr class="grand"><td class="lab">Total labor<span class="bnote">salaried + hourly + PT&amp;B + bonus</span></td>${ttmCells(D,'labor',false)}</tr>`;
+
+  el.innerHTML=`
+    <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>TTM by outlet</b></div>
+    <h1 class="pagetitle serif">Trailing 12 Months by Outlet<span class="sub">Jun 2025 (Period 6) – May 2026 &middot; revenue &amp; labor</span></h1>
+    <div class="kpis">
+      <div class="kpi"><div class="lab">TTM Revenue</div><div class="val">$${(c.rev/1e6).toFixed(1)}M</div>
+        <div class="meta">${usd(c.rev)} across 4 outlets</div></div>
+      <div class="kpi"><div class="lab">TTM Total Labor</div><div class="val">$${(c.labor/1e6).toFixed(1)}M</div>
+        <div class="meta">salaried + hourly + PT&amp;B + bonus</div></div>
+      <div class="kpi"><div class="lab">Labor % of Revenue</div><div class="val">${pct(c.labor/c.rev)}</div>
+        <div class="meta">combined &middot; bar scaled to 50%</div>
+        <div class="bar"><i style="width:${c.labor/c.rev*100*2}%"></i></div></div>
+      <div class="kpi"><div class="lab">Window</div><div class="val" style="font-size:18px">Jun'25–May'26</div>
+        <div class="meta">2025 P6–12 + 2026 P1–5 actuals</div></div>
+    </div>
+    <div class="block"><div class="head"><h3 class="serif">Revenue &amp; labor &middot; trailing 12 months</h3>
+      <span class="note">outlets side by side &middot; $ and % of each outlet's TTM revenue</span></div>
+      <div class="pad" style="padding-top:0"><div class="fbsum-scroll"><table class="fbsum">${head}<tbody>${body}</tbody></table></div></div></div>
+    <div class="block"><div class="head"><h3 class="serif">Total labor as % of revenue</h3>
+      <span class="note">lower is leaner</span></div><div class="pad">${ttmBars(D)}</div></div>
+    <div class="foot"><b>Window.</b> Trailing twelve months = June 2025 (Period 6) through May 2026, built by summing each outlet's monthly P&amp;L: <b>Jun–Dec 2025</b> (Periods 6–12, actual) from the 2025 statements + <b>Jan–May 2026</b> (Periods 1–5, actual) from the 2026 statements. <b>Labor</b> = Management salaried (FOH + BOH + Sales leadership) + FOH hourly + BOH hourly + PT&amp;B + Bonus — the same stack as the F&amp;B Total Labor view. In the 2025 statements hourly groups are labeled “Kitchen Staff” (BOH) and “Restaurant/Bar” (FOH); 2025 monthly columns reconcile to each file's stated annual within rounding.</div>`;
+}
+function ttmBars(D){
+  const max=Math.max(...['lsd','hs','kamp','anth','comb'].map(k=>D[k].labor/D[k].rev));
+  return TTM_COLS.map(c=>{
+    const d=D[c.k], r=d.labor/d.rev;
+    return `<div class="barrow"><div class="bl">${c.label}</div>
+      <div class="track"><i style="width:${r/max*100}%"></i></div>
+      <div class="bv">${pct(r)}<span>${usd(d.labor)}</span></div></div>`;
+  }).join('');
+}
+
 /* ============================ ROUTING ============================ */
 const VIEWS = {
   overview:{el:'view-overview', render:renderOverview, scope:'all'},
@@ -1412,6 +1490,7 @@ const VIEWS = {
   fbsum:{el:'view-fbsum', render:renderFbSum, scope:'all'},
   fbhourly:{el:'view-fbhourly', render:renderFbHourly, scope:'all'},
   fbtotal:{el:'view-fbtotal', render:renderFbTotal, scope:'all'},
+  ttm:{el:'view-ttm', render:renderTtm, scope:'all'},
   outlets:{el:'view-outlets', render:renderOutlets, scope:'fb'},
   'div-fb':{el:'view-division', render:()=>renderDivision('fb'), scope:'fb'},
   'div-sales':{el:'view-division', render:()=>renderDivision('sales'), scope:'sales'},
@@ -1443,6 +1522,7 @@ function show(view){
     {v:'fbsum',t:'All divisions — F&B management'},
     {v:'fbhourly',t:'All divisions — F&B hourly'},
     {v:'fbtotal',t:'All divisions — F&B total labor'},
+    {v:'ttm',t:'All divisions — TTM by outlet'},
     {v:'div-fb',t:'Food & Beverage'},
     {v:'outlets',t:'  ↳ F&B outlet efficiency'},
     {v:'div-sales',t:'Sales'},
