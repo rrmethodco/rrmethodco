@@ -346,7 +346,7 @@
   .fbsum-zoom{transform-origin:top left}
   table.fbsum{border-collapse:separate;border-spacing:0;width:100%;min-width:0;font-variant-numeric:tabular-nums}
   table.fbsum thead th{background:var(--header-navy);color:#C9D5E6;font-weight:600;white-space:nowrap;text-align:right}
-  table.fbsum thead tr.outlets th{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;padding:7px 7px 4px;border-left:1px solid rgba(255,255,255,.08)}
+  table.fbsum thead tr.outlets th{font-size:9.5px;letter-spacing:.6px;text-transform:uppercase;padding:7px 7px 4px;border-left:1px solid rgba(255,255,255,.08);text-align:center}
   table.fbsum thead tr.outlets th.lab{text-align:left;border-left:0;vertical-align:bottom;padding-bottom:8px}
   table.fbsum thead tr.outlets th.sub{background:#1D2C44}
   table.fbsum thead tr.outlets th.grand{background:#16233A}

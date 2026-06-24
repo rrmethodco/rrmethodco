@@ -1443,11 +1443,14 @@ const TTM_COLS = [
 const fbTtmExpand = {foh:false, boh:false};
 const ttmHourlySum = (o,cat) => Object.values(TTM_HOURLY_DETAIL[o][cat]).reduce((a,b)=>a+b,0);
 function ttmModel(){
-  const ct=categoryTotals();   // mapped-roster salaried $ by outlet → FOH/BOH/Sales mix
+  const ct=categoryTotals();   // mapped-roster salaried $ by outlet (FOH/BOH/Sales)
   const D={}; ['lsd','hs','kamp','anth'].forEach(k=>{
     const s=TTM_DATA[k], den=(ct.foh[k]+ct.boh[k]+ct.sales[k])||1;
-    D[k]={rev:s.rev, ptb:s.ptb, bonus:s.bonus, mgmt:s.mgmt,
-      mfoh:s.mgmt*ct.foh[k]/den, mboh:s.mgmt*ct.boh[k]/den, msales:s.mgmt*ct.sales[k]/den,
+    // BOH = its share of TTM management; Sales = the actual mapped sales salaries
+    // extracted from the FOH-side; FOH = the remainder (front-of-house + leadership,
+    // net of sales). The three reconcile to TTM management exactly.
+    const mboh=s.mgmt*ct.boh[k]/den, msales=ct.sales[k], mfoh=s.mgmt-mboh-msales;
+    D[k]={rev:s.rev, ptb:s.ptb, bonus:s.bonus, mgmt:s.mgmt, mfoh, mboh, msales,
       foh:ttmHourlySum(k,'foh'), boh:ttmHourlySum(k,'boh')};
   });
   const keys=['rev','mgmt','mfoh','mboh','msales','foh','boh','ptb','bonus'];
@@ -1485,9 +1488,9 @@ function renderTtm(){
     <tr class="outlets"><th class="lab" rowspan="2">Metric</th>${TTM_COLS.map(x=>`<th class="outcol ${x.cls||''}" colspan="2">${x.label}</th>`).join('')}</tr>
     <tr class="units">${TTM_COLS.map(x=>`<th class="d ${x.cls||''}">$</th><th class="p ${x.cls||''}">% rev</th>`).join('')}</tr></thead>`;
   let body=`<tr class="revrow"><td class="lab">Revenue<span class="bnote">TTM basis for % of revenue</span></td>${ttmCells(D,'rev',true)}</tr>`;
-  body+=`<tr class="catrow"><td class="lab"><span class="catchip foh">FOH</span><span class="glab">management salaried</span></td>${ttmCells(D,'mfoh',false)}</tr>`;
-  body+=`<tr class="catrow"><td class="lab"><span class="catchip boh">BOH</span><span class="glab">management salaried</span></td>${ttmCells(D,'mboh',false)}</tr>`;
-  body+=`<tr class="catrow"><td class="lab"><span class="catchip sales">Sales</span><span class="glab">management salaried</span></td>${ttmCells(D,'msales',false)}</tr>`;
+  body+=`<tr class="catrow"><td class="lab"><span class="catchip foh">FOH</span><span class="glab">Management</span></td>${ttmCells(D,'mfoh',false)}</tr>`;
+  body+=`<tr class="catrow"><td class="lab"><span class="catchip boh">BOH</span><span class="glab">Management</span></td>${ttmCells(D,'mboh',false)}</tr>`;
+  body+=`<tr class="catrow"><td class="lab"><span class="catchip sales">Sales</span><span class="glab">Management</span></td>${ttmCells(D,'msales',false)}</tr>`;
   body+=ttmHourlyGroup(D,'foh','FOH');
   body+=ttmHourlyGroup(D,'boh','BOH');
   body+=`<tr class="catrow"><td class="lab"><span class="glab">PT&amp;B</span><span class="bnote">payroll tax &amp; benefits</span></td>${ttmCells(D,'ptb',false)}</tr>`;
@@ -1518,7 +1521,7 @@ function renderTtm(){
         <div class="fbsum-scroll"><table class="fbsum">${head}<tbody>${body}</tbody></table></div></div></div>
     <div class="block"><div class="head"><h3 class="serif">Total labor as % of revenue</h3>
       <span class="note">lower is leaner</span></div><div class="pad">${ttmBars(D)}</div></div>
-    <div class="foot"><b>Window.</b> Trailing twelve months = June 2025 (Period 6) through May 2026, built by summing each outlet's monthly P&amp;L: <b>Jun–Dec 2025</b> (Periods 6–12, actual) from the 2025 statements + <b>Jan–May 2026</b> (Periods 1–5, actual) from the 2026 statements. <b>Labor</b> = Management salaried (broken out FOH / BOH / Sales) + FOH hourly + BOH hourly + PT&amp;B + Bonus — the same stack as the F&amp;B Total Labor view. <b>Management FOH/BOH/Sales split:</b> the outlet P&amp;Ls carry no standalone Sales line (event-sales salaries sit inside FOH), so each outlet's TTM management total is split by the <b>mapped roster's</b> FOH / BOH / Sales salaried mix; the three rows sum exactly to TTM management. In the 2025 statements hourly groups are labeled “Kitchen Staff” (BOH) and “Restaurant/Bar” (FOH); 2025 monthly columns reconcile to each file's stated annual within rounding. Expand <b>FOH</b> / <b>BOH</b> for the TTM job-role split (role sums reconcile to each category total within rounding).</div>`;
+    <div class="foot"><b>Window.</b> Trailing twelve months = June 2025 (Period 6) through May 2026, built by summing each outlet's monthly P&amp;L: <b>Jun–Dec 2025</b> (Periods 6–12, actual) from the 2025 statements + <b>Jan–May 2026</b> (Periods 1–5, actual) from the 2026 statements. <b>Labor</b> = Management salaried (broken out FOH / BOH / Sales) + FOH hourly + BOH hourly + PT&amp;B + Bonus — the same stack as the F&amp;B Total Labor view. <b>Management FOH/BOH/Sales:</b> the outlet P&amp;Ls carry no standalone Sales line (event-sales salaries sit inside FOH Management), so <b>Sales Management</b> is the mapped sales salaries extracted out, <b>BOH Management</b> is its share of the total, and <b>FOH Management</b> is the remainder (front-of-house + leadership, net of sales). The three sum exactly to TTM management. In the 2025 statements hourly groups are labeled “Kitchen Staff” (BOH) and “Restaurant/Bar” (FOH); 2025 monthly columns reconcile to each file's stated annual within rounding. Expand <b>FOH</b> / <b>BOH</b> for the TTM job-role split (role sums reconcile to each category total within rounding).</div>`;
   wireTtm();
 }
 function wireTtm(){
