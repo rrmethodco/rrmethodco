@@ -1436,35 +1436,74 @@ const TTM_HOURLY_DETAIL = {
   kamp: { foh:{'Bartenders':80968, 'Support':2930, 'Baristas':0, 'Host':135466, 'Servers':62504, 'Training':4908}, boh:{'Line Cooks':91396, 'Prep Cooks':2159, 'Pastry Cooks':31043, 'Dishwashers':20893} },
   anth: { foh:{'Bartenders':55772, 'Support':0, 'Baristas':0, 'Host':11704, 'Servers':332739, 'Training':120}, boh:{'Line Cooks':142529, 'Prep Cooks':0, 'Pastry Cooks':50755, 'Dishwashers':60389} },
 };
+// TTM BOH Management (actual P&L "BOH Management" line, 2025 P6–12 + 2026 P1–5).
+const TTM_BOH_MGMT = {lsd:326260, hs:230552, kamp:41271, anth:133358};
+// Current-Year 2026 — full-year P&L (Jan–May actual + Jun–Dec forecast).
+// mgmt = Total Management S&W; mboh = P&L BOH Management line (Operations folded
+// into FOH via the residual). Hourly/PT&B/Bonus reuse FB_HOURLY(+detail)/FB_PTB/FB_BONUS.
+const CY2026 = {
+  lsd:  {rev:6637901, mgmt:826179, mboh:326321},
+  hs:   {rev:4156492, mgmt:563913, mboh:277302},
+  kamp: {rev:2520779, mgmt:288037, mboh:74397},
+  anth: {rev:4256384, mgmt:789872, mboh:144831},
+};
 const TTM_COLS = [
   {k:'lsd',label:'Le Supreme'},{k:'hs',label:'Hiroki-San'},{k:'kamp',label:'Kampers'},
   {k:'anth',label:'Anthology'},{k:'comb',label:'Combined',cls:'grand'},
 ];
 const fbTtmExpand = {foh:false, boh:false};
-const ttmHourlySum = (o,cat) => Object.values(TTM_HOURLY_DETAIL[o][cat]).reduce((a,b)=>a+b,0);
-function ttmModel(){
-  const ct=categoryTotals();   // mapped-roster salaried $ by outlet (FOH/BOH/Sales)
-  const D={}; ['lsd','hs','kamp','anth'].forEach(k=>{
-    const s=TTM_DATA[k], den=(ct.foh[k]+ct.boh[k]+ct.sales[k])||1;
-    // BOH = its share of TTM management; Sales = the actual mapped sales salaries
-    // extracted from the FOH-side; FOH = the remainder (front-of-house + leadership,
-    // net of sales). The three reconcile to TTM management exactly.
-    const mboh=s.mgmt*ct.boh[k]/den, msales=ct.sales[k], mfoh=s.mgmt-mboh-msales;
-    D[k]={rev:s.rev, ptb:s.ptb, bonus:s.bonus, mgmt:s.mgmt, mfoh, mboh, msales,
-      foh:ttmHourlySum(k,'foh'), boh:ttmHourlySum(k,'boh')};
+let ttmScenario = 'ttm';
+const TTM_SCENARIOS = [
+  {k:'ttm',  label:'Trailing 12M', sub:"Jun 2025 (Period 6) – May 2026 · actual"},
+  {k:'cy26', label:'Current 2026', sub:'FY2026 · Jan–May actual + Jun–Dec forecast'},
+  {k:'plan', label:'Go-Forward',   sub:'modeled from F&B Management + F&B Hourly inputs'},
+];
+const sumVals = o => Object.values(o).reduce((a,b)=>a+b,0);
+// Build the per-outlet model for a scenario. Each D[k] carries rev, the three
+// management splits (mfoh/mboh/msales), hourly foh/boh totals + role detail
+// (_roles.foh/_roles.boh), ptb, bonus, and labor.
+function buildTtmScenario(scn){
+  const ct=categoryTotals();                 // mapped roster salaried $ by outlet
+  const D={};
+  ['lsd','hs','kamp','anth'].forEach(k=>{
+    let rev,mtot,mfoh,mboh,msales,rolesF={},rolesB={},ptb,bonus;
+    if(scn==='plan'){
+      // Go-Forward: management = mapped roster; hourly/PT&B/Bonus = benchmark % × revenue
+      rev=revOf(k);
+      mfoh=ct.foh[k]; mboh=ct.boh[k]; msales=ct.sales[k]; mtot=mfoh+mboh+msales;
+      FB_HOURLY_ROLE_ORDER.foh.forEach(r=> rolesF[r]=(FB_BENCH_HOURLY_DETAIL[k].foh[r]||0)/100*rev);
+      FB_HOURLY_ROLE_ORDER.boh.forEach(r=> rolesB[r]=(FB_BENCH_HOURLY_DETAIL[k].boh[r]||0)/100*rev);
+      ptb=totPtbBenchPct(k)/100*rev; bonus=totBonusBenchPct(k)/100*rev;
+    } else {
+      // TTM / Current-2026: from P&L. BOH = actual P&L BOH mgmt; Sales = mapped sales
+      // extracted; FOH = remainder (FOH + Operations + Corporate, net of sales).
+      const src = scn==='cy26' ? CY2026[k] : TTM_DATA[k];
+      rev=src.rev; mtot=src.mgmt;
+      mboh = scn==='cy26' ? CY2026[k].mboh : TTM_BOH_MGMT[k];
+      msales = ct.sales[k];
+      mfoh = mtot - mboh - msales;
+      const det = scn==='cy26' ? FB_HOURLY_DETAIL[k] : TTM_HOURLY_DETAIL[k];
+      rolesF=Object.assign({}, det.foh); rolesB=Object.assign({}, det.boh);
+      ptb = scn==='cy26' ? FB_PTB[k] : TTM_DATA[k].ptb;
+      bonus = scn==='cy26' ? FB_BONUS[k] : TTM_DATA[k].bonus;
+    }
+    D[k]={rev, mgmt:mtot, mfoh, mboh, msales, ptb, bonus, _roles:{foh:rolesF, boh:rolesB}};
+    D[k].foh=sumVals(rolesF); D[k].boh=sumVals(rolesB);
   });
-  const keys=['rev','mgmt','mfoh','mboh','msales','foh','boh','ptb','bonus'];
-  D.comb={}; keys.forEach(m=>D.comb[m]=0);
-  ['lsd','hs','kamp','anth'].forEach(k=>keys.forEach(m=>D.comb[m]+=D[k][m]));
+  const num=['rev','mgmt','mfoh','mboh','msales','foh','boh','ptb','bonus'];
+  D.comb={_roles:{foh:{},boh:{}}}; num.forEach(m=>D.comb[m]=0);
+  ['foh','boh'].forEach(cat=>FB_HOURLY_ROLE_ORDER[cat].forEach(r=>D.comb._roles[cat][r]=0));
+  ['lsd','hs','kamp','anth'].forEach(k=>{
+    num.forEach(m=>D.comb[m]+=D[k][m]);
+    ['foh','boh'].forEach(cat=>FB_HOURLY_ROLE_ORDER[cat].forEach(r=>D.comb._roles[cat][r]+=(D[k]._roles[cat][r]||0)));
+  });
   Object.keys(D).forEach(k=>{ D[k].labor=D[k].mgmt+D[k].foh+D[k].boh+D[k].ptb+D[k].bonus; });
   return D;
 }
-// One job role's $ across TTM columns (comb = sum of the four outlets).
+// One job role's $ across columns (reads the scenario's role detail off D).
 function ttmRoleCells(D, cat, role){
   return TTM_COLS.map(c=>{
-    const v = c.k==='comb' ? ['lsd','hs','kamp','anth'].reduce((a,o)=>a+(TTM_HOURLY_DETAIL[o][cat][role]||0),0)
-                           : (TTM_HOURLY_DETAIL[c.k][cat][role]||0);
-    const rev=D[c.k].rev, x=c.cls?' '+c.cls:'';
+    const v=D[c.k]._roles[cat][role]||0, rev=D[c.k].rev, x=c.cls?' '+c.cls:'';
     return `<td class="d${x}">${v?usd(v):'—'}</td><td class="p${x}">${(v&&rev)?pct(v/rev):'—'}</td>`;
   }).join('');
 }
@@ -1481,13 +1520,21 @@ function ttmCells(D, key, isRev){
     return `<td class="d${x}">${usd(v)}</td><td class="p${x}">${isRev?'—':(d.rev?pct(v/d.rev):'—')}</td>`;
   }).join('');
 }
+function ttmFoot(scn){
+  const mgmtNote = `<b>Management FOH/BOH/Sales:</b> the outlet P&amp;Ls carry no standalone Sales line (event-sales salaries sit inside FOH Management), so <b>Sales Management</b> is the mapped sales salaries extracted out, <b>BOH Management</b> is the actual P&amp;L BOH-management line, and <b>FOH Management</b> is the remainder — front-of-house plus Operations &amp; Corporate leadership, net of sales. The three sum exactly to the period's total management.`;
+  if(scn==='cy26') return `<b>Current Year 2026.</b> Full-year 2026 from each outlet's P&amp;L — <b>Jan–May actual + Jun–Dec forecast</b> (the “2026 Act/For/Bud” column). Revenue, hourly (FOH/BOH + job-role detail), PT&amp;B and Bonus are the 2026 P&amp;L figures; <b>Operations Management is folded into FOH Management</b>. ${mgmtNote}`;
+  if(scn==='plan') return `<b>Go-Forward Plan.</b> A modeled target, not actuals. <b>Management</b> comes from the mapped roster on the <b>F&amp;B Management</b> view (salary × allocation, editable in Allocation Drivers); <b>FOH / BOH hourly, PT&amp;B and Bonus</b> are the <b>F&amp;B Hourly</b> benchmark targets (% of revenue × revenue). The % column shows each line's target share of revenue. Revenue is the model's per-outlet revenue (editable in Allocation Drivers). Change the inputs on those tabs and the plan moves with them.`;
+  return `<b>Trailing 12 months</b> = June 2025 (Period 6) through May 2026, summing each outlet's monthly P&amp;L: <b>Jun–Dec 2025</b> (Periods 6–12) + <b>Jan–May 2026</b> (Periods 1–5), all actual. ${mgmtNote} In the 2025 statements hourly groups are labeled “Kitchen Staff” (BOH) and “Restaurant/Bar” (FOH); monthly columns reconcile to each file's stated annual within rounding.`;
+}
 function renderTtm(){
   const el=document.getElementById('view-ttm');
-  const D=ttmModel(), c=D.comb;
+  const m=TTM_SCENARIOS.find(s=>s.k===ttmScenario);
+  const D=buildTtmScenario(ttmScenario), c=D.comb;
   const head=`<thead>
     <tr class="outlets"><th class="lab" rowspan="2">Metric</th>${TTM_COLS.map(x=>`<th class="outcol ${x.cls||''}" colspan="2">${x.label}</th>`).join('')}</tr>
     <tr class="units">${TTM_COLS.map(x=>`<th class="d ${x.cls||''}">$</th><th class="p ${x.cls||''}">% rev</th>`).join('')}</tr></thead>`;
-  let body=`<tr class="revrow"><td class="lab">Revenue<span class="bnote">TTM basis for % of revenue</span></td>${ttmCells(D,'rev',true)}</tr>`;
+  const revNote = ttmScenario==='plan'?'model revenue · basis for % of revenue':'basis for % of revenue';
+  let body=`<tr class="revrow"><td class="lab">Revenue<span class="bnote">${revNote}</span></td>${ttmCells(D,'rev',true)}</tr>`;
   body+=`<tr class="catrow"><td class="lab"><span class="catchip foh">FOH</span><span class="glab">Management</span></td>${ttmCells(D,'mfoh',false)}</tr>`;
   body+=`<tr class="catrow"><td class="lab"><span class="catchip boh">BOH</span><span class="glab">Management</span></td>${ttmCells(D,'mboh',false)}</tr>`;
   body+=`<tr class="catrow"><td class="lab"><span class="catchip sales">Sales</span><span class="glab">Management</span></td>${ttmCells(D,'msales',false)}</tr>`;
@@ -1497,22 +1544,27 @@ function renderTtm(){
   body+=`<tr class="catrow"><td class="lab"><span class="glab">Bonus</span></td>${ttmCells(D,'bonus',false)}</tr>`;
   body+=`<tr class="grand"><td class="lab">Total labor<span class="bnote">salaried + hourly + PT&amp;B + bonus</span></td>${ttmCells(D,'labor',false)}</tr>`;
 
+  const seg=`<div class="segmented" id="ttmSeg">${TTM_SCENARIOS.map(s=>`<button data-scn="${s.k}" class="${s.k===ttmScenario?'on':''}">${s.label}</button>`).join('')}</div>`;
+  const titleMap={ttm:'Trailing 12 Months', cy26:'Current Year 2026', plan:'Go-Forward Plan'};
   el.innerHTML=`
-    <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>TTM by outlet</b></div>
-    <h1 class="pagetitle serif">Trailing 12 Months by Outlet<span class="sub">Jun 2025 (Period 6) – May 2026 &middot; revenue &amp; labor</span></h1>
+    <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>${m.label} by outlet</b></div>
+    <h1 class="pagetitle serif">${titleMap[ttmScenario]} by Outlet<span class="sub">${m.sub} &middot; revenue &amp; labor</span></h1>
+    <div class="alloc-toolbar">${seg}<div class="grow"></div>
+      <span class="savestate"><span class="dot" style="background:#6FA8E6"></span>${m.label}</span></div>
     <div class="kpis">
-      <div class="kpi"><div class="lab">TTM Revenue</div><div class="val">$${(c.rev/1e6).toFixed(1)}M</div>
+      <div class="kpi"><div class="lab">Revenue</div><div class="val">$${(c.rev/1e6).toFixed(1)}M</div>
         <div class="meta">${usd(c.rev)} across 4 outlets</div></div>
-      <div class="kpi"><div class="lab">TTM Total Labor</div><div class="val">$${(c.labor/1e6).toFixed(1)}M</div>
+      <div class="kpi"><div class="lab">Total Labor</div><div class="val">$${(c.labor/1e6).toFixed(1)}M</div>
         <div class="meta">salaried + hourly + PT&amp;B + bonus</div></div>
       <div class="kpi"><div class="lab">Labor % of Revenue</div><div class="val">${pct(c.labor/c.rev)}</div>
         <div class="meta">combined &middot; bar scaled to 50%</div>
         <div class="bar"><i style="width:${c.labor/c.rev*100*2}%"></i></div></div>
-      <div class="kpi"><div class="lab">Window</div><div class="val" style="font-size:18px">Jun'25–May'26</div>
-        <div class="meta">2025 P6–12 + 2026 P1–5 actuals</div></div>
+      <div class="kpi"><div class="lab">Mgmt &middot; FOH/BOH/Sales</div>
+        <div class="val" style="font-size:15px">${usdK(c.mfoh)} / ${usdK(c.mboh)} / ${usdK(c.msales)}</div>
+        <div class="meta">salaried management split</div></div>
     </div>
-    <div class="block"><div class="head"><h3 class="serif">Revenue &amp; labor &middot; trailing 12 months</h3>
-      <span class="note">outlets side by side &middot; $ and % of each outlet's TTM revenue &middot; expand FOH / BOH for the role split</span></div>
+    <div class="block"><div class="head"><h3 class="serif">Revenue &amp; labor &middot; ${m.label.toLowerCase()}</h3>
+      <span class="note">outlets side by side &middot; $ and % of each outlet's revenue &middot; expand FOH / BOH for the role split</span></div>
       <div class="pad" style="padding-top:0">
         <div class="fbsum-toolbar"><div class="expandctl">
           <button class="btn" id="ttmExpandAll">Expand all</button>
@@ -1521,11 +1573,12 @@ function renderTtm(){
         <div class="fbsum-scroll"><table class="fbsum">${head}<tbody>${body}</tbody></table></div></div></div>
     <div class="block"><div class="head"><h3 class="serif">Total labor as % of revenue</h3>
       <span class="note">lower is leaner</span></div><div class="pad">${ttmBars(D)}</div></div>
-    <div class="foot"><b>Window.</b> Trailing twelve months = June 2025 (Period 6) through May 2026, built by summing each outlet's monthly P&amp;L: <b>Jun–Dec 2025</b> (Periods 6–12, actual) from the 2025 statements + <b>Jan–May 2026</b> (Periods 1–5, actual) from the 2026 statements. <b>Labor</b> = Management salaried (broken out FOH / BOH / Sales) + FOH hourly + BOH hourly + PT&amp;B + Bonus — the same stack as the F&amp;B Total Labor view. <b>Management FOH/BOH/Sales:</b> the outlet P&amp;Ls carry no standalone Sales line (event-sales salaries sit inside FOH Management), so <b>Sales Management</b> is the mapped sales salaries extracted out, <b>BOH Management</b> is its share of the total, and <b>FOH Management</b> is the remainder (front-of-house + leadership, net of sales). The three sum exactly to TTM management. In the 2025 statements hourly groups are labeled “Kitchen Staff” (BOH) and “Restaurant/Bar” (FOH); 2025 monthly columns reconcile to each file's stated annual within rounding. Expand <b>FOH</b> / <b>BOH</b> for the TTM job-role split (role sums reconcile to each category total within rounding).</div>`;
+    <div class="foot">${ttmFoot(ttmScenario)}</div>`;
   wireTtm();
 }
 function wireTtm(){
   const root=document.getElementById('view-ttm');
+  root.querySelector('#ttmSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b&&b.dataset.scn){ ttmScenario=b.dataset.scn; renderTtm(); }});
   root.querySelectorAll('.grouprow').forEach(r=> r.addEventListener('click', ()=>{ const c=r.dataset.cat; fbTtmExpand[c]=!fbTtmExpand[c]; renderTtm(); }));
   root.querySelector('#ttmExpandAll').addEventListener('click', ()=>{ Object.keys(fbTtmExpand).forEach(k=>fbTtmExpand[k]=true); renderTtm(); });
   root.querySelector('#ttmCollapseAll').addEventListener('click', ()=>{ Object.keys(fbTtmExpand).forEach(k=>fbTtmExpand[k]=false); renderTtm(); });
