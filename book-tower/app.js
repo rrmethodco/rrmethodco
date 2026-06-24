@@ -1409,29 +1409,53 @@ function wireFbTotal(){
 // 2026 Periods 1–5 (Jan–May actual), summed from each outlet's monthly P&L.
 // Revenue + the full salaried/hourly labor stack. ($; 2025 months reconcile to
 // each file's stated annual within source rounding.)
+// Revenue + non-hourly labor per outlet (TTM). FOH/BOH hourly are derived from
+// the role detail below so the expandable rows reconcile to their totals.
 const TTM_DATA = {
-  lsd:  {rev:7024417, mgmt:854955, foh:433468, boh:910804, ptb:505802, bonus:44979},
-  hs:   {rev:4107912, mgmt:555022, foh:245374, boh:556583, ptb:277499, bonus:19459},
-  kamp: {rev:2512963, mgmt:348058, foh:286775, boh:145491, ptb:174309, bonus:12843},
-  anth: {rev:4040130, mgmt:899077, foh:400335, boh:253672, ptb:230152, bonus:125295},
+  lsd:  {rev:7024417, mgmt:854955, ptb:505802, bonus:44979},
+  hs:   {rev:4107912, mgmt:555022, ptb:277499, bonus:19459},
+  kamp: {rev:2512963, mgmt:348058, ptb:174309, bonus:12843},
+  anth: {rev:4040130, mgmt:899077, ptb:230152, bonus:125295},
+};
+// Job-level hourly $ over the TTM window (2025 P6–12 + 2026 P1–5). Per outlet,
+// these reconcile to the category FOH/BOH TTM totals within source rounding.
+const TTM_HOURLY_DETAIL = {
+  lsd:  { foh:{'Bartenders':119953, 'Support':16959, 'Baristas':37990, 'Host':86196, 'Servers':158999, 'Training':13375}, boh:{'Line Cooks':485251, 'Prep Cooks':177532, 'Pastry Cooks':90079, 'Dishwashers':157944} },
+  hs:   { foh:{'Bartenders':79293, 'Support':3905, 'Baristas':0, 'Host':62573, 'Servers':89645, 'Training':9956}, boh:{'Line Cooks':378989, 'Prep Cooks':80890, 'Pastry Cooks':32945, 'Dishwashers':63758} },
+  kamp: { foh:{'Bartenders':80968, 'Support':2930, 'Baristas':0, 'Host':135466, 'Servers':62504, 'Training':4908}, boh:{'Line Cooks':91396, 'Prep Cooks':2159, 'Pastry Cooks':31043, 'Dishwashers':20893} },
+  anth: { foh:{'Bartenders':55772, 'Support':0, 'Baristas':0, 'Host':11704, 'Servers':332739, 'Training':120}, boh:{'Line Cooks':142529, 'Prep Cooks':0, 'Pastry Cooks':50755, 'Dishwashers':60389} },
 };
 const TTM_COLS = [
   {k:'lsd',label:'Le Supreme'},{k:'hs',label:'Hiroki-San'},{k:'kamp',label:'Kampers'},
   {k:'anth',label:'Anthology'},{k:'comb',label:'Combined',cls:'grand'},
 ];
-const TTM_ROWS = [
-  {k:'mgmt',  label:'Management salaried', chip:null,    note:'FOH + BOH + Sales leadership'},
-  {k:'foh',   label:'FOH hourly',          chip:'foh',   note:'bartenders, servers, hosts…'},
-  {k:'boh',   label:'BOH hourly',          chip:'boh',   note:'line, prep, pastry, dish'},
-  {k:'ptb',   label:'PT&amp;B',            chip:null,    note:'payroll tax &amp; benefits'},
-  {k:'bonus', label:'Bonus',               chip:null,    note:''},
-];
+const fbTtmExpand = {foh:false, boh:false};
+const ttmHourlySum = (o,cat) => Object.values(TTM_HOURLY_DETAIL[o][cat]).reduce((a,b)=>a+b,0);
 function ttmModel(){
-  const D={}; ['lsd','hs','kamp','anth'].forEach(k=>D[k]=Object.assign({}, TTM_DATA[k]));
+  const D={}; ['lsd','hs','kamp','anth'].forEach(k=>{
+    const s=TTM_DATA[k];
+    D[k]={rev:s.rev, mgmt:s.mgmt, ptb:s.ptb, bonus:s.bonus, foh:ttmHourlySum(k,'foh'), boh:ttmHourlySum(k,'boh')};
+  });
   D.comb={rev:0,mgmt:0,foh:0,boh:0,ptb:0,bonus:0};
   ['lsd','hs','kamp','anth'].forEach(k=>['rev','mgmt','foh','boh','ptb','bonus'].forEach(m=>D.comb[m]+=D[k][m]));
   Object.keys(D).forEach(k=>{ D[k].labor=D[k].mgmt+D[k].foh+D[k].boh+D[k].ptb+D[k].bonus; });
   return D;
+}
+// One job role's $ across TTM columns (comb = sum of the four outlets).
+function ttmRoleCells(D, cat, role){
+  return TTM_COLS.map(c=>{
+    const v = c.k==='comb' ? ['lsd','hs','kamp','anth'].reduce((a,o)=>a+(TTM_HOURLY_DETAIL[o][cat][role]||0),0)
+                           : (TTM_HOURLY_DETAIL[c.k][cat][role]||0);
+    const rev=D[c.k].rev, x=c.cls?' '+c.cls:'';
+    return `<td class="d${x}">${v?usd(v):'—'}</td><td class="p${x}">${(v&&rev)?pct(v/rev):'—'}</td>`;
+  }).join('');
+}
+// FOH/BOH hourly group row → job-role rows when expanded.
+function ttmHourlyGroup(D, cat, label){
+  const exp=fbTtmExpand[cat];
+  let h=`<tr class="grouprow ${exp?'open':''}" data-cat="${cat}"><td class="lab"><span class="chev">&#9656;</span><span class="catchip ${cat}">${cat.toUpperCase()}</span><span class="glab">${label} hourly</span></td>${ttmCells(D,cat,false)}</tr>`;
+  if(exp) FB_HOURLY_ROLE_ORDER[cat].forEach(role=>{ h+=`<tr class="personrow"><td class="lab"><span class="pos">${role}</span></td>${ttmRoleCells(D,cat,role)}</tr>`; });
+  return h;
 }
 function ttmCells(D, key, isRev){
   return TTM_COLS.map(c=>{
@@ -1446,9 +1470,11 @@ function renderTtm(){
     <tr class="outlets"><th class="lab" rowspan="2">Metric</th>${TTM_COLS.map(x=>`<th class="outcol ${x.cls||''}" colspan="2">${x.label}</th>`).join('')}</tr>
     <tr class="units">${TTM_COLS.map(x=>`<th class="d ${x.cls||''}">$</th><th class="p ${x.cls||''}">% rev</th>`).join('')}</tr></thead>`;
   let body=`<tr class="revrow"><td class="lab">Revenue<span class="bnote">TTM basis for % of revenue</span></td>${ttmCells(D,'rev',true)}</tr>`;
-  TTM_ROWS.forEach(r=>{
-    body+=`<tr class="catrow"><td class="lab">${r.chip?`<span class="catchip ${r.chip}">${r.chip.toUpperCase()}</span>`:''}<span class="glab">${r.label}</span>${r.note?`<span class="bnote">${r.note}</span>`:''}</td>${ttmCells(D,r.k,false)}</tr>`;
-  });
+  body+=`<tr class="catrow"><td class="lab"><span class="glab">Management salaried</span><span class="bnote">FOH + BOH + Sales leadership</span></td>${ttmCells(D,'mgmt',false)}</tr>`;
+  body+=ttmHourlyGroup(D,'foh','FOH');
+  body+=ttmHourlyGroup(D,'boh','BOH');
+  body+=`<tr class="catrow"><td class="lab"><span class="glab">PT&amp;B</span><span class="bnote">payroll tax &amp; benefits</span></td>${ttmCells(D,'ptb',false)}</tr>`;
+  body+=`<tr class="catrow"><td class="lab"><span class="glab">Bonus</span></td>${ttmCells(D,'bonus',false)}</tr>`;
   body+=`<tr class="grand"><td class="lab">Total labor<span class="bnote">salaried + hourly + PT&amp;B + bonus</span></td>${ttmCells(D,'labor',false)}</tr>`;
 
   el.innerHTML=`
@@ -1466,11 +1492,23 @@ function renderTtm(){
         <div class="meta">2025 P6–12 + 2026 P1–5 actuals</div></div>
     </div>
     <div class="block"><div class="head"><h3 class="serif">Revenue &amp; labor &middot; trailing 12 months</h3>
-      <span class="note">outlets side by side &middot; $ and % of each outlet's TTM revenue</span></div>
-      <div class="pad" style="padding-top:0"><div class="fbsum-scroll"><table class="fbsum">${head}<tbody>${body}</tbody></table></div></div></div>
+      <span class="note">outlets side by side &middot; $ and % of each outlet's TTM revenue &middot; expand FOH / BOH for the role split</span></div>
+      <div class="pad" style="padding-top:0">
+        <div class="fbsum-toolbar"><div class="expandctl">
+          <button class="btn" id="ttmExpandAll">Expand all</button>
+          <button class="btn" id="ttmCollapseAll">Collapse all</button>
+        </div></div>
+        <div class="fbsum-scroll"><table class="fbsum">${head}<tbody>${body}</tbody></table></div></div></div>
     <div class="block"><div class="head"><h3 class="serif">Total labor as % of revenue</h3>
       <span class="note">lower is leaner</span></div><div class="pad">${ttmBars(D)}</div></div>
-    <div class="foot"><b>Window.</b> Trailing twelve months = June 2025 (Period 6) through May 2026, built by summing each outlet's monthly P&amp;L: <b>Jun–Dec 2025</b> (Periods 6–12, actual) from the 2025 statements + <b>Jan–May 2026</b> (Periods 1–5, actual) from the 2026 statements. <b>Labor</b> = Management salaried (FOH + BOH + Sales leadership) + FOH hourly + BOH hourly + PT&amp;B + Bonus — the same stack as the F&amp;B Total Labor view. In the 2025 statements hourly groups are labeled “Kitchen Staff” (BOH) and “Restaurant/Bar” (FOH); 2025 monthly columns reconcile to each file's stated annual within rounding.</div>`;
+    <div class="foot"><b>Window.</b> Trailing twelve months = June 2025 (Period 6) through May 2026, built by summing each outlet's monthly P&amp;L: <b>Jun–Dec 2025</b> (Periods 6–12, actual) from the 2025 statements + <b>Jan–May 2026</b> (Periods 1–5, actual) from the 2026 statements. <b>Labor</b> = Management salaried (FOH + BOH + Sales leadership) + FOH hourly + BOH hourly + PT&amp;B + Bonus — the same stack as the F&amp;B Total Labor view. In the 2025 statements hourly groups are labeled “Kitchen Staff” (BOH) and “Restaurant/Bar” (FOH); 2025 monthly columns reconcile to each file's stated annual within rounding. Expand <b>FOH</b> / <b>BOH</b> for the TTM job-role split (role sums reconcile to each category total within rounding).</div>`;
+  wireTtm();
+}
+function wireTtm(){
+  const root=document.getElementById('view-ttm');
+  root.querySelectorAll('.grouprow').forEach(r=> r.addEventListener('click', ()=>{ const c=r.dataset.cat; fbTtmExpand[c]=!fbTtmExpand[c]; renderTtm(); }));
+  root.querySelector('#ttmExpandAll').addEventListener('click', ()=>{ Object.keys(fbTtmExpand).forEach(k=>fbTtmExpand[k]=true); renderTtm(); });
+  root.querySelector('#ttmCollapseAll').addEventListener('click', ()=>{ Object.keys(fbTtmExpand).forEach(k=>fbTtmExpand[k]=false); renderTtm(); });
 }
 function ttmBars(D){
   const max=Math.max(...['lsd','hs','kamp','anth','comb'].map(k=>D[k].labor/D[k].rev));
