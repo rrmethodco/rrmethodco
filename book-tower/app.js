@@ -1452,11 +1452,22 @@ const TTM_COLS = [
   {k:'anth',label:'Anthology'},{k:'comb',label:'Combined',cls:'grand'},
 ];
 const fbTtmExpand = {foh:false, boh:false};
-let ttmScenario = 'ttm';
+let ttmOutlet = 'comb';
 const TTM_SCENARIOS = [
   {k:'ttm',  label:'Trailing 12M', sub:"Jun 2025 (Period 6) – May 2026 · actual"},
   {k:'cy26', label:'Current 2026', sub:'FY2026 · Jan–May actual + Jun–Dec forecast'},
   {k:'plan', label:'Go-Forward',   sub:'modeled from F&B Management + F&B Hourly inputs'},
+];
+// Scenario columns shown side by side (+ a Go-Forward vs Current-2026 delta).
+const SCN_COLS = [
+  {k:'ttm',  label:'Trailing 12M'},
+  {k:'cy26', label:'Current 2026'},
+  {k:'plan', label:'Go-Forward'},
+  {k:'delta',label:'Δ Go-Fwd vs 2026', cls:'grand', delta:true},
+];
+const TTM_OUTLETS = [
+  {k:'comb',label:'Combined'},{k:'lsd',label:'Le Supreme'},{k:'hs',label:'Hiroki-San'},
+  {k:'kamp',label:'Kampers'},{k:'anth',label:'Anthology'},
 ];
 const sumVals = o => Object.values(o).reduce((a,b)=>a+b,0);
 // Build the per-outlet model for a scenario. Each D[k] carries rev, the three
@@ -1500,97 +1511,100 @@ function buildTtmScenario(scn){
   Object.keys(D).forEach(k=>{ D[k].labor=D[k].mgmt+D[k].foh+D[k].boh+D[k].ptb+D[k].bonus; });
   return D;
 }
-// One job role's $ across columns (reads the scenario's role detail off D).
-function ttmRoleCells(D, cat, role){
-  return TTM_COLS.map(c=>{
-    const v=D[c.k]._roles[cat][role]||0, rev=D[c.k].rev, x=c.cls?' '+c.cls:'';
+// Cells for one metric across the scenario columns (+ Go-Forward vs 2026 delta),
+// all for the selected outlet `o`. M = {ttm,cy26,plan} models.
+function scnCells(M, o, metric, isRev){
+  return SCN_COLS.map(c=>{
+    const x=c.cls?' '+c.cls:'';
+    if(c.delta){
+      const p=M.plan[o], q=M.cy26[o];
+      const pv=isRev?p.rev:(p[metric]||0), qv=isRev?q.rev:(q[metric]||0), dv=pv-qv;
+      const cls = dv>0?'over':dv<0?'under':'';
+      const pp=(isRev||!p.rev||!q.rev)?null:((pv/p.rev-qv/q.rev)*100);
+      return `<td class="d${x} ${cls}">${dv?signedUsd(dv):'—'}</td><td class="p${x} ${cls}">${pp==null?'—':signedPct(pp)}</td>`;
+    }
+    const d=M[c.k][o], v=isRev?d.rev:(d[metric]||0), rev=d.rev;
+    return `<td class="d${x}">${v?usd(v):'—'}</td><td class="p${x}">${isRev?'—':(v&&rev?pct(v/rev):'—')}</td>`;
+  }).join('');
+}
+function scnRoleCells(M, o, cat, role){
+  return SCN_COLS.map(c=>{
+    const x=c.cls?' '+c.cls:'';
+    if(c.delta){
+      const pv=M.plan[o]._roles[cat][role]||0, qv=M.cy26[o]._roles[cat][role]||0, dv=pv-qv;
+      const cls = dv>0?'over':dv<0?'under':'';
+      return `<td class="d${x} ${cls}">${dv?signedUsd(dv):'—'}</td><td class="p${x} ${cls}">—</td>`;
+    }
+    const d=M[c.k][o], v=d._roles[cat][role]||0, rev=d.rev;
     return `<td class="d${x}">${v?usd(v):'—'}</td><td class="p${x}">${(v&&rev)?pct(v/rev):'—'}</td>`;
   }).join('');
 }
-// FOH/BOH hourly group row → job-role rows when expanded.
-function ttmHourlyGroup(D, cat, label){
+function scnHourlyGroup(M, o, cat, label){
   const exp=fbTtmExpand[cat];
-  let h=`<tr class="grouprow ${exp?'open':''}" data-cat="${cat}"><td class="lab"><span class="chev">&#9656;</span><span class="catchip ${cat}">${cat.toUpperCase()}</span><span class="glab">${label} hourly</span></td>${ttmCells(D,cat,false)}</tr>`;
-  if(exp) FB_HOURLY_ROLE_ORDER[cat].forEach(role=>{ h+=`<tr class="personrow"><td class="lab"><span class="pos">${role}</span></td>${ttmRoleCells(D,cat,role)}</tr>`; });
+  let h=`<tr class="grouprow ${exp?'open':''}" data-cat="${cat}"><td class="lab"><span class="chev">&#9656;</span><span class="catchip ${cat}">${cat.toUpperCase()}</span><span class="glab">${label} hourly</span></td>${scnCells(M,o,cat,false)}</tr>`;
+  if(exp) FB_HOURLY_ROLE_ORDER[cat].forEach(role=>{ h+=`<tr class="personrow"><td class="lab"><span class="pos">${role}</span></td>${scnRoleCells(M,o,cat,role)}</tr>`; });
   return h;
 }
-function ttmCells(D, key, isRev){
-  return TTM_COLS.map(c=>{
-    const d=D[c.k], v=isRev?d.rev:d[key], x=c.cls?' '+c.cls:'';
-    return `<td class="d${x}">${usd(v)}</td><td class="p${x}">${isRev?'—':(d.rev?pct(v/d.rev):'—')}</td>`;
-  }).join('');
-}
-function ttmFoot(scn){
-  const mgmtNote = `<b>Management FOH/BOH/Sales:</b> the outlet P&amp;Ls carry no standalone Sales line (event-sales salaries sit inside FOH Management), so <b>Sales Management</b> is the mapped sales salaries extracted out, <b>BOH Management</b> is the actual P&amp;L BOH-management line, and <b>FOH Management</b> is the remainder — front-of-house plus Operations &amp; Corporate leadership, net of sales. The three sum exactly to the period's total management.`;
-  if(scn==='cy26') return `<b>Current Year 2026.</b> Full-year 2026 from each outlet's P&amp;L — <b>Jan–May actual + Jun–Dec forecast</b> (the “2026 Act/For/Bud” column). Revenue, hourly (FOH/BOH + job-role detail), PT&amp;B and Bonus are the 2026 P&amp;L figures; <b>Operations Management is folded into FOH Management</b>. ${mgmtNote}`;
-  if(scn==='plan') return `<b>Go-Forward Plan.</b> A modeled target, not actuals. <b>Management</b> comes from the mapped roster on the <b>F&amp;B Management</b> view (salary × allocation, editable in Allocation Drivers); <b>FOH / BOH hourly, PT&amp;B and Bonus</b> are the <b>F&amp;B Hourly</b> benchmark targets (% of revenue × revenue). The % column shows each line's target share of revenue. Revenue is the model's per-outlet revenue (editable in Allocation Drivers). Change the inputs on those tabs and the plan moves with them.`;
-  return `<b>Trailing 12 months</b> = June 2025 (Period 6) through May 2026, summing each outlet's monthly P&amp;L: <b>Jun–Dec 2025</b> (Periods 6–12) + <b>Jan–May 2026</b> (Periods 1–5), all actual. ${mgmtNote} In the 2025 statements hourly groups are labeled “Kitchen Staff” (BOH) and “Restaurant/Bar” (FOH); monthly columns reconcile to each file's stated annual within rounding.`;
+function scnBars(M, o){
+  const vals=['ttm','cy26','plan'].map(k=>({label:TTM_SCENARIOS.find(s=>s.k===k).label, r:M[k][o].labor/M[k][o].rev, labor:M[k][o].labor}));
+  const max=Math.max(...vals.map(v=>v.r));
+  return vals.map(v=>`<div class="barrow"><div class="bl">${v.label}</div>
+    <div class="track"><i style="width:${v.r/max*100}%"></i></div>
+    <div class="bv">${pct(v.r)}<span>${usd(v.labor)}</span></div></div>`).join('');
 }
 function renderTtm(){
   const el=document.getElementById('view-ttm');
-  const m=TTM_SCENARIOS.find(s=>s.k===ttmScenario);
-  const D=buildTtmScenario(ttmScenario), c=D.comb;
+  const M={ttm:buildTtmScenario('ttm'), cy26:buildTtmScenario('cy26'), plan:buildTtmScenario('plan')};
+  const o=ttmOutlet, oLabel=TTM_OUTLETS.find(x=>x.k===o).label;
   const head=`<thead>
-    <tr class="outlets"><th class="lab" rowspan="2">Metric</th>${TTM_COLS.map(x=>`<th class="outcol ${x.cls||''}" colspan="2">${x.label}</th>`).join('')}</tr>
-    <tr class="units">${TTM_COLS.map(x=>`<th class="d ${x.cls||''}">$</th><th class="p ${x.cls||''}">% rev</th>`).join('')}</tr></thead>`;
-  const revNote = ttmScenario==='plan'?'model revenue · basis for % of revenue':'basis for % of revenue';
-  let body=`<tr class="revrow"><td class="lab">Revenue<span class="bnote">${revNote}</span></td>${ttmCells(D,'rev',true)}</tr>`;
-  body+=`<tr class="catrow"><td class="lab"><span class="catchip foh">FOH</span><span class="glab">Management</span></td>${ttmCells(D,'mfoh',false)}</tr>`;
-  body+=`<tr class="catrow"><td class="lab"><span class="catchip boh">BOH</span><span class="glab">Management</span></td>${ttmCells(D,'mboh',false)}</tr>`;
-  body+=`<tr class="catrow"><td class="lab"><span class="catchip sales">Sales</span><span class="glab">Management</span></td>${ttmCells(D,'msales',false)}</tr>`;
-  body+=ttmHourlyGroup(D,'foh','FOH');
-  body+=ttmHourlyGroup(D,'boh','BOH');
-  body+=`<tr class="catrow"><td class="lab"><span class="glab">PT&amp;B</span><span class="bnote">payroll tax &amp; benefits</span></td>${ttmCells(D,'ptb',false)}</tr>`;
-  body+=`<tr class="catrow"><td class="lab"><span class="glab">Bonus</span></td>${ttmCells(D,'bonus',false)}</tr>`;
-  body+=`<tr class="grand"><td class="lab">Total labor<span class="bnote">salaried + hourly + PT&amp;B + bonus</span></td>${ttmCells(D,'labor',false)}</tr>`;
+    <tr class="outlets"><th class="lab" rowspan="2">Position</th>${SCN_COLS.map(x=>`<th class="outcol ${x.cls||''}" colspan="2">${x.label}</th>`).join('')}</tr>
+    <tr class="units">${SCN_COLS.map(x=>`<th class="d ${x.cls||''}">$</th><th class="p ${x.cls||''}">${x.delta?'Δ pts':'% rev'}</th>`).join('')}</tr></thead>`;
+  let body=`<tr class="revrow"><td class="lab">Revenue<span class="bnote">basis for % of revenue</span></td>${scnCells(M,o,'rev',true)}</tr>`;
+  body+=`<tr class="catrow"><td class="lab"><span class="catchip foh">FOH</span><span class="glab">Management</span></td>${scnCells(M,o,'mfoh',false)}</tr>`;
+  body+=`<tr class="catrow"><td class="lab"><span class="catchip boh">BOH</span><span class="glab">Management</span></td>${scnCells(M,o,'mboh',false)}</tr>`;
+  body+=`<tr class="catrow"><td class="lab"><span class="catchip sales">Sales</span><span class="glab">Management</span></td>${scnCells(M,o,'msales',false)}</tr>`;
+  body+=scnHourlyGroup(M,o,'foh','FOH');
+  body+=scnHourlyGroup(M,o,'boh','BOH');
+  body+=`<tr class="catrow"><td class="lab"><span class="glab">PT&amp;B</span><span class="bnote">payroll tax &amp; benefits</span></td>${scnCells(M,o,'ptb',false)}</tr>`;
+  body+=`<tr class="catrow"><td class="lab"><span class="glab">Bonus</span></td>${scnCells(M,o,'bonus',false)}</tr>`;
+  body+=`<tr class="grand"><td class="lab">Total labor<span class="bnote">salaried + hourly + PT&amp;B + bonus</span></td>${scnCells(M,o,'labor',false)}</tr>`;
 
-  const seg=`<div class="segmented" id="ttmSeg">${TTM_SCENARIOS.map(s=>`<button data-scn="${s.k}" class="${s.k===ttmScenario?'on':''}">${s.label}</button>`).join('')}</div>`;
-  const titleMap={ttm:'Trailing 12 Months', cy26:'Current Year 2026', plan:'Go-Forward Plan'};
+  const sel=`<div class="segmented" id="ttmOutletSeg">${TTM_OUTLETS.map(x=>`<button data-o="${x.k}" class="${x.k===o?'on':''}">${x.label}</button>`).join('')}</div>`;
+  const kpiCard=(k)=>{ const d=M[k][o], meta=TTM_SCENARIOS.find(s=>s.k===k); return `<div class="kpi"><div class="lab">${meta.label}</div><div class="val">${pct(d.labor/d.rev)}</div><div class="meta">${usd(d.labor)} labor &middot; on ${usdK(d.rev)}</div><div class="bar"><i style="width:${d.labor/d.rev*100*2}%"></i></div></div>`; };
+  const dPts=(M.plan[o].labor/M.plan[o].rev - M.cy26[o].labor/M.cy26[o].rev)*100;
   el.innerHTML=`
-    <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>${m.label} by outlet</b></div>
-    <h1 class="pagetitle serif">${titleMap[ttmScenario]} by Outlet<span class="sub">${m.sub} &middot; revenue &amp; labor</span></h1>
-    <div class="alloc-toolbar">${seg}<div class="grow"></div>
-      <span class="savestate"><span class="dot" style="background:#6FA8E6"></span>${m.label}</span></div>
+    <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>Scenario Viewer</b></div>
+    <h1 class="pagetitle serif">Scenario Viewer<span class="sub">${oLabel} &middot; Trailing 12M vs Current 2026 vs Go-Forward</span></h1>
+    <div class="alloc-toolbar"><span class="zlab" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Outlet</span>${sel}<div class="grow"></div></div>
     <div class="kpis">
-      <div class="kpi"><div class="lab">Revenue</div><div class="val">$${(c.rev/1e6).toFixed(1)}M</div>
-        <div class="meta">${usd(c.rev)} across 4 outlets</div></div>
-      <div class="kpi"><div class="lab">Total Labor</div><div class="val">$${(c.labor/1e6).toFixed(1)}M</div>
-        <div class="meta">salaried + hourly + PT&amp;B + bonus</div></div>
-      <div class="kpi"><div class="lab">Labor % of Revenue</div><div class="val">${pct(c.labor/c.rev)}</div>
-        <div class="meta">combined &middot; bar scaled to 50%</div>
-        <div class="bar"><i style="width:${c.labor/c.rev*100*2}%"></i></div></div>
-      <div class="kpi"><div class="lab">Mgmt &middot; FOH/BOH/Sales</div>
-        <div class="val" style="font-size:15px">${usdK(c.mfoh)} / ${usdK(c.mboh)} / ${usdK(c.msales)}</div>
-        <div class="meta">salaried management split</div></div>
+      ${kpiCard('ttm')}${kpiCard('cy26')}${kpiCard('plan')}
+      <div class="kpi"><div class="lab">Go-Forward vs 2026</div><div class="val ${dPts>0?'neg':'pos'}">${signedPct(dPts)} pts</div>
+        <div class="meta">labor % of revenue change</div></div>
     </div>
-    <div class="block"><div class="head"><h3 class="serif">Revenue &amp; labor &middot; ${m.label.toLowerCase()}</h3>
-      <span class="note">outlets side by side &middot; $ and % of each outlet's revenue &middot; expand FOH / BOH for the role split</span></div>
+    <div class="block"><div class="head"><h3 class="serif">${oLabel} &middot; three scenarios side by side</h3>
+      <span class="note">$ and % of revenue per scenario &middot; Δ = Go-Forward − Current 2026 &middot; expand FOH / BOH for the role split</span></div>
       <div class="pad" style="padding-top:0">
         <div class="fbsum-toolbar"><div class="expandctl">
           <button class="btn" id="ttmExpandAll">Expand all</button>
           <button class="btn" id="ttmCollapseAll">Collapse all</button>
         </div></div>
         <div class="fbsum-scroll"><table class="fbsum">${head}<tbody>${body}</tbody></table></div></div></div>
-    <div class="block"><div class="head"><h3 class="serif">Total labor as % of revenue</h3>
-      <span class="note">lower is leaner</span></div><div class="pad">${ttmBars(D)}</div></div>
-    <div class="foot">${ttmFoot(ttmScenario)}</div>`;
+    <div class="block"><div class="head"><h3 class="serif">Total labor as % of revenue &middot; ${oLabel}</h3>
+      <span class="note">the three scenarios &middot; lower is leaner</span></div><div class="pad">${scnBars(M,o)}</div></div>
+    <div class="foot"><b>Three scenarios, ${oLabel}.</b>
+      <b>Trailing 12M</b> = Jun 2025 (P6) – May 2026 actuals (monthly P&amp;L sums).
+      <b>Current 2026</b> = full-year 2026 P&amp;L (Jan–May actual + Jun–Dec forecast); Operations Management folded into FOH Management.
+      <b>Go-Forward</b> = modeled target — management from the mapped roster (<b>F&amp;B Management</b>), and hourly / PT&amp;B / Bonus from the <b>F&amp;B Hourly</b> benchmark % × revenue; edit those tabs and it moves.
+      <b>Δ</b> compares Go-Forward to Current 2026 (<span class="over">red = higher cost</span>, <span class="under">green = leaner</span>).
+      Across all three, <b>BOH Management</b> is the actual P&amp;L BOH line, <b>Sales Management</b> is the mapped sales salaries extracted out, and <b>FOH Management</b> is the remainder (front-of-house + leadership, net of sales); the three reconcile to total management.</div>`;
   wireTtm();
 }
 function wireTtm(){
   const root=document.getElementById('view-ttm');
-  root.querySelector('#ttmSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b&&b.dataset.scn){ ttmScenario=b.dataset.scn; renderTtm(); }});
+  root.querySelector('#ttmOutletSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b&&b.dataset.o){ ttmOutlet=b.dataset.o; renderTtm(); }});
   root.querySelectorAll('.grouprow').forEach(r=> r.addEventListener('click', ()=>{ const c=r.dataset.cat; fbTtmExpand[c]=!fbTtmExpand[c]; renderTtm(); }));
   root.querySelector('#ttmExpandAll').addEventListener('click', ()=>{ Object.keys(fbTtmExpand).forEach(k=>fbTtmExpand[k]=true); renderTtm(); });
   root.querySelector('#ttmCollapseAll').addEventListener('click', ()=>{ Object.keys(fbTtmExpand).forEach(k=>fbTtmExpand[k]=false); renderTtm(); });
-}
-function ttmBars(D){
-  const max=Math.max(...['lsd','hs','kamp','anth','comb'].map(k=>D[k].labor/D[k].rev));
-  return TTM_COLS.map(c=>{
-    const d=D[c.k], r=d.labor/d.rev;
-    return `<div class="barrow"><div class="bl">${c.label}</div>
-      <div class="track"><i style="width:${r/max*100}%"></i></div>
-      <div class="bv">${pct(r)}<span>${usd(d.labor)}</span></div></div>`;
-  }).join('');
 }
 
 /* ============================ ROUTING ============================ */
@@ -1633,7 +1647,7 @@ function show(view){
     {v:'fbsum',t:'All divisions — F&B management'},
     {v:'fbhourly',t:'All divisions — F&B hourly'},
     {v:'fbtotal',t:'All divisions — F&B total labor'},
-    {v:'ttm',t:'All divisions — TTM by outlet'},
+    {v:'ttm',t:'All divisions — Scenario Viewer'},
     {v:'div-fb',t:'Food & Beverage'},
     {v:'outlets',t:'  ↳ F&B outlet efficiency'},
     {v:'div-sales',t:'Sales'},
