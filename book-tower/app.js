@@ -1592,14 +1592,16 @@ function renderTtm(){
   const kpiCard=(k)=>{ const d=M[k][o], meta=TTM_SCENARIOS.find(s=>s.k===k); return `<div class="kpi"><div class="lab">${meta.label}</div><div class="val">${pct(d.labor/d.rev)}</div><div class="meta">${usd(d.labor)} labor &middot; on ${usdK(d.rev)}</div><div class="bar"><i style="width:${d.labor/d.rev*100*2}%"></i></div></div>`; };
   const oppMetrics=['mfoh','mboh','msales','foh','boh','ptb','bonus'];
   const grossOpp=oppMetrics.reduce((a,mt)=>{const b=benchDollars(M,o,mt);return a+(b!=null?Math.max(0,M.plan[o][mt]-b):0);},0);
+  const planPct=M.plan[o].labor/M.plan[o].rev, postPct=(M.plan[o].labor-grossOpp)/M.plan[o].rev;
   el.innerHTML=`
     <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>Scenario Viewer</b></div>
     <h1 class="pagetitle serif">Scenario Viewer<span class="sub">${oLabel} &middot; Trailing 12M vs Current 2026 vs Go-Forward</span></h1>
     <div class="alloc-toolbar"><span class="zlab" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Outlet</span>${sel}<div class="grow"></div></div>
     <div class="kpis">
       ${kpiCard('ttm')}${kpiCard('cy26')}${kpiCard('plan')}
-      <div class="kpi"><div class="lab">Benchmark opportunity</div><div class="val ${grossOpp>1000?'pos':''}">${usd(grossOpp)}</div>
-        <div class="meta">Go-Forward over benchmark &middot; ${pct(grossOpp/M.plan[o].rev)} of revenue</div></div>
+      <div class="kpi"><div class="lab">Labor % if benchmark hit</div><div class="val pos">${pct(postPct)}</div>
+        <div class="meta">captures ${usd(grossOpp)} &middot; ${((postPct-planPct)*100).toFixed(1)} pts vs Go-Forward ${pct(planPct)}</div>
+        <div class="bar"><i style="width:${postPct*100*2}%"></i></div></div>
     </div>
     <div class="block"><div class="head"><h3 class="serif">${oLabel} &middot; three scenarios side by side</h3>
       <span class="note">$ and % of revenue per scenario &middot; right column = $ over benchmark (savings opportunity) &middot; expand FOH / BOH for the role split</span></div>
