@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Book Tower — Management Cost Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="titlebar">
+    <div class="lights"><i></i><i></i><i></i></div>
+    <div class="name">Book Tower</div>
+    <div class="spacer"></div>
+  </div>
+
+  <div class="shell">
+    <!-- secondary nav -->
+    <nav class="nav">
+      <h6>Reports <span style="opacity:.6">&#8249;</span></h6>
+      <div class="eyebrow">Management Cost</div>
+      <div class="navitem active" data-view="overview"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="3" width="8" height="8" rx="1"/><rect x="13" y="3" width="8" height="5" rx="1"/><rect x="13" y="11" width="8" height="10" rx="1"/><rect x="3" y="13" width="8" height="8" rx="1"/></svg></span>Overview</div>
+      <div class="navitem" data-view="org"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="9" y="3" width="6" height="4" rx="1"/><rect x="3" y="17" width="6" height="4" rx="1"/><rect x="15" y="17" width="6" height="4" rx="1"/><path d="M12 7v5M6 17v-3h12v3"/></svg></span>Org &amp; cost map</div>
+      <div class="navitem" data-view="alloc"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="7" cy="17" r="2.2"/></svg></span>Allocation drivers</div>
+      <div class="eyebrow">F&amp;B Labor</div>
+      <div class="navitem sub" data-view="fbsum">F&amp;B Management</div>
+      <div class="navitem sub" data-view="fbhourly">F&amp;B Hourly</div>
+      <div class="navitem sub" data-view="fbtotal">F&amp;B Total Labor</div>
+      <div class="eyebrow">By division</div>
+      <div class="navitem sub" data-view="div-fb">Food &amp; Beverage</div>
+      <div class="navitem sub" data-view="div-sales">Sales</div>
+      <div class="navitem sub" data-view="div-roost">ROOST</div>
+      <div class="navitem sub" data-view="div-shared">Shared Services</div>
+      <div class="navitem sub" data-view="div-leadership">Executive Leadership</div>
+      <div class="eyebrow">F&amp;B detail</div>
+      <div class="navitem sub" data-view="outlets">Outlet efficiency</div>
+    </nav>
+
+    <!-- main -->
+    <main class="main">
+      <div class="toolbar">
+        <div class="selectwrap">
+          <select class="scope" id="scope"></select>
+        </div>
+        <div class="grow"></div>
+        <button class="iconbtn" title="Grid view"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
+        <button class="iconbtn" title="Refresh"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 5v6h-6"/></svg></button>
+      </div>
+
+      <div class="content">
+        <section class="view show" id="view-overview"></section>
+        <section class="view" id="view-org"></section>
+        <section class="view" id="view-alloc"></section>
+        <section class="view" id="view-fbsum"></section>
+        <section class="view" id="view-fbhourly"></section>
+        <section class="view" id="view-fbtotal"></section>
+        <section class="view" id="view-outlets"></section>
+        <section class="view" id="view-division"></section>
+      </div>
+    </main>
+  </div>
+
+<script src="app.js"></script>
+</body>
+</html>
