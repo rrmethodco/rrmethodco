@@ -1192,6 +1192,7 @@ const FB_BENCH_HOURLY_DETAIL = {
   },
 };
 const fbHourlyExpand = {foh:false, boh:false};
+const fbTotalExpand  = {foh:false, boh:false};
 // Any outlet supplies job-level detail for this category?
 function fbHourlyHasDetail(catKey){ return Object.keys(FB_HOURLY_DETAIL).some(k=>FB_HOURLY_DETAIL[k] && FB_HOURLY_DETAIL[k][catKey]); }
 // Union of role names across outlets with detail, in display order.
@@ -1268,9 +1269,22 @@ function fbBenchBlockTotal(){
     grand[k]=fohA[k]+bohA[k]+salesA[k]+ptbA[k]+bonusA[k];
     bF[k]=totFohBenchPct(k); bB[k]=totBohBenchPct(k); bS[k]=totSalesBenchPct(k); bP[k]=totPtbBenchPct(k); bN[k]=totBonusBenchPct(k); bT[k]=totTotalBenchPct(k);
   });
-  return `<tr class="benchsection"><td class="lab" colspan="${colspan}"><div class="notecap">Industry benchmarks &middot; total labor by venue type<span class="bnote">each cost line targeted as a share of revenue; Total = sum of the parts &middot; approximate, tune to market</span></div></td></tr>`
-    + fbBenchPairG({label:'FOH', chip:'foh', act:fohA, bench:bF})
-    + fbBenchPairG({label:'BOH', chip:'boh', act:bohA, bench:bB})
+  // When a category is expanded, break its benchmark into salaried-management
+  // (category-level) + per-hourly-role targets, which sum to the category total.
+  const catBenchTotal = (catKey, label, actMap, benchMap) => {
+    let h='';
+    if(fbTotalExpand[catKey]){
+      const salAct={},salBench={}; FB_KEYS.forEach(k=>{ salAct[k]=ct[catKey][k]; salBench[k]=FB_BENCH[k][catKey]||0; });
+      h += fbBenchPairG({label:'Salaried mgmt', chip:catKey, act:salAct, bench:salBench});
+      fbHourlyRoles(catKey).forEach(role=>{
+        h += fbBenchPairG({label:role, chip:null, act:fbHourlyRoleDollars(catKey,role), bench:fbHourlyRoleBenchPct(catKey,role)});
+      });
+    }
+    return h + fbBenchPairG({label, chip:catKey, act:actMap, bench:benchMap});
+  };
+  return `<tr class="benchsection"><td class="lab" colspan="${colspan}"><div class="notecap">Industry benchmarks &middot; total labor by venue type<span class="bnote">each cost line targeted as a share of revenue; Total = sum of the parts &middot; expand FOH / BOH for role-level targets &middot; approximate, tune to market</span></div></td></tr>`
+    + catBenchTotal('foh','FOH', fohA, bF)
+    + catBenchTotal('boh','BOH', bohA, bB)
     + fbBenchPairG({label:'Sales', chip:'sales', act:salesA, bench:bS})
     + `<tr class="benchsubnote"><td class="lab" colspan="${colspan}"><div class="notecap"><b>PT&amp;B</b> is benchmarked as ~24% of target wages (payroll-tax &amp; benefits load); <b>Bonus</b> as a share of revenue. The <b>Total labor</b> variance therefore equals the sum of the five component variances above and below.</div></td></tr>`
     + fbBenchPairG({label:'PT&amp;B', chip:null, act:ptbA, bench:bP})
@@ -1334,6 +1348,21 @@ function wireFbHourly(){
   root.querySelector('#fbhCollapseAll').addEventListener('click', ()=>{ Object.keys(fbHourlyExpand).forEach(k=>fbHourlyExpand[k]=false); renderFbHourly(); });
 }
 
+// Total-labor FOH/BOH group row → "Salaried management" + hourly job roles when expanded.
+function fbTotalGroupBlock(catKey, label, totalMap, ct){
+  const exp=fbTotalExpand[catKey];
+  let h=`<tr class="grouprow ${exp?'open':''}" data-cat="${catKey}">`
+      + `<td class="lab"><span class="chev">&#9656;</span><span class="catchip ${catKey}">${catKey.toUpperCase()}</span><span class="glab">${label} — salaried + hourly</span></td>`
+      + fbMapCells(totalMap)+`</tr>`;
+  if(exp){
+    const sal={}; FB_KEYS.forEach(k=>sal[k]=ct[catKey][k]);
+    h+=`<tr class="personrow"><td class="lab"><span class="pos">Salaried management</span><span class="pn">from F&amp;B Management</span></td>`+fbMapCells(sal)+`</tr>`;
+    fbHourlyRoles(catKey).forEach(role=>{
+      h+=`<tr class="personrow"><td class="lab"><span class="pos">${role}</span><span class="pn">hourly</span></td>`+fbMapCells(fbHourlyRoleDollars(catKey,role))+`</tr>`;
+    });
+  }
+  return h;
+}
 function renderFbTotal(){
   const el=document.getElementById('view-fbtotal');
   const ct=categoryTotals(), fohH=fbHourlyMap('foh'), bohH=fbHourlyMap('boh');
@@ -1341,8 +1370,8 @@ function renderFbTotal(){
   FB_KEYS.forEach(k=>{ fohT[k]=ct.foh[k]+fohH[k]; bohT[k]=ct.boh[k]+bohH[k]; salesT[k]=ct.sales[k]; mgmtT[k]=ct.foh[k]+ct.boh[k]+ct.sales[k]; hourlyT[k]=fohH[k]+bohH[k]; ptbT[k]=FB_PTB[k]; bonusT[k]=FB_BONUS[k]; grand[k]=mgmtT[k]+hourlyT[k]+ptbT[k]+bonusT[k]; });
   const colspan=1+FB_COLS.length*2;
   let body=fbRevRow();
-  body+=`<tr class="catrow"><td class="lab"><span class="catchip foh">FOH</span><span class="glab">salaried + hourly</span></td>`+fbMapCells(fohT)+`</tr>`;
-  body+=`<tr class="catrow"><td class="lab"><span class="catchip boh">BOH</span><span class="glab">salaried + hourly</span></td>`+fbMapCells(bohT)+`</tr>`;
+  body+=fbTotalGroupBlock('foh','FOH', fohT, ct);
+  body+=fbTotalGroupBlock('boh','BOH', bohT, ct);
   body+=`<tr class="catrow"><td class="lab"><span class="catchip sales">Sales</span><span class="glab">salaried</span></td>`+fbMapCells(salesT)+`</tr>`;
   body+=`<tr class="catrow"><td class="lab">PT&amp;B<span class="glab">payroll tax &amp; benefits</span></td>`+fbMapCells(ptbT)+`</tr>`;
   body+=`<tr class="catrow"><td class="lab">Bonus</td>`+fbMapCells(bonusT)+`</tr>`;
@@ -1355,11 +1384,24 @@ function renderFbTotal(){
   body+=`<tr class="memorow"><td class="lab">Bonus</td>`+fbMapCells(bonusT)+`</tr>`;
   el.innerHTML=`
     <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> F&amp;B Labor <span>&rsaquo;</span> <b>F&amp;B Total Labor</b></div>
-    <h1 class="pagetitle serif">Book Tower — F&amp;B Total Labor<span class="sub">Salaried management + hourly + PT&amp;B + Bonus, by outlet</span></h1>
-    <div class="fbsum-scroll"><table class="fbsum">${fbHeadHtml('Category')}<tbody>${body}</tbody></table></div>
+    <h1 class="pagetitle serif">Book Tower — F&amp;B Total Labor<span class="sub">Salaried management + hourly + PT&amp;B + Bonus, by outlet &middot; expand FOH / BOH for the role split</span></h1>
+    <div class="fbsum-toolbar">
+      <div class="expandctl">
+        <button class="btn" id="fbtExpandAll">Expand all</button>
+        <button class="btn" id="fbtCollapseAll">Collapse all</button>
+      </div>
+    </div>
+    <div class="fbsum-scroll"><table class="fbsum">${fbHeadHtml('Category / role')}<tbody>${body}</tbody></table></div>
     <div id="fbChartHostTotal"></div>
-    <div class="foot"><b>Total labor</b> = salaried management (FOH + BOH + Sales, from F&amp;B Management) + hourly wages (FOH + BOH, from F&amp;B Hourly) + PT&amp;B + Bonus. The composition rows restate the same total by cost type.</div>`;
+    <div class="foot"><b>Total labor</b> = salaried management (FOH + BOH + Sales, from F&amp;B Management) + hourly wages (FOH + BOH, from F&amp;B Hourly) + PT&amp;B + Bonus. Expand FOH / BOH to split each into its salaried-management total and hourly job roles; the benchmark expands in step. The composition rows restate the same total by cost type.</div>`;
+  wireFbTotal();
   buildChart(fbChartTotal);
+}
+function wireFbTotal(){
+  const root=document.getElementById('view-fbtotal');
+  root.querySelectorAll('.grouprow').forEach(r=> r.addEventListener('click', ()=>{ const c=r.dataset.cat; fbTotalExpand[c]=!fbTotalExpand[c]; renderFbTotal(); }));
+  root.querySelector('#fbtExpandAll').addEventListener('click', ()=>{ Object.keys(fbTotalExpand).forEach(k=>fbTotalExpand[k]=true); renderFbTotal(); });
+  root.querySelector('#fbtCollapseAll').addEventListener('click', ()=>{ Object.keys(fbTotalExpand).forEach(k=>fbTotalExpand[k]=false); renderFbTotal(); });
 }
 
 /* ============================ ROUTING ============================ */
