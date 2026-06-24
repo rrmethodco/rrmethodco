@@ -1514,7 +1514,7 @@ function buildTtmScenario(scn){
   return D;
 }
 // Benchmark % of revenue for a labor line (single outlet).
-function benchPctOf(o, metric){
+function lineBenchPct(o, metric){
   if(metric==='mfoh') return FB_BENCH[o].foh||0;
   if(metric==='mboh') return FB_BENCH[o].boh||0;
   if(metric==='msales') return FB_BENCH[o].sales||0;
@@ -1528,7 +1528,7 @@ function benchPctOf(o, metric){
 // Benchmark $ at the Go-Forward (plan) revenue; comb = sum across outlets.
 function benchDollars(M, o, metric){
   if(o==='comb') return ['lsd','hs','kamp','anth'].reduce((a,k)=>a+(benchDollars(M,k,metric)||0),0);
-  const p=benchPctOf(o,metric); return p==null?null:p/100*M.plan[o].rev;
+  const p=lineBenchPct(o,metric); return p==null?null:p/100*M.plan[o].rev;
 }
 function benchRoleDollars(M, o, cat, role){
   if(o==='comb') return ['lsd','hs','kamp','anth'].reduce((a,k)=>a+benchRoleDollars(M,k,cat,role),0);
