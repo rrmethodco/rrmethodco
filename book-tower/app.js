@@ -1136,12 +1136,85 @@ function wireFbSum(){
 /* ==================== F&B HOURLY + TOTAL LABOR ==================== */
 // Actual hourly (non-salaried) labor $ per outlet — FOH & BOH from provided figures.
 const FB_HOURLY = {
-  lsd:  {foh: 382826, boh: 843646},
+  lsd:  {foh: 382825, boh: 843646},  // FOH = sum of role detail (P&L total row rounds to 382,826)
   hs:   {foh: 230953, boh: 492828},
   kamp: {foh: 251159, boh: 123500},
   anth: {foh: 380714, boh: 214594},
 };
 const fbHourlyMap = key => ({lsd:FB_HOURLY.lsd[key], hs:FB_HOURLY.hs[key], kamp:FB_HOURLY.kamp[key], anth:FB_HOURLY.anth[key]});
+
+// Job-level hourly detail by outlet (2026, $, from each outlet's P&L detail).
+// Outlets present here get an expandable FOH/BOH breakdown; any outlet absent
+// falls back to the FB_HOURLY category totals.
+const FB_HOURLY_DETAIL = {
+  lsd: {
+    foh: {'Bartenders':107409, 'Support':14658, 'Baristas':47223, 'Host':77984, 'Servers':127153, 'Training':8398},
+    boh: {'Line Cooks':481563, 'Prep Cooks':143651, 'Pastry Cooks':75053, 'Dishwashers':143379},
+  },
+  hs: {
+    foh: {'Bartenders':82529, 'Support':1948, 'Baristas':0, 'Host':58686, 'Servers':77047, 'Training':10743},
+    boh: {'Line Cooks':342603, 'Prep Cooks':65727, 'Pastry Cooks':34912, 'Dishwashers':49586},
+  },
+  kamp: {
+    foh: {'Bartenders':61970, 'Support':6160, 'Baristas':0, 'Host':133742, 'Servers':35536, 'Training':13751},
+    boh: {'Line Cooks':79964, 'Prep Cooks':0, 'Pastry Cooks':30335, 'Dishwashers':13201},
+  },
+  anth: {
+    foh: {'Bartenders':49194, 'Support':0, 'Baristas':0, 'Host':829, 'Servers':330691, 'Training':0},
+    boh: {'Line Cooks':115370, 'Prep Cooks':0, 'Pastry Cooks':39352, 'Dishwashers':59872},
+  },
+};
+// Stable display order for roles; any extra role found in detail is appended.
+const FB_HOURLY_ROLE_ORDER = {
+  foh: ['Bartenders','Support','Baristas','Host','Servers','Training'],
+  boh: ['Line Cooks','Prep Cooks','Pastry Cooks','Dishwashers'],
+};
+// Job-level hourly benchmarks (% of outlet revenue). Per category these sum to
+// FB_BENCH_HOURLY (the FOH/BOH venue-type targets), so the collapsed category
+// benchmark and the expanded per-role benchmarks reconcile. Each role's share
+// tracks that outlet's staffing mix. Directional — tune to market.
+const FB_BENCH_HOURLY_DETAIL = {
+  lsd: {
+    foh: {'Bartenders':2.0, 'Support':0.3, 'Baristas':0.9, 'Host':1.4, 'Servers':2.2, 'Training':0.2},
+    boh: {'Line Cooks':6.9, 'Prep Cooks':2.0, 'Pastry Cooks':1.1, 'Dishwashers':2.0},
+  },
+  hs: {
+    foh: {'Bartenders':2.1, 'Support':0.1, 'Baristas':0.0, 'Host':1.5, 'Servers':2.0, 'Training':0.3},
+    boh: {'Line Cooks':7.6, 'Prep Cooks':1.5, 'Pastry Cooks':0.8, 'Dishwashers':1.1},
+  },
+  kamp: {
+    foh: {'Bartenders':2.6, 'Support':0.3, 'Baristas':0.0, 'Host':5.5, 'Servers':1.5, 'Training':0.6},
+    boh: {'Line Cooks':3.9, 'Prep Cooks':0.0, 'Pastry Cooks':1.5, 'Dishwashers':0.6},
+  },
+  anth: {
+    foh: {'Bartenders':1.0, 'Support':0.0, 'Baristas':0.0, 'Host':0.0, 'Servers':7.0, 'Training':0.0},
+    boh: {'Line Cooks':3.2, 'Prep Cooks':0.0, 'Pastry Cooks':1.1, 'Dishwashers':1.7},
+  },
+};
+const fbHourlyExpand = {foh:false, boh:false};
+// Any outlet supplies job-level detail for this category?
+function fbHourlyHasDetail(catKey){ return Object.keys(FB_HOURLY_DETAIL).some(k=>FB_HOURLY_DETAIL[k] && FB_HOURLY_DETAIL[k][catKey]); }
+// Union of role names across outlets with detail, in display order.
+function fbHourlyRoles(catKey){
+  const seen=new Set();
+  Object.keys(FB_HOURLY_DETAIL).forEach(k=>{ const d=FB_HOURLY_DETAIL[k] && FB_HOURLY_DETAIL[k][catKey]; if(d) Object.keys(d).forEach(r=>seen.add(r)); });
+  const ordered=(FB_HOURLY_ROLE_ORDER[catKey]||[]).filter(r=>seen.has(r));
+  seen.forEach(r=>{ if(!ordered.includes(r)) ordered.push(r); });
+  return ordered;
+}
+// One role's $ across outlets (0 where an outlet has no detail yet).
+function fbHourlyRoleDollars(catKey, role){
+  const cell={lsd:0,hs:0,kamp:0,anth:0};
+  FB_KEYS.forEach(k=>{ const d=FB_HOURLY_DETAIL[k] && FB_HOURLY_DETAIL[k][catKey]; if(d && d[role]!=null) cell[k]=d[role]; });
+  return cell;
+}
+// One role's benchmark % across outlets.
+function fbHourlyRoleBenchPct(catKey, role){
+  const out={lsd:0,hs:0,kamp:0,anth:0};
+  FB_KEYS.forEach(k=>{ const d=FB_BENCH_HOURLY_DETAIL[k] && FB_BENCH_HOURLY_DETAIL[k][catKey]; if(d && d[role]!=null) out[k]=d[role]; });
+  return out;
+}
+
 // Payroll tax & benefits and Bonus by outlet (from provided figures).
 const FB_PTB   = {lsd:498686, hs:268070, kamp:155000, anth:228445};
 const FB_BONUS = {lsd:38481,  hs:20952,  kamp:12459,  anth:129416};
@@ -1170,9 +1243,20 @@ function fbBenchBlockHourly(){
   const colspan=1+FB_COLS.length*2;
   const foh=fbHourlyMap('foh'), boh=fbHourlyMap('boh'), comb={}; FB_KEYS.forEach(k=>comb[k]=foh[k]+boh[k]);
   const bF={},bB={},bC={}; FB_KEYS.forEach(k=>{ bF[k]=FB_BENCH_HOURLY[k].foh; bB[k]=FB_BENCH_HOURLY[k].boh; bC[k]=FB_BENCH_HOURLY[k].foh+FB_BENCH_HOURLY[k].boh; });
-  return `<tr class="benchsection"><td class="lab" colspan="${colspan}"><div class="notecap">Industry benchmarks &middot; hourly labor by venue type<span class="bnote">FOH &amp; BOH hourly targets as a share of each outlet's revenue &middot; approximate, tune to market</span></div></td></tr>`
-    + fbBenchPairG({label:'FOH', chip:'foh', act:foh, bench:bF})
-    + fbBenchPairG({label:'BOH', chip:'boh', act:boh, bench:bB})
+  // When a category is expanded, show each role's benchmark/variance (rolls up
+  // to the category target), then the category total; otherwise just the total.
+  const catBench = (catKey, label, actMap, benchMap) => {
+    let h='';
+    if(fbHourlyExpand[catKey] && fbHourlyHasDetail(catKey)){
+      fbHourlyRoles(catKey).forEach(role=>{
+        h += fbBenchPairG({label:role, chip:null, act:fbHourlyRoleDollars(catKey,role), bench:fbHourlyRoleBenchPct(catKey,role)});
+      });
+    }
+    return h + fbBenchPairG({label, chip:catKey, act:actMap, bench:benchMap});
+  };
+  return `<tr class="benchsection"><td class="lab" colspan="${colspan}"><div class="notecap">Industry benchmarks &middot; hourly labor by venue type<span class="bnote">FOH &amp; BOH hourly targets as a share of each outlet's revenue &middot; expand a category for role-level targets &middot; approximate, tune to market</span></div></td></tr>`
+    + catBench('foh','FOH', foh, bF)
+    + catBench('boh','BOH', boh, bB)
     + fbBenchPairG({label:'FOH + BOH', chip:'foh', extra:'combbench', act:comb, bench:bC});
 }
 function fbBenchBlockTotal(){
@@ -1203,22 +1287,51 @@ function fbMapCells(map){ const cell={lsd:map.lsd||0,hs:map.hs||0,kamp:map.kamp|
 function fbRevRow(){ return `<tr class="revrow"><td class="lab">Assumed revenue<span class="bnote">basis for % of revenue</span></td>`+FB_COLS.map(c=>{ const x=c.cls?' '+c.cls:''; return `<td class="d${x}">${usd(revOf(c.k))}</td><td class="p${x}">—</td>`; }).join('')+`</tr>`; }
 const FB_KEYS=['lsd','hs','kamp','anth'];
 
+// One collapsible category (FOH/BOH) group row + its job-role rows when expanded.
+function fbHourlyGroupBlock(catKey, label){
+  const map=fbHourlyMap(catKey);              // official category totals (all outlets)
+  const hasDetail=fbHourlyHasDetail(catKey);
+  const exp=fbHourlyExpand[catKey] && hasDetail;
+  const chev=`<span class="chev${hasDetail?'':' hidden'}">&#9656;</span>`;
+  let h=`<tr class="grouprow ${exp?'open':''}" data-cat="${catKey}">`
+      + `<td class="lab">${chev}<span class="catchip ${catKey}">${catKey.toUpperCase()}</span><span class="glab">${label} — hourly</span></td>`
+      + fbMapCells(map) + `</tr>`;
+  if(exp){
+    fbHourlyRoles(catKey).forEach(role=>{
+      h+=`<tr class="personrow"><td class="lab"><span class="pos">${role}</span></td>`+fbMapCells(fbHourlyRoleDollars(catKey,role))+`</tr>`;
+    });
+  }
+  return h;
+}
 function renderFbHourly(){
   const el=document.getElementById('view-fbhourly');
   const foh=fbHourlyMap('foh'), boh=fbHourlyMap('boh'), tot={}; FB_KEYS.forEach(k=>tot[k]=foh[k]+boh[k]);
   let body=fbRevRow();
-  body+=`<tr class="catrow"><td class="lab"><span class="catchip foh">FOH</span><span class="glab">front of house — hourly</span></td>`+fbMapCells(foh)+`</tr>`;
-  body+=`<tr class="catrow"><td class="lab"><span class="catchip boh">BOH</span><span class="glab">back of house — hourly</span></td>`+fbMapCells(boh)+`</tr>`;
+  body+=fbHourlyGroupBlock('foh','front of house');
+  body+=fbHourlyGroupBlock('boh','back of house');
   body+=`<tr class="grand"><td class="lab">Total F&amp;B hourly<span class="bnote">FOH + BOH hourly</span></td>`+fbMapCells(tot)+`</tr>`;
   body+=fbBenchBlockHourly();
   el.innerHTML=`
     <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> F&amp;B Labor <span>&rsaquo;</span> <b>F&amp;B Hourly</b></div>
-    <h1 class="pagetitle serif">Book Tower — F&amp;B Hourly<span class="sub">Hourly (non-salaried) labor by outlet</span></h1>
-    <div class="ph-banner"><b>FOH &amp; BOH hourly are actuals.</b> Your source also lists <b>PT&amp;B</b> (payroll tax &amp; benefits, $1,150,201) and <b>Bonus</b> ($201,308) — say the word and I'll add them here and roll them into Total Labor.</div>
-    <div class="fbsum-scroll"><table class="fbsum">${fbHeadHtml('Category')}<tbody>${body}</tbody></table></div>
+    <h1 class="pagetitle serif">Book Tower — F&amp;B Hourly<span class="sub">Hourly (non-salaried) labor by outlet &middot; expand FOH / BOH for job-level detail</span></h1>
+    <div class="ph-banner"><b>FOH &amp; BOH hourly are actuals</b>, now with job-level detail for all four outlets. Click a category row (or use Expand all) to see the role split; collapse back to FOH / BOH totals.</div>
+    <div class="fbsum-toolbar">
+      <div class="expandctl">
+        <button class="btn" id="fbhExpandAll">Expand all</button>
+        <button class="btn" id="fbhCollapseAll">Collapse all</button>
+      </div>
+    </div>
+    <div class="fbsum-scroll"><table class="fbsum">${fbHeadHtml('Category / role')}<tbody>${body}</tbody></table></div>
     <div id="fbChartHostHourly"></div>
-    <div class="foot"><b>Hourly labor</b> covers non-salaried staff — servers, bartenders, hosts, bussers (FOH) and line cooks, prep cooks, dishwashers (BOH). FOH &amp; BOH figures are actuals; once we have the position-level split we can make each category expandable like the management view.</div>`;
+    <div class="foot"><b>Hourly labor</b> covers non-salaried staff — bartenders, baristas, hosts, servers, support (FOH) and line cooks, prep cooks, pastry cooks, dishwashers (BOH). Expand a category for the job-level split; collapse to FOH / BOH totals. <b>Benchmarks</b> expand in step: per-role targets sum to each outlet's FOH / BOH venue-type benchmark, with each role's share tracking that outlet's staffing mix. Directional — tune to market.</div>`;
+  wireFbHourly();
   buildChart(fbChartHourly);
+}
+function wireFbHourly(){
+  const root=document.getElementById('view-fbhourly');
+  root.querySelectorAll('.grouprow').forEach(r=> r.addEventListener('click', ()=>{ const c=r.dataset.cat; if(fbHourlyHasDetail(c)){ fbHourlyExpand[c]=!fbHourlyExpand[c]; renderFbHourly(); } }));
+  root.querySelector('#fbhExpandAll').addEventListener('click', ()=>{ Object.keys(fbHourlyExpand).forEach(k=>fbHourlyExpand[k]=true); renderFbHourly(); });
+  root.querySelector('#fbhCollapseAll').addEventListener('click', ()=>{ Object.keys(fbHourlyExpand).forEach(k=>fbHourlyExpand[k]=false); renderFbHourly(); });
 }
 
 function renderFbTotal(){
