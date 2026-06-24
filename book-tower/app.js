@@ -30,7 +30,7 @@ const DIVISIONS = [
         {n:'TBD', r:'Banquet Manager', s:90000, open:true},
         {n:'Joseph McMann', r:'Asst General Manager', s:75000},
         {n:'Mohammed', r:'Executive Chef', s:88000},
-        {n:'Shiana', r:'Restaurant Manager', s:65000},
+        {n:'Shiana', r:'FOH Manager', s:65000},
         {n:'Dylan Clement', r:'Sous Chef', s:59200},
       ]},
       { name:'Pastry', revenue:null, positions:[
@@ -41,15 +41,15 @@ const DIVISIONS = [
         {n:'OPEN', r:'General Manager', s:95000, open:true},
         {n:'Jono Tacconilli', r:'Asst General Manager', s:88000},
         {n:'Nyle Flynn', r:'Executive Chef', s:100000},
-        {n:'Dominic Fosmore', r:'Restaurant Manager', s:62500},
-        {n:'Briana Swayze', r:'Restaurant Manager', s:67500},
+        {n:'Dominic Fosmore', r:'FOH Manager', s:62500},
+        {n:'Briana Swayze', r:'FOH Manager', s:67500},
         {n:'Dylan Trippe Edwards', r:'Sous Chef', s:68000},
         {n:'Mitchell Driesenga', r:'Sous Chef', s:65000},
         {n:'Nino Toigo', r:'Sous Chef', s:64000},
       ]},
       { name:'Hiroki-San', revenue:FB_REVENUE['Hiroki-San'].rev, positions:[
         {n:'Naomi Scott', r:'General Manager', s:88000},
-        {n:'Petr Balcarovsky', r:'Restaurant Manager', s:70000},
+        {n:'Petr Balcarovsky', r:'FOH Manager', s:70000},
         {n:'Christian Vasquez', r:'Executive Chef', s:95000},
         {n:'Louis Placido', r:'Sushi Chef', s:75000},
         {n:'Aiden Toby', r:'Sous Chef', s:64000},
@@ -402,14 +402,14 @@ const ORG = {
       { n:'Patrick Jobst', r:'Director of Beverage', s:125000, k:[
         { lab:'Kampers / Anthology', n:'Stephanie Jordan', r:'General Manager', s:100000, k:[
           { n:'TBD', r:'Banquet Manager', s:90000, open:true },
-          { n:'Joseph McMann', r:'Asst GM', s:75000, k:[ {n:'Shiana', r:'Restaurant Manager', s:65000} ]},
+          { n:'Joseph McMann', r:'Asst GM', s:75000, k:[ {n:'Shiana', r:'FOH Manager', s:65000} ]},
           { n:'Mohammed', r:'Executive Chef', s:88000, k:[ {n:'Dylan Clement', r:'Sous Chef', s:59200} ]},
         ]},
         { lab:'Pastry', n:'Hailey Enszer', r:'EC – Pastry', s:99000, k:[ {n:'Neal Murakami', r:'Sous – Pastry', s:57200} ]},
         { lab:'Le Supreme / Bar Rotunda', n:'OPEN', r:'General Manager', s:95000, open:true, k:[
           { n:'Jono Tacconilli', r:'Asst GM', s:88000, k:[
-            {n:'Dominic Fosmore', r:'Restaurant Manager', s:62500},
-            {n:'Briana Swayze', r:'Restaurant Manager', s:67500},
+            {n:'Dominic Fosmore', r:'FOH Manager', s:62500},
+            {n:'Briana Swayze', r:'FOH Manager', s:67500},
           ]},
           { n:'Nyle Flynn', r:'Executive Chef', s:100000, k:[
             {n:'Dylan Trippe Edwards', r:'Sous Chef', s:68000},
@@ -418,7 +418,7 @@ const ORG = {
           ]},
         ]},
         { lab:'Hiroki-San', n:'Naomi Scott', r:'General Manager', s:88000, k:[
-          { n:'Petr Balcarovsky', r:'Restaurant Manager', s:70000 },
+          { n:'Petr Balcarovsky', r:'FOH Manager', s:70000 },
           { n:'Christian Vasquez', r:'Executive Chef', s:95000, k:[
             {n:'Louis Placido', r:'Sushi Chef', s:75000},
             {n:'Aiden Toby', r:'Sous Chef', s:64000},
@@ -526,23 +526,23 @@ const DEFAULT_PEOPLE = [
   {id:'nyle',     n:'Nyle Flynn',         home:'F&B Leadership', role:'Culinary Director',     cat:'BOH', salary:145000, a:{roost:0,lsd:55,hs:5,kamp:10,anth:30}},
   {id:'tbdgm',    n:'TBD GM',             home:'Le Supreme',             role:'General Manager', open:true, cat:'FOH', salary:90000, a:{roost:0,lsd:100,hs:0,kamp:0,anth:0}},
   {id:'jono',     n:'Jono Tacconilli',    home:'Le Supreme',             role:'Assistant GM',          cat:'FOH', salary:88000,  a:{roost:0,lsd:100,hs:0,kamp:0,anth:0}},
-  {id:'fosmore',  n:'Dominic Fosmore',    home:'Le Supreme',             role:'Rest Manager',          cat:'FOH', salary:62500,  a:{roost:0,lsd:100,hs:0,kamp:0,anth:0}},
-  {id:'swayze',   n:'Briana Swayze',      home:'Le Supreme',             role:'Rest Manager',          cat:'FOH', salary:67500,  a:{roost:0,lsd:100,hs:0,kamp:0,anth:0}},
+  {id:'fosmore',  n:'Dominic Fosmore',    home:'Le Supreme',             role:'FOH Manager',          cat:'FOH', salary:62500,  a:{roost:0,lsd:100,hs:0,kamp:0,anth:0}},
+  {id:'swayze',   n:'Briana Swayze',      home:'Le Supreme',             role:'FOH Manager',          cat:'FOH', salary:67500,  a:{roost:0,lsd:100,hs:0,kamp:0,anth:0}},
   {id:'dedwards', n:'Dylan Edwards',      home:'Le Supreme',             role:'Sous Chef',             cat:'BOH', salary:68000,  a:{roost:0,lsd:100,hs:0,kamp:0,anth:0}},
   {id:'mitchell', n:'Mitchell Drisenga',  home:'Le Supreme',             role:'Sous Chef',             cat:'BOH', salary:65000,  a:{roost:0,lsd:100,hs:0,kamp:0,anth:0}},
   {id:'nini',     n:'Nini Toigo',         home:'Le Supreme',             role:'Sous Chef',             cat:'BOH', salary:64000,  a:{roost:0,lsd:100,hs:0,kamp:0,anth:0}},
   {id:'hailey',   n:'Hailey Enszer',      home:'Pastry',         role:'Pastry Chef',           cat:'BOH', salary:99000,  a:{roost:0,lsd:65,hs:5,kamp:5,anth:25}},
   {id:'neal',     n:'Neal Murakami',      home:'Pastry',         role:'Pastry Sous',           cat:'BOH', salary:57200,  a:{roost:0,lsd:65,hs:5,kamp:5,anth:25}},
   {id:'naomi',    n:'Naomi Scott',        home:'Hiroki-San',             role:'General Manager',       cat:'FOH', salary:88000,  a:{roost:0,lsd:0,hs:100,kamp:0,anth:0}},
-  {id:'petr',     n:'Petr Balcarovsky',   home:'Hiroki-San',             role:'Rest Manager',          cat:'FOH', salary:70000,  a:{roost:0,lsd:0,hs:100,kamp:0,anth:0}},
+  {id:'petr',     n:'Petr Balcarovsky',   home:'Hiroki-San',             role:'FOH Manager',          cat:'FOH', salary:70000,  a:{roost:0,lsd:0,hs:100,kamp:0,anth:0}},
   {id:'christian',n:'Christian Vasquez',  home:'Hiroki-San',             role:'Exec Chef',             cat:'BOH', salary:95000,  a:{roost:0,lsd:0,hs:100,kamp:0,anth:0}},
   {id:'louis',    n:'Louis Placido',      home:'Hiroki-San',             role:'Sous Chef',             cat:'BOH', salary:75000,  a:{roost:0,lsd:0,hs:100,kamp:0,anth:0}},
   {id:'aiden',    n:'Aiden Toby',         home:'Hiroki-San',             role:'Sous Chef',             cat:'BOH', salary:64000,  a:{roost:0,lsd:0,hs:100,kamp:0,anth:0}},
   {id:'stephani', n:'Stephani Jordan',    home:'Kamp/Anth',      role:'General Manager',       cat:'FOH', salary:100000, a:{roost:0,lsd:0,hs:0,kamp:50,anth:50}},
   {id:'mcmann',   n:'Joseph McMann',      home:'Kamp/Anth',      role:'Assistant GM',          cat:'FOH', salary:75000,  a:{roost:0,lsd:10,hs:10,kamp:70,anth:10}},
   {id:'mohamad',  n:'Mohamad',            home:'Kamp/Anth',      role:'CDC',                   cat:'BOH', salary:88000,  a:{roost:0,lsd:0,hs:0,kamp:50,anth:50}},
-  {id:'tbdbanq',  n:'TBD Banquet',        home:'Kamp/Anth',      role:'Rest Manager', open:true, cat:'FOH', salary:80000,  a:{roost:0,lsd:0,hs:0,kamp:0,anth:100}},
-  {id:'shina',    n:'Shina',              home:'Kamp/Anth',      role:'Rest Manager',          cat:'FOH', salary:65000,  a:{roost:0,lsd:10,hs:10,kamp:70,anth:10}},
+  {id:'tbdbanq',  n:'TBD Banquet',        home:'Kamp/Anth',      role:'FOH Manager', open:true, cat:'FOH', salary:80000,  a:{roost:0,lsd:0,hs:0,kamp:0,anth:100}},
+  {id:'shina',    n:'Shina',              home:'Kamp/Anth',      role:'FOH Manager',          cat:'FOH', salary:65000,  a:{roost:0,lsd:10,hs:10,kamp:70,anth:10}},
   {id:'dclement', n:'Dylan Clement',      home:'Kamp/Anth',      role:'Sous Chef',             cat:'BOH', salary:59200,  a:{roost:0,lsd:0,hs:0,kamp:50,anth:50}},
   {id:'tamika',   n:'Tamika Nixon',       home:'Sales - Rooms',  role:'Senior Sales - Corp',   cat:'Sales', salary:95000,  a:{roost:100,lsd:0,hs:0,kamp:0,anth:0}},
   {id:'yoorim',   n:'YooRim Kim',         home:'Sales - Rooms',  role:'Group Sales Mgr',       cat:'Sales', salary:75000,  a:{roost:100,lsd:0,hs:0,kamp:0,anth:0}},
@@ -1463,7 +1463,7 @@ const SCN_COLS = [
   {k:'ttm',  label:'Trailing 12M'},
   {k:'cy26', label:'Current 2026'},
   {k:'plan', label:'Go-Forward'},
-  {k:'delta',label:'Δ Go-Fwd vs 2026', cls:'grand', delta:true},
+  {k:'bmk',  label:'Benchmark opportunity', cls:'grand', delta:true},
 ];
 const TTM_OUTLETS = [
   {k:'comb',label:'Combined'},{k:'lsd',label:'Le Supreme'},{k:'hs',label:'Hiroki-San'},
@@ -1479,12 +1479,14 @@ function buildTtmScenario(scn){
   ['lsd','hs','kamp','anth'].forEach(k=>{
     let rev,mtot,mfoh,mboh,msales,rolesF={},rolesB={},ptb,bonus;
     if(scn==='plan'){
-      // Go-Forward: management = mapped roster; hourly/PT&B/Bonus = benchmark % × revenue
+      // Go-Forward: management = mapped roster (fixed $). Hourly / PT&B / Bonus hold the
+      // CURRENT-2026 share of revenue and flex with the (editable) go-forward revenue.
       rev=revOf(k);
       mfoh=ct.foh[k]; mboh=ct.boh[k]; msales=ct.sales[k]; mtot=mfoh+mboh+msales;
-      FB_HOURLY_ROLE_ORDER.foh.forEach(r=> rolesF[r]=(FB_BENCH_HOURLY_DETAIL[k].foh[r]||0)/100*rev);
-      FB_HOURLY_ROLE_ORDER.boh.forEach(r=> rolesB[r]=(FB_BENCH_HOURLY_DETAIL[k].boh[r]||0)/100*rev);
-      ptb=totPtbBenchPct(k)/100*rev; bonus=totBonusBenchPct(k)/100*rev;
+      const sc=rev/CY2026[k].rev;     // scale 2026 actual $ to the go-forward revenue
+      FB_HOURLY_ROLE_ORDER.foh.forEach(r=> rolesF[r]=(FB_HOURLY_DETAIL[k].foh[r]||0)*sc);
+      FB_HOURLY_ROLE_ORDER.boh.forEach(r=> rolesB[r]=(FB_HOURLY_DETAIL[k].boh[r]||0)*sc);
+      ptb=FB_PTB[k]*sc; bonus=FB_BONUS[k]*sc;
     } else {
       // TTM / Current-2026: from P&L. BOH = actual P&L BOH mgmt; Sales = mapped sales
       // extracted; FOH = remainder (FOH + Operations + Corporate, net of sales).
@@ -1511,18 +1513,39 @@ function buildTtmScenario(scn){
   Object.keys(D).forEach(k=>{ D[k].labor=D[k].mgmt+D[k].foh+D[k].boh+D[k].ptb+D[k].bonus; });
   return D;
 }
-// Cells for one metric across the scenario columns (+ Go-Forward vs 2026 delta),
-// all for the selected outlet `o`. M = {ttm,cy26,plan} models.
+// Benchmark % of revenue for a labor line (single outlet).
+function benchPctOf(o, metric){
+  if(metric==='mfoh') return FB_BENCH[o].foh||0;
+  if(metric==='mboh') return FB_BENCH[o].boh||0;
+  if(metric==='msales') return FB_BENCH[o].sales||0;
+  if(metric==='foh') return FB_BENCH_HOURLY[o].foh;
+  if(metric==='boh') return FB_BENCH_HOURLY[o].boh;
+  if(metric==='ptb') return totPtbBenchPct(o);
+  if(metric==='bonus') return totBonusBenchPct(o);
+  if(metric==='labor') return totTotalBenchPct(o);
+  return null;
+}
+// Benchmark $ at the Go-Forward (plan) revenue; comb = sum across outlets.
+function benchDollars(M, o, metric){
+  if(o==='comb') return ['lsd','hs','kamp','anth'].reduce((a,k)=>a+(benchDollars(M,k,metric)||0),0);
+  const p=benchPctOf(o,metric); return p==null?null:p/100*M.plan[o].rev;
+}
+function benchRoleDollars(M, o, cat, role){
+  if(o==='comb') return ['lsd','hs','kamp','anth'].reduce((a,k)=>a+benchRoleDollars(M,k,cat,role),0);
+  return (FB_BENCH_HOURLY_DETAIL[o][cat][role]||0)/100*M.plan[o].rev;
+}
+// Opportunity = Go-Forward $ − benchmark $ (positive = above benchmark = savings).
+function oppCell(M, o, x, gf, bm){
+  const rev=M.plan[o].rev, opp=(gf==null||bm==null)?null:gf-bm;
+  const save = opp!=null && opp>1;
+  return `<td class="d${x} ${save?'under':''}">${save?usd(opp):'—'}</td><td class="p${x}">${bm==null?'—':'bmk '+(rev?pct(bm/rev):'—')}</td>`;
+}
+// Cells for one metric across the scenario columns + benchmark-opportunity column,
+// for the selected outlet `o`. M = {ttm,cy26,plan} models.
 function scnCells(M, o, metric, isRev){
   return SCN_COLS.map(c=>{
     const x=c.cls?' '+c.cls:'';
-    if(c.delta){
-      const p=M.plan[o], q=M.cy26[o];
-      const pv=isRev?p.rev:(p[metric]||0), qv=isRev?q.rev:(q[metric]||0), dv=pv-qv;
-      const cls = dv>0?'over':dv<0?'under':'';
-      const pp=(isRev||!p.rev||!q.rev)?null:((pv/p.rev-qv/q.rev)*100);
-      return `<td class="d${x} ${cls}">${dv?signedUsd(dv):'—'}</td><td class="p${x} ${cls}">${pp==null?'—':signedPct(pp)}</td>`;
-    }
+    if(c.delta) return isRev ? `<td class="d${x}">—</td><td class="p${x}">—</td>` : oppCell(M,o,x,M.plan[o][metric],benchDollars(M,o,metric));
     const d=M[c.k][o], v=isRev?d.rev:(d[metric]||0), rev=d.rev;
     return `<td class="d${x}">${v?usd(v):'—'}</td><td class="p${x}">${isRev?'—':(v&&rev?pct(v/rev):'—')}</td>`;
   }).join('');
@@ -1530,11 +1553,7 @@ function scnCells(M, o, metric, isRev){
 function scnRoleCells(M, o, cat, role){
   return SCN_COLS.map(c=>{
     const x=c.cls?' '+c.cls:'';
-    if(c.delta){
-      const pv=M.plan[o]._roles[cat][role]||0, qv=M.cy26[o]._roles[cat][role]||0, dv=pv-qv;
-      const cls = dv>0?'over':dv<0?'under':'';
-      return `<td class="d${x} ${cls}">${dv?signedUsd(dv):'—'}</td><td class="p${x} ${cls}">—</td>`;
-    }
+    if(c.delta) return oppCell(M,o,x,M.plan[o]._roles[cat][role]||0,benchRoleDollars(M,o,cat,role));
     const d=M[c.k][o], v=d._roles[cat][role]||0, rev=d.rev;
     return `<td class="d${x}">${v?usd(v):'—'}</td><td class="p${x}">${(v&&rev)?pct(v/rev):'—'}</td>`;
   }).join('');
@@ -1558,7 +1577,7 @@ function renderTtm(){
   const o=ttmOutlet, oLabel=TTM_OUTLETS.find(x=>x.k===o).label;
   const head=`<thead>
     <tr class="outlets"><th class="lab" rowspan="2">Position</th>${SCN_COLS.map(x=>`<th class="outcol ${x.cls||''}" colspan="2">${x.label}</th>`).join('')}</tr>
-    <tr class="units">${SCN_COLS.map(x=>`<th class="d ${x.cls||''}">$</th><th class="p ${x.cls||''}">${x.delta?'Δ pts':'% rev'}</th>`).join('')}</tr></thead>`;
+    <tr class="units">${SCN_COLS.map(x=>`<th class="d ${x.cls||''}">${x.delta?'save $':'$'}</th><th class="p ${x.cls||''}">${x.delta?'target':'% rev'}</th>`).join('')}</tr></thead>`;
   let body=`<tr class="revrow"><td class="lab">Revenue<span class="bnote">basis for % of revenue</span></td>${scnCells(M,o,'rev',true)}</tr>`;
   body+=`<tr class="catrow"><td class="lab"><span class="catchip foh">FOH</span><span class="glab">Management</span></td>${scnCells(M,o,'mfoh',false)}</tr>`;
   body+=`<tr class="catrow"><td class="lab"><span class="catchip boh">BOH</span><span class="glab">Management</span></td>${scnCells(M,o,'mboh',false)}</tr>`;
@@ -1571,18 +1590,19 @@ function renderTtm(){
 
   const sel=`<div class="segmented" id="ttmOutletSeg">${TTM_OUTLETS.map(x=>`<button data-o="${x.k}" class="${x.k===o?'on':''}">${x.label}</button>`).join('')}</div>`;
   const kpiCard=(k)=>{ const d=M[k][o], meta=TTM_SCENARIOS.find(s=>s.k===k); return `<div class="kpi"><div class="lab">${meta.label}</div><div class="val">${pct(d.labor/d.rev)}</div><div class="meta">${usd(d.labor)} labor &middot; on ${usdK(d.rev)}</div><div class="bar"><i style="width:${d.labor/d.rev*100*2}%"></i></div></div>`; };
-  const dPts=(M.plan[o].labor/M.plan[o].rev - M.cy26[o].labor/M.cy26[o].rev)*100;
+  const oppMetrics=['mfoh','mboh','msales','foh','boh','ptb','bonus'];
+  const grossOpp=oppMetrics.reduce((a,mt)=>{const b=benchDollars(M,o,mt);return a+(b!=null?Math.max(0,M.plan[o][mt]-b):0);},0);
   el.innerHTML=`
     <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>Scenario Viewer</b></div>
     <h1 class="pagetitle serif">Scenario Viewer<span class="sub">${oLabel} &middot; Trailing 12M vs Current 2026 vs Go-Forward</span></h1>
     <div class="alloc-toolbar"><span class="zlab" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Outlet</span>${sel}<div class="grow"></div></div>
     <div class="kpis">
       ${kpiCard('ttm')}${kpiCard('cy26')}${kpiCard('plan')}
-      <div class="kpi"><div class="lab">Go-Forward vs 2026</div><div class="val ${dPts>0?'neg':'pos'}">${signedPct(dPts)} pts</div>
-        <div class="meta">labor % of revenue change</div></div>
+      <div class="kpi"><div class="lab">Benchmark opportunity</div><div class="val ${grossOpp>1000?'pos':''}">${usd(grossOpp)}</div>
+        <div class="meta">Go-Forward over benchmark &middot; ${pct(grossOpp/M.plan[o].rev)} of revenue</div></div>
     </div>
     <div class="block"><div class="head"><h3 class="serif">${oLabel} &middot; three scenarios side by side</h3>
-      <span class="note">$ and % of revenue per scenario &middot; Δ = Go-Forward − Current 2026 &middot; expand FOH / BOH for the role split</span></div>
+      <span class="note">$ and % of revenue per scenario &middot; right column = $ over benchmark (savings opportunity) &middot; expand FOH / BOH for the role split</span></div>
       <div class="pad" style="padding-top:0">
         <div class="fbsum-toolbar"><div class="expandctl">
           <button class="btn" id="ttmExpandAll">Expand all</button>
@@ -1594,9 +1614,9 @@ function renderTtm(){
     <div class="foot"><b>Three scenarios, ${oLabel}.</b>
       <b>Trailing 12M</b> = Jun 2025 (P6) – May 2026 actuals (monthly P&amp;L sums).
       <b>Current 2026</b> = full-year 2026 P&amp;L (Jan–May actual + Jun–Dec forecast); Operations Management folded into FOH Management.
-      <b>Go-Forward</b> = modeled target — management from the mapped roster (<b>F&amp;B Management</b>), and hourly / PT&amp;B / Bonus from the <b>F&amp;B Hourly</b> benchmark % × revenue; edit those tabs and it moves.
-      <b>Δ</b> compares Go-Forward to Current 2026 (<span class="over">red = higher cost</span>, <span class="under">green = leaner</span>).
-      Across all three, <b>BOH Management</b> is the actual P&amp;L BOH line, <b>Sales Management</b> is the mapped sales salaries extracted out, and <b>FOH Management</b> is the remainder (front-of-house + leadership, net of sales); the three reconcile to total management.</div>`;
+      <b>Go-Forward</b> = the plan — management from the mapped roster (<b>F&amp;B Management</b>, fixed salaries), and hourly / PT&amp;B / Bonus held at the <b>current-2026 share of revenue</b>, flexing with the go-forward revenue (editable in Allocation Drivers).
+      <b>Benchmark opportunity</b> = where Go-Forward runs <i>over</i> the F&amp;B Hourly / management benchmark (<span class="under">green $ = potential savings if you tighten to target</span>); the “target” column shows the benchmark % of revenue.
+      Across all scenarios, <b>BOH Management</b> is the actual P&amp;L BOH line, <b>Sales Management</b> is the mapped sales salaries extracted out, and <b>FOH Management</b> is the remainder (front-of-house + leadership, net of sales); the three reconcile to total management.</div>`;
   wireTtm();
 }
 function wireTtm(){
