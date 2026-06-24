@@ -1171,24 +1171,32 @@ const FB_HOURLY_ROLE_ORDER = {
 };
 // Job-level hourly benchmarks (% of outlet revenue). Per category these sum to
 // FB_BENCH_HOURLY (the FOH/BOH venue-type targets), so the collapsed category
-// benchmark and the expanded per-role benchmarks reconcile. Each role's share
-// tracks that outlet's staffing mix. Directional — tune to market.
+// benchmark and the expanded per-role benchmarks reconcile. Targets are tuned to
+// each outlet's CONCEPT and HOURS of operation (not just its current mix):
+//   lsd  — Le Supreme brasserie + Bar Rotunda all-day café/cocktail bar (7am–1am):
+//          real barista line, heavy bar + French pastry.
+//   hs   — dinner-only sushi izakaya + 3 bar concepts (Sakazuki, Aladdin Sane):
+//          bartender-heavy FOH, no baristas, skilled sushi/line BOH.
+//   kamp — rooftop bar/lounge, Basque tapas, seasonal, long late hours:
+//          host-dominant (rooftop flow) + bartenders, light tapas kitchen.
+//   anth — event/wedding venue, banquet model: server-dominant FOH, catering BOH.
+// Directional — tune to market.
 const FB_BENCH_HOURLY_DETAIL = {
   lsd: {
-    foh: {'Bartenders':2.0, 'Support':0.3, 'Baristas':0.9, 'Host':1.4, 'Servers':2.2, 'Training':0.2},
-    boh: {'Line Cooks':6.9, 'Prep Cooks':2.0, 'Pastry Cooks':1.1, 'Dishwashers':2.0},
+    foh: {'Bartenders':1.8, 'Support':0.4, 'Baristas':0.8, 'Host':1.3, 'Servers':2.4, 'Training':0.3},
+    boh: {'Line Cooks':6.5, 'Prep Cooks':2.3, 'Pastry Cooks':1.4, 'Dishwashers':1.8},
   },
   hs: {
-    foh: {'Bartenders':2.1, 'Support':0.1, 'Baristas':0.0, 'Host':1.5, 'Servers':2.0, 'Training':0.3},
-    boh: {'Line Cooks':7.6, 'Prep Cooks':1.5, 'Pastry Cooks':0.8, 'Dishwashers':1.1},
+    foh: {'Bartenders':2.4, 'Support':0.2, 'Baristas':0.0, 'Host':1.2, 'Servers':1.8, 'Training':0.4},
+    boh: {'Line Cooks':7.0, 'Prep Cooks':2.0, 'Pastry Cooks':0.7, 'Dishwashers':1.3},
   },
   kamp: {
-    foh: {'Bartenders':2.6, 'Support':0.3, 'Baristas':0.0, 'Host':5.5, 'Servers':1.5, 'Training':0.6},
-    boh: {'Line Cooks':3.9, 'Prep Cooks':0.0, 'Pastry Cooks':1.5, 'Dishwashers':0.6},
+    foh: {'Bartenders':3.0, 'Support':0.4, 'Baristas':0.0, 'Host':5.0, 'Servers':1.5, 'Training':0.6},
+    boh: {'Line Cooks':3.6, 'Prep Cooks':0.4, 'Pastry Cooks':0.8, 'Dishwashers':1.2},
   },
   anth: {
-    foh: {'Bartenders':1.0, 'Support':0.0, 'Baristas':0.0, 'Host':0.0, 'Servers':7.0, 'Training':0.0},
-    boh: {'Line Cooks':3.2, 'Prep Cooks':0.0, 'Pastry Cooks':1.1, 'Dishwashers':1.7},
+    foh: {'Bartenders':1.0, 'Support':0.1, 'Baristas':0.0, 'Host':0.1, 'Servers':6.8, 'Training':0.0},
+    boh: {'Line Cooks':3.2, 'Prep Cooks':0.2, 'Pastry Cooks':1.1, 'Dishwashers':1.5},
   },
 };
 const fbHourlyExpand = {foh:false, boh:false};
@@ -1337,7 +1345,7 @@ function renderFbHourly(){
     </div>
     <div class="fbsum-scroll"><table class="fbsum">${fbHeadHtml('Category / role')}<tbody>${body}</tbody></table></div>
     <div id="fbChartHostHourly"></div>
-    <div class="foot"><b>Hourly labor</b> covers non-salaried staff — bartenders, baristas, hosts, servers, support (FOH) and line cooks, prep cooks, pastry cooks, dishwashers (BOH). Expand a category for the job-level split; collapse to FOH / BOH totals. <b>Benchmarks</b> expand in step: per-role targets sum to each outlet's FOH / BOH venue-type benchmark, with each role's share tracking that outlet's staffing mix. Directional — tune to market.</div>`;
+    <div class="foot"><b>Hourly labor</b> covers non-salaried staff — bartenders, baristas, hosts, servers, support (FOH) and line cooks, prep cooks, pastry cooks, dishwashers (BOH). Expand a category for the job-level split; collapse to FOH / BOH totals. <b>Benchmarks</b> expand in step: per-position targets sum to each outlet's FOH / BOH venue-type benchmark, with each role's share tuned to that outlet's <b>concept and hours of operation</b> — e.g., a barista line for Bar Rotunda's all-day café, bartender-heavy Hiroki-San (three bar concepts, no coffee), host-dominant Kampers rooftop, server-dominant Anthology events. Directional — tune to market.</div>`;
   wireFbHourly();
   buildChart(fbChartHourly);
 }
