@@ -1629,6 +1629,127 @@ function wireTtm(){
   root.querySelector('#ttmCollapseAll').addEventListener('click', ()=>{ Object.keys(fbTtmExpand).forEach(k=>fbTtmExpand[k]=false); renderTtm(); });
 }
 
+/* ============================ FINANCIALS ============================ */
+const FIN_DATA = {
+  'ttm':{
+    lsd:{rev:7024417, cogs:1984994, mgmt:854955, boh:910806, foh:433472, ptb:505802, bonus:44979, ctrl:960045, unc:1287025},
+    hs:{rev:4107912, cogs:1138409, mgmt:555022, boh:556582, foh:245372, ptb:277499, bonus:19459, ctrl:714636, unc:784403},
+    kamp:{rev:2512963, cogs:422633, mgmt:348058, boh:145491, foh:286776, ptb:174309, bonus:12843, ctrl:397331, unc:475481},
+    anth:{rev:4040130, cogs:551027, mgmt:899077, boh:253673, foh:400335, ptb:230152, bonus:125295, ctrl:796184, unc:736695},
+  },
+  '2026':{
+    lsd:{rev:6637901, cogs:1827908, mgmt:826179, boh:843646, foh:382826, ptb:498686, bonus:38481, ctrl:887476, unc:1106711},
+    hs:{rev:4156492, cogs:1125724, mgmt:563913, boh:492828, foh:230953, ptb:268070, bonus:20952, ctrl:669451, unc:680804},
+    kamp:{rev:2520779, cogs:440513, mgmt:288037, boh:123500, foh:251159, ptb:155000, bonus:12459, ctrl:355287, unc:415645},
+    anth:{rev:4256384, cogs:578295, mgmt:789872, boh:214594, foh:380714, ptb:228445, bonus:129416, ctrl:726090, unc:670166},
+  },
+  '2025':{
+    lsd:{rev:7247791, cogs:2025769, mgmt:839698, boh:935218, foh:433238, ptb:497993, bonus:52348, ctrl:955427, unc:1371365},
+    hs:{rev:3870417, cogs:1078416, mgmt:565101, boh:523136, foh:233393, ptb:264191, bonus:20979, ctrl:729807, unc:800879},
+    kamp:{rev:2458753, cogs:421190, mgmt:304703, boh:158037, foh:297602, ptb:161561, bonus:13825, ctrl:406323, unc:490845},
+    anth:{rev:4000862, cogs:536951, mgmt:877113, boh:265909, foh:399600, ptb:242729, bonus:143254, ctrl:823849, unc:773658},
+  },
+};
+const FIN_OUTLETS = [
+  {k:'lsd',  label:'Le Supreme'},
+  {k:'hs',   label:'Hiroki-San'},
+  {k:'kamp', label:'Kampers'},
+  {k:'anth', label:'Anthology'},
+];
+const FIN_PERIODS = [
+  {k:'2025', label:'FY 2025'},
+  {k:'2026', label:'FY 2026'},
+  {k:'ttm',  label:'Trailing 12M'},
+];
+const FIN_PERIOD_SUB = {
+  '2025':'Full-year 2025 actuals',
+  '2026':'Full-year 2026 (Jan–May actual + Jun–Dec forecast)',
+  'ttm' :'Jun 2025 (P6) – May 2026 actuals',
+};
+let finPeriod = 'ttm';
+const finMoney = v => v<0 ? '−'+usd(-v) : usd(v);
+
+function buildFinModel(period){
+  const src=FIN_DATA[period], m={};
+  FIN_OUTLETS.forEach(o=>{
+    const d=src[o.k];
+    const gp=d.rev-d.cogs;
+    const labor=d.mgmt+d.boh+d.foh+d.ptb+d.bonus;
+    const prime=d.cogs+labor;
+    const opprofit=gp-labor;
+    const net=opprofit-d.ctrl-d.unc;
+    m[o.k]={...d, gp, labor, prime, opprofit, net};
+  });
+  const c={};
+  ['rev','cogs','mgmt','boh','foh','ptb','bonus','ctrl','unc','gp','labor','prime','opprofit','net']
+    .forEach(key=> c[key]=FIN_OUTLETS.reduce((a,o)=>a+m[o.k][key],0));
+  m.comb=c;
+  return m;
+}
+
+function finCells(m, metric, signed){
+  const cols=[...FIN_OUTLETS.map(o=>o.k), 'comb'];
+  return cols.map(k=>{
+    const grand=k==='comb'?' grand':'';
+    const v=m[k][metric], rev=m[k].rev;
+    const neg=signed&&v<0;
+    const dol=finMoney(v);
+    const pc=rev?pct(v/rev):'—';
+    return `<td class="d${grand}${neg?' over':''}">${dol}</td><td class="p${grand}">${pc}</td>`;
+  }).join('');
+}
+
+function renderFin(){
+  const el=document.getElementById('view-fin');
+  const m=buildFinModel(finPeriod);
+  const per=FIN_PERIODS.find(p=>p.k===finPeriod);
+  const head=`<thead>
+    <tr class="outlets"><th class="lab" rowspan="2">Line item</th>${FIN_OUTLETS.map(o=>`<th class="outcol" colspan="2">${o.label}</th>`).join('')}<th class="grand" colspan="2">Combined</th></tr>
+    <tr class="units">${[...FIN_OUTLETS,{k:'comb'}].map(o=>`<th class="d${o.k==='comb'?' grand':''}">$</th><th class="p${o.k==='comb'?' grand':''}">% rev</th>`).join('')}</tr></thead>`;
+  const ind='<span style="display:inline-block;width:14px"></span>';
+  let body='';
+  body+=`<tr class="revrow"><td class="lab">Total Revenue</td>${finCells(m,'rev')}</tr>`;
+  body+=`<tr><td class="lab">${ind}Total COGS</td>${finCells(m,'cogs')}</tr>`;
+  body+=`<tr class="catrow"><td class="lab">Gross Profit</td>${finCells(m,'gp',true)}</tr>`;
+  body+=`<tr><td class="lab">${ind}Management Salaries</td>${finCells(m,'mgmt')}</tr>`;
+  body+=`<tr><td class="lab">${ind}BOH Hourly</td>${finCells(m,'boh')}</tr>`;
+  body+=`<tr><td class="lab">${ind}FOH Hourly</td>${finCells(m,'foh')}</tr>`;
+  body+=`<tr><td class="lab">${ind}Payroll Tax &amp; Benefits</td>${finCells(m,'ptb')}</tr>`;
+  body+=`<tr><td class="lab">${ind}Bonus</td>${finCells(m,'bonus')}</tr>`;
+  body+=`<tr class="grand"><td class="lab">Total Labor</td>${finCells(m,'labor')}</tr>`;
+  body+=`<tr class="catrow"><td class="lab">Prime Cost<span class="bnote">COGS + total labor</span></td>${finCells(m,'prime')}</tr>`;
+  body+=`<tr class="catrow"><td class="lab">Operating Profit<span class="bnote">gross profit − labor</span></td>${finCells(m,'opprofit',true)}</tr>`;
+  body+=`<tr><td class="lab">${ind}Total Controllable</td>${finCells(m,'ctrl')}</tr>`;
+  body+=`<tr><td class="lab">${ind}Total Uncontrollable</td>${finCells(m,'unc')}</tr>`;
+  body+=`<tr class="grand"><td class="lab">Net Operating Profit</td>${finCells(m,'net',true)}</tr>`;
+
+  const c=m.comb;
+  const seg=`<div class="segmented" id="finPeriodSeg">${FIN_PERIODS.map(p=>`<button data-p="${p.k}" class="${p.k===finPeriod?'on':''}">${p.label}</button>`).join('')}</div>`;
+  const kpi=(lab,val,meta,cls)=>`<div class="kpi"><div class="lab">${lab}</div><div class="val ${cls||''}">${val}</div><div class="meta">${meta}</div></div>`;
+  el.innerHTML=`
+    <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>Financials</b></div>
+    <h1 class="pagetitle serif">Financials<span class="sub">${per.label} &middot; P&amp;L by outlet</span></h1>
+    <div class="alloc-toolbar"><span class="zlab" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Period</span>${seg}<div class="grow"></div></div>
+    <div class="kpis">
+      ${kpi('Total Revenue', usdK(c.rev), `${FIN_OUTLETS.length} F&amp;B outlets &middot; ${FIN_PERIOD_SUB[finPeriod]}`)}
+      ${kpi('Prime Cost', pct(c.prime/c.rev), `${usdK(c.prime)} &middot; COGS ${pct(c.cogs/c.rev)} + labor ${pct(c.labor/c.rev)}`)}
+      ${kpi('Total Labor', pct(c.labor/c.rev), `${usdK(c.labor)} all-in`)}
+      ${kpi('Net Operating Profit', pct(c.net/c.rev), `${finMoney(c.net)} after controllable + uncontrollable`, c.net>=0?'pos':'neg')}
+    </div>
+    <div class="block"><div class="head"><h3 class="serif">${per.label} &middot; full P&amp;L by outlet</h3>
+      <span class="note">$ and % of revenue per outlet &middot; Combined = four F&amp;B outlets &middot; ${FIN_PERIOD_SUB[finPeriod]}</span></div>
+      <div class="pad" style="padding-top:0">
+        <div class="fbsum-scroll"><table class="fbsum">${head}<tbody>${body}</tbody></table></div></div></div>
+    <div class="foot"><b>Three periods, four F&amp;B outlets.</b>
+      <b>FY 2025</b> = full-year 2025 actuals. <b>FY 2026</b> = full-year 2026 (January–May actual + June–December forecast).
+      <b>Trailing 12M</b> = June 2025 (Period 6) through May 2026, summed from the monthly P&amp;L columns.
+      Each line is shown in dollars and as a percent of that outlet&rsquo;s revenue. <b>Gross Profit</b> = revenue − COGS.
+      <b>Total Labor</b> = management salaries + BOH hourly + FOH hourly + payroll tax &amp; benefits + bonus.
+      <b>Prime Cost</b> = COGS + total labor. <b>Operating Profit</b> = gross profit − labor.
+      <b>Net Operating Profit</b> = operating profit − total controllable − total uncontrollable. ROOST (rooms) is excluded — these are the F&amp;B outlet P&amp;Ls.</div>`;
+  el.querySelector('#finPeriodSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b&&b.dataset.p){ finPeriod=b.dataset.p; renderFin(); }});
+}
+
 /* ============================ ROUTING ============================ */
 const VIEWS = {
   overview:{el:'view-overview', render:renderOverview, scope:'all'},
@@ -1638,6 +1759,7 @@ const VIEWS = {
   fbhourly:{el:'view-fbhourly', render:renderFbHourly, scope:'all'},
   fbtotal:{el:'view-fbtotal', render:renderFbTotal, scope:'all'},
   ttm:{el:'view-ttm', render:renderTtm, scope:'all'},
+  fin:{el:'view-fin', render:renderFin, scope:'all'},
   outlets:{el:'view-outlets', render:renderOutlets, scope:'fb'},
   'div-fb':{el:'view-division', render:()=>renderDivision('fb'), scope:'fb'},
   'div-sales':{el:'view-division', render:()=>renderDivision('sales'), scope:'sales'},
@@ -1670,6 +1792,7 @@ function show(view){
     {v:'fbhourly',t:'All divisions — F&B hourly'},
     {v:'fbtotal',t:'All divisions — F&B total labor'},
     {v:'ttm',t:'All divisions — Scenario Viewer'},
+    {v:'fin',t:'All divisions — Financials'},
     {v:'div-fb',t:'Food & Beverage'},
     {v:'outlets',t:'  ↳ F&B outlet efficiency'},
     {v:'div-sales',t:'Sales'},
