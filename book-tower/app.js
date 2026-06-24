@@ -1183,19 +1183,19 @@ const FB_HOURLY_ROLE_ORDER = {
 // Directional — tune to market.
 const FB_BENCH_HOURLY_DETAIL = {
   lsd: {
-    foh: {'Bartenders':1.8, 'Support':0.4, 'Baristas':0.8, 'Host':1.3, 'Servers':2.4, 'Training':0.3},
-    boh: {'Line Cooks':6.5, 'Prep Cooks':2.3, 'Pastry Cooks':1.4, 'Dishwashers':1.8},
+    foh: {'Bartenders':2.2, 'Support':0.5, 'Baristas':1.0, 'Host':1.6, 'Servers':2.8, 'Training':0.4},
+    boh: {'Line Cooks':7.3, 'Prep Cooks':2.6, 'Pastry Cooks':1.6, 'Dishwashers':2.0},
   },
   hs: {
-    foh: {'Bartenders':2.4, 'Support':0.2, 'Baristas':0.0, 'Host':1.2, 'Servers':1.8, 'Training':0.4},
-    boh: {'Line Cooks':7.0, 'Prep Cooks':2.0, 'Pastry Cooks':0.7, 'Dishwashers':1.3},
+    foh: {'Bartenders':2.8, 'Support':0.2, 'Baristas':0.0, 'Host':1.4, 'Servers':2.1, 'Training':0.5},
+    boh: {'Line Cooks':8.9, 'Prep Cooks':2.5, 'Pastry Cooks':0.9, 'Dishwashers':1.7},
   },
   kamp: {
-    foh: {'Bartenders':3.0, 'Support':0.4, 'Baristas':0.0, 'Host':5.0, 'Servers':1.5, 'Training':0.6},
-    boh: {'Line Cooks':3.6, 'Prep Cooks':0.4, 'Pastry Cooks':0.8, 'Dishwashers':1.2},
+    foh: {'Bartenders':2.9, 'Support':0.4, 'Baristas':0.0, 'Host':4.7, 'Servers':1.4, 'Training':0.6},
+    boh: {'Line Cooks':3.0, 'Prep Cooks':0.3, 'Pastry Cooks':0.7, 'Dishwashers':1.0},
   },
   anth: {
-    foh: {'Bartenders':1.0, 'Support':0.1, 'Baristas':0.0, 'Host':0.1, 'Servers':6.8, 'Training':0.0},
+    foh: {'Bartenders':1.1, 'Support':0.1, 'Baristas':0.0, 'Host':0.1, 'Servers':7.7, 'Training':0.0},
     boh: {'Line Cooks':3.2, 'Prep Cooks':0.2, 'Pastry Cooks':1.1, 'Dishwashers':1.5},
   },
 };
@@ -1228,12 +1228,15 @@ function fbHourlyRoleBenchPct(catKey, role){
 const FB_PTB   = {lsd:498686, hs:268070, kamp:155000, anth:228445};
 const FB_BONUS = {lsd:38481,  hs:20952,  kamp:12459,  anth:129416};
 
-// Hourly labor benchmarks (% of revenue) by venue type — directional, tune to market.
+// Hourly (non-management) labor benchmarks (% of revenue), set to restaurant-
+// industry concept comps. Full-service runs ~8% FOH / ~13% BOH hourly; fine
+// dining pushes BOH higher; bars run lighter overall with a small kitchen;
+// catering/banquet is server-dominant. Directional — tune to market.
 const FB_BENCH_HOURLY = {
-  lsd:  {foh:7.0, boh:12.0},  // full-service restaurant
-  hs:   {foh:6.0, boh:11.0},  // Hiroki-San — Japanese izakaya: smaller kitchen, faster tickets, high bev mix
-  kamp: {foh:10.5, boh:6.0}, // Kampers — rooftop bar: elevators, hosts, security, event/weather complexity
-  anth: {foh:8.0, boh:6.0},   // event venue
+  lsd:  {foh:8.5, boh:13.5}, // upscale French brasserie + all-day café/bar (full-service ~8% FOH, fine-dining-leaning BOH)
+  hs:   {foh:7.0, boh:14.0}, // sushi izakaya + 3 bar concepts — skilled-BOH (sushi) premium, bar-heavy FOH
+  kamp: {foh:10.0, boh:5.0}, // rooftop bar/lounge + tapas — bar/host-heavy FOH, light kitchen (bar-concept comp)
+  anth: {foh:9.0, boh:6.0},  // event/banquet venue — server-dominant FOH, catering kitchen (catering comp ~16-18% combined)
 };
 // Bonus benchmark (% of revenue) and PT&B load rate (share of benchmark wages) — directional.
 const FB_BENCH_BONUS = {lsd:0.5, hs:0.5, kamp:0.5, anth:2.5};
