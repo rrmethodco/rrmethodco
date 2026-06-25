@@ -1663,6 +1663,9 @@ let finSelOutlets = FIN_OUTLETS.map(o=>o.k);      // Combined = total of the sel
 // Owner's allocated expenses — toggle to include/exclude
 const FIN_OWNER_ALLOC = ['u_electric','u_gas','u_trash','u_water','u_unsplit','g_deposit','ug_building','oc_retax'];
 let finInclOwnerAlloc = true;
+let finVar = true;          // show variance Δ column when 2+ periods are compared
+let finVarBase = null;      // base period for the variance (defaults to the first selected)
+const finPolarity = k => k==='rev'?1 : (k==='cogs'||k==='labor'||k==='ctrl'||k==='unc'||k==='prime'||k==='reserve')?-1 : (k==='gp'||k==='opprofit'||k==='net'||k==='ncf')?1 : 0;
 function finMonthlyArr(o,id,period){
   const r=FIN_M[o]&&FIN_M[o][id];
   if(!r) return [0,0,0,0,0,0,0,0,0,0,0,0];
@@ -1750,20 +1753,38 @@ function renderFin(){
   const sel=FIN_OUTLETS.filter(o=>finSelOutlets.includes(o.k));
   const showComb=sel.length>=2;
   const multiP=periods.length>=2;
-  // build column descriptors: {id, outlet, period, label, grand}
-  let cols;
+  // build column descriptors: {id, outlet, period, label, grand} (+ variance col)
+  let cols, vbase, vcomp;
+  const varOn = finVar && multiP;
   if(multiP){
     const aggOutlet=showComb?'comb':sel[0].k;
     cols=periods.map(p=>({id:p.k, outlet:aggOutlet, period:p.k, label:p.label, grand:false}));
+    if(varOn){
+      vbase = finSelPeriods.includes(finVarBase) ? finVarBase : periods[0].k;
+      const others=periods.map(p=>p.k).filter(k=>k!==vbase);
+      vcomp = others[others.length-1];
+      const lab=k=>FIN_PERIODS.find(p=>p.k===k).label;
+      cols.push({id:'__var', isVar:true, outlet:aggOutlet, base:vbase, comp:vcomp, label:`Δ ${lab(vcomp)} − ${lab(vbase)}`, grand:true});
+    }
   } else {
     const p=periods[0].k;
     cols=sel.map(o=>({id:o.k, outlet:o.k, period:p, label:o.label, grand:false}))
        .concat(showComb?[{id:'comb', outlet:'comb', period:p, label:'Combined', grand:true}]:[]);
   }
-  const CV={}; cols.forEach(col=>CV[col.id]=finColVals(col.outlet,col.period));
-  const cells=(valFn,signed,blank)=> cols.map(col=>{
+  const cvCache={};
+  const cvOf=(o,p)=> cvCache[o+'|'+p] || (cvCache[o+'|'+p]=finColVals(o,p));
+  const CV={}; cols.forEach(col=>{ if(!col.isVar) CV[col.id]=cvOf(col.outlet,col.period); });
+  const cells=(mfn,signed,blank,pol)=> cols.map(col=>{
     const grand=col.grand?' grand':'';
-    const v=valFn(col), rev=CV[col.id].rev, neg=signed&&v<0;
+    if(col.isVar){
+      const cv=mfn(col.comp,col.outlet), bv=mfn(col.base,col.outlet), v=cv-bv;
+      const fav = pol ? (pol>0 ? (v>0?1:v<0?-1:0) : (v<0?1:v>0?-1:0)) : 0;
+      const cl = fav>0?' under':fav<0?' over':'';
+      const dol=(blank&&!v)?'—':signedUsd(v);
+      const pc=(blank&&!v)?'':(bv?signedPct(v/Math.abs(bv)*100):'—');
+      return `<td class="d${grand}${cl}">${dol}</td><td class="p${grand}${cl}">${pc}</td>`;
+    }
+    const v=mfn(col.period,col.outlet), rev=cvOf(col.outlet,col.period).rev, neg=signed&&v<0;
     const dol=(blank&&!v)?'—':finMoney(v);
     const pc=(blank&&!v)?'':(rev?pct(v/rev):'—');
     return `<td class="d${grand}${neg?' over':''}">${dol}</td><td class="p${grand}">${pc}</td>`;
@@ -1771,28 +1792,28 @@ function renderFin(){
   const ind=n=>`<span style="display:inline-block;width:${n*15}px"></span>`;
   const head=`<thead>
     <tr class="outlets"><th class="lab" rowspan="2">Line item</th>${cols.map(col=>`<th class="outcol${col.grand?' grand':''}" colspan="2">${col.label}</th>`).join('')}</tr>
-    <tr class="units">${cols.map(col=>`<th class="d${col.grand?' grand':''}">$</th><th class="p${col.grand?' grand':''}">% rev</th>`).join('')}</tr></thead>`;
+    <tr class="units">${cols.map(col=>`<th class="d${col.grand?' grand':''}">${col.isVar?'Δ $':'$'}</th><th class="p${col.grand?' grand':''}">${col.isVar?'Δ %':'% rev'}</th>`).join('')}</tr></thead>`;
   let body='';
   FIN_TREE.forEach(node=>{
     if(node.kind==='derived'){
       const cls=(node.k==='net'||node.k==='ncf')?'grand':'catrow';
-      body+=`<tr class="${cls}"><td class="lab">${node.label}${node.note?`<span class="bnote">${node.note}</span>`:''}</td>${cells(col=>CV[col.id][node.k],true)}</tr>`;
+      body+=`<tr class="${cls}"><td class="lab">${node.label}${node.note?`<span class="bnote">${node.note}</span>`:''}</td>${cells((p,o)=>cvOf(o,p)[node.k],true,false,finPolarity(node.k))}</tr>`;
     } else if(node.kind==='memo'){
-      body+=`<tr class="memorow"><td class="lab">${ind(1)}${node.label}</td>${cells(col=>finLeaf(col.outlet,node.k,col.period),true)}</tr>`;
+      body+=`<tr class="memorow"><td class="lab">${ind(1)}${node.label}</td>${cells((p,o)=>finLeaf(o,node.k,p),true,false,node.k==='reserve'?-1:0)}</tr>`;
     } else {
-      const open=!!finDetExpand[node.k];
-      body+=`<tr class="grouprow${open?' open':''}" data-key="${node.k}"><td class="lab"><span class="chev">▶</span>${node.label}</td>${cells(col=>CV[col.id][node.k],false)}</tr>`;
+      const open=!!finDetExpand[node.k]; const pol=finPolarity(node.k);
+      body+=`<tr class="grouprow${open?' open':''}" data-key="${node.k}"><td class="lab"><span class="chev">▶</span>${node.label}</td>${cells((p,o)=>cvOf(o,p)[node.k],false,false,pol)}</tr>`;
       if(!open) return;
       if(node.kids){
-        node.kids.forEach(id=>{ if(!cols.some(col=>finLeaf(col.outlet,id,col.period))) return;
-          body+=`<tr class="finleaf"><td class="lab">${ind(1)}${FIN_LEAF[id]}</td>${cells(col=>finLeaf(col.outlet,id,col.period),false,true)}</tr>`; });
+        node.kids.forEach(id=>{ if(!cols.some(col=>!col.isVar&&finLeaf(col.outlet,id,col.period))) return;
+          body+=`<tr class="finleaf"><td class="lab">${ind(1)}${FIN_LEAF[id]}</td>${cells((p,o)=>finLeaf(o,id,p),false,true,pol)}</tr>`; });
       } else if(node.groups){
         node.groups.forEach(g=>{
           const gopen=!!finDetExpand[g.k];
-          body+=`<tr class="grouprow${gopen?' open':''}" data-key="${g.k}"><td class="lab">${ind(1)}<span class="chev">▶</span>${g.label}</td>${cells(col=>g.kids.reduce((a,id)=>a+finLeaf(col.outlet,id,col.period),0),false)}</tr>`;
+          body+=`<tr class="grouprow${gopen?' open':''}" data-key="${g.k}"><td class="lab">${ind(1)}<span class="chev">▶</span>${g.label}</td>${cells((p,o)=>g.kids.reduce((a,id)=>a+finLeaf(o,id,p),0),false,false,pol)}</tr>`;
           if(!gopen) return;
-          g.kids.forEach(id=>{ if(!cols.some(col=>finLeaf(col.outlet,id,col.period))) return;
-            body+=`<tr class="finleaf"><td class="lab">${ind(2)}${FIN_LEAF[id]}</td>${cells(col=>finLeaf(col.outlet,id,col.period),false,true)}</tr>`; });
+          g.kids.forEach(id=>{ if(!cols.some(col=>!col.isVar&&finLeaf(col.outlet,id,col.period))) return;
+            body+=`<tr class="finleaf"><td class="lab">${ind(2)}${FIN_LEAF[id]}</td>${cells((p,o)=>finLeaf(o,id,p),false,true,pol)}</tr>`; });
         });
       }
     }
@@ -1811,6 +1832,8 @@ function renderFin(){
   const oseg=`<div class="segmented" id="finOutletSeg">${FIN_OUTLETS.map(o=>`<button data-o="${o.k}" class="${finSelOutlets.includes(o.k)?'on':''}">${o.label}</button>`).join('')}<button data-o="__all" class="${finSelOutlets.length===FIN_OUTLETS.length?'on':''}">All</button></div>`;
   const aseg=`<div class="segmented" id="finAllocSeg"><button data-a="inc" class="${finInclOwnerAlloc?'on':''}">Include</button><button data-a="exc" class="${!finInclOwnerAlloc?'on':''}">Exclude</button></div>`;
   const mseg=`<div class="segmented" id="finMonthSeg">${finMonthLabels().map((lab,i)=>`<button data-m="${i}" class="${finSelMonths.includes(i)?'on':''}">${lab}</button>`).join('')}<button data-m="__all" class="${finSelMonths.length===12?'on':''}">Full yr</button></div>`;
+  const vseg=`<div class="segmented" id="finVarSeg"><button data-v="on" class="${finVar?'on':''}">On</button><button data-v="off" class="${!finVar?'on':''}">Off</button></div>`;
+  const vbaseSeg=varOn?`<div class="segmented" id="finVarBaseSeg">${periods.map(p=>`<button data-vb="${p.k}" class="${p.k===vbase?'on':''}">${p.label}</button>`).join('')}</div>`:'';
   const kpi=(lab,val,meta,cls)=>`<div class="kpi"><div class="lab">${lab}</div><div class="val ${cls||''}">${val}</div><div class="meta">${meta}</div></div>`;
   el.innerHTML=`
     <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>Financials</b></div>
@@ -1820,7 +1843,7 @@ function renderFin(){
       ${zlab('Outlets')}${oseg}
       ${zlab("Owner's allocated exp.")}${aseg}
       <div class="grow"></div></div>
-    <div class="alloc-toolbar" style="flex-wrap:wrap;gap:8px 10px;margin-top:6px">${zlab('Months')}${mseg}</div>
+    <div class="alloc-toolbar" style="flex-wrap:wrap;gap:8px 10px;margin-top:6px">${zlab('Months')}${mseg}${multiP?zlab('Variance Δ')+vseg:''}${varOn?zlab('vs base')+vbaseSeg:''}</div>
     <div class="kpis">
       ${kpi('Total Revenue', usdK(c.rev), `${aggLabel} &middot; ${mlab}${allocNote}`)}
       ${kpi('Prime Cost', pct(c.prime/c.rev), `${usdK(c.prime)} &middot; COGS ${pct(c.cogs/c.rev)} + labor ${pct(c.labor/c.rev)}`)}
@@ -1873,6 +1896,8 @@ function wireFin(){
     renderFin();
   });
   root.querySelector('#finAllocSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b&&b.dataset.a){ finInclOwnerAlloc=(b.dataset.a==='inc'); renderFin(); }});
+  const vs=root.querySelector('#finVarSeg'); if(vs) vs.addEventListener('click', e=>{ const b=e.target.closest('button'); if(b&&b.dataset.v){ finVar=(b.dataset.v==='on'); renderFin(); }});
+  const vbs=root.querySelector('#finVarBaseSeg'); if(vbs) vbs.addEventListener('click', e=>{ const b=e.target.closest('button'); if(b&&b.dataset.vb){ finVarBase=b.dataset.vb; renderFin(); }});
   root.querySelector('#finExpandAll').addEventListener('click', ()=>{ FIN_TOGGLE_KEYS.forEach(k=>finDetExpand[k]=true); renderFin(); });
   root.querySelector('#finCollapseAll').addEventListener('click', ()=>{ finDetExpand={}; renderFin(); });
   root.querySelectorAll('tr.grouprow[data-key]').forEach(r=> r.addEventListener('click', ()=>{ const k=r.dataset.key; finDetExpand[k]=!finDetExpand[k]; renderFin(); }));
