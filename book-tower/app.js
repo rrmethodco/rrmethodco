@@ -395,34 +395,32 @@ function renderOutlets(){
 
 /* ============================ ORG & COST MAP ============================ */
 const ORG = {
-  n:'John Lenchen', r:'VP of Sales', s:180000, lab:'Book Tower',
+  n:'Scott Sadoff', r:'VP of Food &amp; Beverage', s:215000, lab:'Book Tower',
   k:[
-    { lab:'F&B', n:'David Massoni', r:'Director of Operations', s:160000, k:[
+    { lab:'F&B', n:'TBD', r:'Assistant Director of Operations', s:110000, open:true, k:[
       { n:'Nyle Flynn', r:'Executive Chef', s:45000 },
-      { n:'Patrick Jobst', r:'Director of Beverage', s:125000, k:[
-        { lab:'Kampers / Anthology', n:'Stephanie Jordan', r:'General Manager', s:100000, k:[
-          { n:'TBD', r:'Banquet Manager', s:90000, open:true },
-          { n:'Joseph McMann', r:'Asst GM', s:75000, k:[ {n:'Shiana', r:'FOH Manager', s:65000} ]},
-          { n:'Mohammed', r:'Executive Chef', s:88000, k:[ {n:'Dylan Clement', r:'Sous Chef', s:59200} ]},
+      { lab:'Kampers / Anthology', n:'Stephanie Jordan', r:'General Manager', s:100000, k:[
+        { n:'TBD', r:'Banquet Manager', s:90000, open:true },
+        { n:'Joseph McMann', r:'Asst GM', s:75000, k:[ {n:'Shiana', r:'FOH Manager', s:65000} ]},
+        { n:'Mohammed', r:'Executive Chef', s:88000, k:[ {n:'Dylan Clement', r:'Sous Chef', s:59200} ]},
+      ]},
+      { lab:'Pastry', n:'Hailey Enszer', r:'EC – Pastry', s:99000, k:[ {n:'Neal Murakami', r:'Sous – Pastry', s:57200} ]},
+      { lab:'Le Supreme / Bar Rotunda', n:'OPEN', r:'General Manager', s:95000, open:true, k:[
+        { n:'Jono Tacconilli', r:'Asst GM', s:88000, k:[
+          {n:'Dominic Fosmore', r:'FOH Manager', s:62500},
+          {n:'Briana Swayze', r:'FOH Manager', s:67500},
         ]},
-        { lab:'Pastry', n:'Hailey Enszer', r:'EC – Pastry', s:99000, k:[ {n:'Neal Murakami', r:'Sous – Pastry', s:57200} ]},
-        { lab:'Le Supreme / Bar Rotunda', n:'OPEN', r:'General Manager', s:95000, open:true, k:[
-          { n:'Jono Tacconilli', r:'Asst GM', s:88000, k:[
-            {n:'Dominic Fosmore', r:'FOH Manager', s:62500},
-            {n:'Briana Swayze', r:'FOH Manager', s:67500},
-          ]},
-          { n:'Nyle Flynn', r:'Executive Chef', s:100000, k:[
-            {n:'Dylan Trippe Edwards', r:'Sous Chef', s:68000},
-            {n:'Mitchell Driesenga', r:'Sous Chef', s:65000},
-            {n:'Nino Toigo', r:'Sous Chef', s:64000},
-          ]},
+        { n:'Nyle Flynn', r:'Executive Chef', s:100000, k:[
+          {n:'Dylan Trippe Edwards', r:'Sous Chef', s:68000},
+          {n:'Mitchell Driesenga', r:'Sous Chef', s:65000},
+          {n:'Nino Toigo', r:'Sous Chef', s:64000},
         ]},
-        { lab:'Hiroki-San', n:'Naomi Scott', r:'General Manager', s:88000, k:[
-          { n:'Petr Balcarovsky', r:'FOH Manager', s:70000 },
-          { n:'Christian Vasquez', r:'Executive Chef', s:95000, k:[
-            {n:'Louis Placido', r:'Sushi Chef', s:75000},
-            {n:'Aiden Toby', r:'Sous Chef', s:64000},
-          ]},
+      ]},
+      { lab:'Hiroki-San', n:'Naomi Scott', r:'General Manager', s:88000, k:[
+        { n:'Petr Balcarovsky', r:'FOH Manager', s:70000 },
+        { n:'Christian Vasquez', r:'Executive Chef', s:95000, k:[
+          {n:'Louis Placido', r:'Sushi Chef', s:75000},
+          {n:'Aiden Toby', r:'Sous Chef', s:64000},
         ]},
       ]},
     ]},
