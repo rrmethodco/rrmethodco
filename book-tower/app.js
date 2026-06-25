@@ -519,8 +519,8 @@ const DEFAULT_REV = {roost:8965850, lsd:6637901, hs:4156492, kamp:2520779, anth:
 const DEFAULT_PEOPLE = [
   {id:'john',     n:'John Lerchin',       home:'Book Tower',     role:'VP Sales',             cat:'Sales', salary:185000, a:{roost:55,lsd:5,hs:5,kamp:5,anth:30}},
   {id:'chris',    n:'Chris Cavanaugh',    home:'ROOST',          role:'General Manager',       cat:'FOH', salary:80000,  a:{roost:100,lsd:0,hs:0,kamp:0,anth:0}},
-  {id:'sadoff',   n:'Scott Sadoff',       home:'F&B Leadership', role:'VP Food &amp; Beverage', cat:'FOH', salary:250000, a:{roost:0,lsd:40,hs:30,kamp:15,anth:15}},
-  {id:'jobst',    n:'Patrick Jobst',      home:'F&B Leadership', role:'F&B Director - Bev',    cat:'FOH', salary:125000, a:{roost:0,lsd:40,hs:30,kamp:15,anth:15}},
+  {id:'sadoff',   n:'Scott Sadoff',       home:'F&B Leadership', role:'VP Food &amp; Beverage', cat:'FOH', salary:215000, a:{roost:0,lsd:40,hs:30,kamp:15,anth:15}},
+  {id:'tbdaod',   n:'TBD',                home:'F&B Leadership', role:'Asst Director of Operations', open:true, cat:'FOH', salary:110000, a:{roost:0,lsd:40,hs:30,kamp:15,anth:15}},
   {id:'nyle',     n:'Nyle Flynn',         home:'F&B Leadership', role:'Culinary Director',     cat:'BOH', salary:145000, a:{roost:0,lsd:55,hs:5,kamp:10,anth:30}},
   {id:'tbdgm',    n:'TBD GM',             home:'Le Supreme',             role:'General Manager', open:true, cat:'FOH', salary:90000, a:{roost:0,lsd:100,hs:0,kamp:0,anth:0}},
   {id:'jono',     n:'Jono Tacconilli',    home:'Le Supreme',             role:'Assistant GM',          cat:'FOH', salary:88000,  a:{roost:0,lsd:100,hs:0,kamp:0,anth:0}},
