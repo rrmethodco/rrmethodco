@@ -1659,7 +1659,7 @@ let finPeriod = 'ttm';
 const finMoney = v => v<0 ? '−'+usd(-v) : usd(v);
 
 const FIN_PI = {'2025':0,'2026':1,'ttm':2};
-const FIN_COLS = [...FIN_OUTLETS.map(o=>o.k),'comb'];
+let finSelOutlets = FIN_OUTLETS.map(o=>o.k);   // multi-select; Combined = total of the selected (shown only when 2+)
 const FIN_LEAF = {
   r_food:'Food Sales', r_nonalc:'Non-Alcoholic Beverage', r_liquor:'Liquor', r_beer:'Beer', r_wine:'Wine',
   r_other:'Other Operating Income', r_pdr:'PDR &amp; Catering', r_room:'Room Rental Fee', r_av:'Audio / Visual Fee',
@@ -1717,7 +1717,7 @@ let finDetExpand = {};
 
 function finLeafIds(node){ if(node.kids) return node.kids; if(node.groups) return node.groups.reduce((a,g)=>a.concat(g.kids),[]); return []; }
 function finLeaf(col,id){
-  if(col==='comb') return FIN_OUTLETS.reduce((a,o)=>a+finLeaf(o.k,id),0);
+  if(col==='comb') return finSelOutlets.reduce((a,k)=>a+finLeaf(k,id),0);
   const row=FIN_DETAIL[col][id]; return row?(row[FIN_PI[finPeriod]]||0):0;
 }
 function finColVals(col){
@@ -1732,8 +1732,11 @@ function finColVals(col){
 function renderFin(){
   const el=document.getElementById('view-fin');
   const per=FIN_PERIODS.find(p=>p.k===finPeriod);
-  const CV={}; FIN_COLS.forEach(c=>CV[c]=finColVals(c));
-  const cells=(fn,signed,blank)=> FIN_COLS.map(c=>{
+  const sel=FIN_OUTLETS.filter(o=>finSelOutlets.includes(o.k));
+  const showComb=sel.length>=2;
+  const cols=[...sel.map(o=>o.k), ...(showComb?['comb']:[])];
+  const CV={}; cols.forEach(c=>CV[c]=finColVals(c));
+  const cells=(fn,signed,blank)=> cols.map(c=>{
     const grand=c==='comb'?' grand':'';
     const v=fn(c), rev=CV[c].rev, neg=signed&&v<0;
     const dol=(blank&&!v)?'—':finMoney(v);
@@ -1742,8 +1745,8 @@ function renderFin(){
   }).join('');
   const ind=n=>`<span style="display:inline-block;width:${n*15}px"></span>`;
   const head=`<thead>
-    <tr class="outlets"><th class="lab" rowspan="2">Line item</th>${FIN_OUTLETS.map(o=>`<th class="outcol" colspan="2">${o.label}</th>`).join('')}<th class="grand" colspan="2">Combined</th></tr>
-    <tr class="units">${FIN_COLS.map(c=>`<th class="d${c==='comb'?' grand':''}">$</th><th class="p${c==='comb'?' grand':''}">% rev</th>`).join('')}</tr></thead>`;
+    <tr class="outlets"><th class="lab" rowspan="2">Line item</th>${sel.map(o=>`<th class="outcol" colspan="2">${o.label}</th>`).join('')}${showComb?'<th class="grand" colspan="2">Combined</th>':''}</tr>
+    <tr class="units">${cols.map(c=>`<th class="d${c==='comb'?' grand':''}">$</th><th class="p${c==='comb'?' grand':''}">% rev</th>`).join('')}</tr></thead>`;
   let body='';
   FIN_TREE.forEach(node=>{
     if(node.kind==='derived'){
@@ -1770,15 +1773,20 @@ function renderFin(){
     }
   });
 
-  const c=CV.comb;
+  const c=CV[showComb?'comb':cols[0]];
+  const aggLabel=showComb?`${sel.length} outlets`:sel[0].label;
   const seg=`<div class="segmented" id="finPeriodSeg">${FIN_PERIODS.map(p=>`<button data-p="${p.k}" class="${p.k===finPeriod?'on':''}">${p.label}</button>`).join('')}</div>`;
+  const oseg=`<div class="segmented" id="finOutletSeg">${FIN_OUTLETS.map(o=>`<button data-o="${o.k}" class="${finSelOutlets.includes(o.k)?'on':''}">${o.label}</button>`).join('')}<button data-o="__all" class="${finSelOutlets.length===FIN_OUTLETS.length?'on':''}">All</button></div>`;
   const kpi=(lab,val,meta,cls)=>`<div class="kpi"><div class="lab">${lab}</div><div class="val ${cls||''}">${val}</div><div class="meta">${meta}</div></div>`;
   el.innerHTML=`
     <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>Financials</b></div>
     <h1 class="pagetitle serif">Financials<span class="sub">${per.label} &middot; full detail P&amp;L by outlet</span></h1>
-    <div class="alloc-toolbar"><span class="zlab" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Period</span>${seg}<div class="grow"></div></div>
+    <div class="alloc-toolbar" style="flex-wrap:wrap;gap:10px 18px">
+      <span class="zlab" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Period</span>${seg}
+      <span class="zlab" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Outlets</span>${oseg}
+      <div class="grow"></div></div>
     <div class="kpis">
-      ${kpi('Total Revenue', usdK(c.rev), `${FIN_OUTLETS.length} F&amp;B outlets &middot; ${FIN_PERIOD_SUB[finPeriod]}`)}
+      ${kpi('Total Revenue', usdK(c.rev), `${aggLabel} &middot; ${FIN_PERIOD_SUB[finPeriod]}`)}
       ${kpi('Prime Cost', pct(c.prime/c.rev), `${usdK(c.prime)} &middot; COGS ${pct(c.cogs/c.rev)} + labor ${pct(c.labor/c.rev)}`)}
       ${kpi('Total Labor', pct(c.labor/c.rev), `${usdK(c.labor)} all-in`)}
       ${kpi('Net Operating Profit', pct(c.net/c.rev), `${finMoney(c.net)} before reserve`, c.net>=0?'pos':'neg')}
@@ -1804,6 +1812,13 @@ function renderFin(){
 function wireFin(){
   const root=document.getElementById('view-fin');
   root.querySelector('#finPeriodSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b&&b.dataset.p){ finPeriod=b.dataset.p; renderFin(); }});
+  root.querySelector('#finOutletSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b||!b.dataset.o) return;
+    const k=b.dataset.o;
+    if(k==='__all'){ finSelOutlets=FIN_OUTLETS.map(o=>o.k); }
+    else if(finSelOutlets.includes(k)){ if(finSelOutlets.length>1) finSelOutlets=finSelOutlets.filter(x=>x!==k); }
+    else { finSelOutlets=FIN_OUTLETS.map(o=>o.k).filter(x=>finSelOutlets.includes(x)||x===k); }
+    renderFin();
+  });
   root.querySelector('#finExpandAll').addEventListener('click', ()=>{ FIN_TOGGLE_KEYS.forEach(k=>finDetExpand[k]=true); renderFin(); });
   root.querySelector('#finCollapseAll').addEventListener('click', ()=>{ finDetExpand={}; renderFin(); });
   root.querySelectorAll('tr.grouprow[data-key]').forEach(r=> r.addEventListener('click', ()=>{ const k=r.dataset.key; finDetExpand[k]=!finDetExpand[k]; renderFin(); }));
