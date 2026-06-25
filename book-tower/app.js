@@ -1651,24 +1651,24 @@ const FIN_PERIOD_SUB = {
   'ttm'   :'Jun 2025 (P6) – May 2026 actuals',
   'budget':'2026 operating budget',
 };
-let finPeriod = 'ttm';
+let finSelPeriods = ['ttm'];                       // multi-select; 2+ => periods become the comparison columns
 const finMoney = v => v<0 ? '−'+usd(-v) : usd(v);
 
 // month-level data: FIN_M[outlet][leaf] = {y25:[12],y26:[12],bud:[12]} (Jan..Dec). TTM derived.
 const FIN_MONTHS_STD = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 const FIN_MONTHS_TTM = ["Jun'25","Jul'25","Aug'25","Sep'25","Oct'25","Nov'25","Dec'25","Jan'26","Feb'26","Mar'26","Apr'26","May'26"];
-const finMonthLabels = () => finPeriod==='ttm' ? FIN_MONTHS_TTM : FIN_MONTHS_STD;
+const finMonthLabels = () => (finSelPeriods.length===1 && finSelPeriods[0]==='ttm') ? FIN_MONTHS_TTM : FIN_MONTHS_STD;
 let finSelMonths = [0,1,2,3,4,5,6,7,8,9,10,11];   // month indices included (default = full year)
 let finSelOutlets = FIN_OUTLETS.map(o=>o.k);      // Combined = total of the selected (shown only when 2+)
 // Owner's allocated expenses — toggle to include/exclude
 const FIN_OWNER_ALLOC = ['u_electric','u_gas','u_trash','u_water','u_unsplit','g_deposit','ug_building','oc_retax'];
 let finInclOwnerAlloc = true;
-function finMonthlyArr(o,id){
+function finMonthlyArr(o,id,period){
   const r=FIN_M[o]&&FIN_M[o][id];
   if(!r) return [0,0,0,0,0,0,0,0,0,0,0,0];
-  if(finPeriod==='2025')  return r.y25;
-  if(finPeriod==='2026')  return r.y26;
-  if(finPeriod==='budget')return r.bud;
+  if(period==='2025')  return r.y25;
+  if(period==='2026')  return r.y26;
+  if(period==='budget')return r.bud;
   return r.y25.slice(5,12).concat(r.y26.slice(0,5));   // ttm: 2025 Jun-Dec + 2026 Jan-May
 }
 const FIN_LEAF = {
@@ -1727,83 +1727,96 @@ FIN_TREE.forEach(n=>{ if(n.kind==='section'){ FIN_TOGGLE_KEYS.push(n.k); if(n.gr
 let finDetExpand = {};
 
 function finLeafIds(node){ if(node.kids) return node.kids; if(node.groups) return node.groups.reduce((a,g)=>a.concat(g.kids),[]); return []; }
-function finLeaf(col,id){
+function finLeaf(col,id,period){
   if(!finInclOwnerAlloc && FIN_OWNER_ALLOC.includes(id)) return 0;
-  if(col==='comb') return finSelOutlets.reduce((a,k)=>a+finLeaf(k,id),0);
-  const arr=finMonthlyArr(col,id);
+  if(col==='comb') return finSelOutlets.reduce((a,k)=>a+finLeaf(k,id,period),0);
+  const arr=finMonthlyArr(col,id,period);
   let s=0; for(const m of finSelMonths) s+=arr[m]||0;
   return s;
 }
-function finColVals(col){
-  const sum=ids=>ids.reduce((a,id)=>a+finLeaf(col,id),0);
+function finColVals(col,period){
+  const sum=ids=>ids.reduce((a,id)=>a+finLeaf(col,id,period),0);
   const sec=k=>sum(finLeafIds(FIN_TREE.find(x=>x.k===k)));
   const rev=sec('rev'), cogs=sec('cogs'), labor=sec('labor'), ctrl=sec('ctrl'), unc=sec('unc');
-  const reserve=finLeaf(col,'reserve'), oth=finLeaf(col,'oth_income');
+  const reserve=finLeaf(col,'reserve',period), oth=finLeaf(col,'oth_income',period);
   const gp=rev-cogs, prime=cogs+labor, opprofit=gp-labor, net=gp-labor-ctrl-unc, ncf=net-reserve-oth;
   return {rev,cogs,labor,ctrl,unc,reserve,oth_income:oth,gp,prime,opprofit,net,ncf};
 }
 
 function renderFin(){
   const el=document.getElementById('view-fin');
-  const per=FIN_PERIODS.find(p=>p.k===finPeriod);
+  const periods=FIN_PERIODS.filter(p=>finSelPeriods.includes(p.k));
+  const periodsLabel=periods.map(p=>p.label).join(' · ');
   const sel=FIN_OUTLETS.filter(o=>finSelOutlets.includes(o.k));
   const showComb=sel.length>=2;
-  const cols=[...sel.map(o=>o.k), ...(showComb?['comb']:[])];
-  const CV={}; cols.forEach(c=>CV[c]=finColVals(c));
-  const cells=(fn,signed,blank)=> cols.map(c=>{
-    const grand=c==='comb'?' grand':'';
-    const v=fn(c), rev=CV[c].rev, neg=signed&&v<0;
+  const multiP=periods.length>=2;
+  // build column descriptors: {id, outlet, period, label, grand}
+  let cols;
+  if(multiP){
+    const aggOutlet=showComb?'comb':sel[0].k;
+    cols=periods.map(p=>({id:p.k, outlet:aggOutlet, period:p.k, label:p.label, grand:false}));
+  } else {
+    const p=periods[0].k;
+    cols=sel.map(o=>({id:o.k, outlet:o.k, period:p, label:o.label, grand:false}))
+       .concat(showComb?[{id:'comb', outlet:'comb', period:p, label:'Combined', grand:true}]:[]);
+  }
+  const CV={}; cols.forEach(col=>CV[col.id]=finColVals(col.outlet,col.period));
+  const cells=(valFn,signed,blank)=> cols.map(col=>{
+    const grand=col.grand?' grand':'';
+    const v=valFn(col), rev=CV[col.id].rev, neg=signed&&v<0;
     const dol=(blank&&!v)?'—':finMoney(v);
     const pc=(blank&&!v)?'':(rev?pct(v/rev):'—');
     return `<td class="d${grand}${neg?' over':''}">${dol}</td><td class="p${grand}">${pc}</td>`;
   }).join('');
   const ind=n=>`<span style="display:inline-block;width:${n*15}px"></span>`;
   const head=`<thead>
-    <tr class="outlets"><th class="lab" rowspan="2">Line item</th>${sel.map(o=>`<th class="outcol" colspan="2">${o.label}</th>`).join('')}${showComb?'<th class="grand" colspan="2">Combined</th>':''}</tr>
-    <tr class="units">${cols.map(c=>`<th class="d${c==='comb'?' grand':''}">$</th><th class="p${c==='comb'?' grand':''}">% rev</th>`).join('')}</tr></thead>`;
+    <tr class="outlets"><th class="lab" rowspan="2">Line item</th>${cols.map(col=>`<th class="outcol${col.grand?' grand':''}" colspan="2">${col.label}</th>`).join('')}</tr>
+    <tr class="units">${cols.map(col=>`<th class="d${col.grand?' grand':''}">$</th><th class="p${col.grand?' grand':''}">% rev</th>`).join('')}</tr></thead>`;
   let body='';
   FIN_TREE.forEach(node=>{
     if(node.kind==='derived'){
       const cls=(node.k==='net'||node.k==='ncf')?'grand':'catrow';
-      body+=`<tr class="${cls}"><td class="lab">${node.label}${node.note?`<span class="bnote">${node.note}</span>`:''}</td>${cells(c=>CV[c][node.k],true)}</tr>`;
+      body+=`<tr class="${cls}"><td class="lab">${node.label}${node.note?`<span class="bnote">${node.note}</span>`:''}</td>${cells(col=>CV[col.id][node.k],true)}</tr>`;
     } else if(node.kind==='memo'){
-      body+=`<tr class="memorow"><td class="lab">${ind(1)}${node.label}</td>${cells(c=>finLeaf(c,node.k),true)}</tr>`;
+      body+=`<tr class="memorow"><td class="lab">${ind(1)}${node.label}</td>${cells(col=>finLeaf(col.outlet,node.k,col.period),true)}</tr>`;
     } else {
       const open=!!finDetExpand[node.k];
-      body+=`<tr class="grouprow${open?' open':''}" data-key="${node.k}"><td class="lab"><span class="chev">▶</span>${node.label}</td>${cells(c=>CV[c][node.k],false)}</tr>`;
+      body+=`<tr class="grouprow${open?' open':''}" data-key="${node.k}"><td class="lab"><span class="chev">▶</span>${node.label}</td>${cells(col=>CV[col.id][node.k],false)}</tr>`;
       if(!open) return;
       if(node.kids){
-        node.kids.forEach(id=>{ if(!cols.some(c=>finLeaf(c,id))) return;
-          body+=`<tr class="finleaf"><td class="lab">${ind(1)}${FIN_LEAF[id]}</td>${cells(c=>finLeaf(c,id),false,true)}</tr>`; });
+        node.kids.forEach(id=>{ if(!cols.some(col=>finLeaf(col.outlet,id,col.period))) return;
+          body+=`<tr class="finleaf"><td class="lab">${ind(1)}${FIN_LEAF[id]}</td>${cells(col=>finLeaf(col.outlet,id,col.period),false,true)}</tr>`; });
       } else if(node.groups){
         node.groups.forEach(g=>{
           const gopen=!!finDetExpand[g.k];
-          body+=`<tr class="grouprow${gopen?' open':''}" data-key="${g.k}"><td class="lab">${ind(1)}<span class="chev">▶</span>${g.label}</td>${cells(c=>g.kids.reduce((a,id)=>a+finLeaf(c,id),0),false)}</tr>`;
+          body+=`<tr class="grouprow${gopen?' open':''}" data-key="${g.k}"><td class="lab">${ind(1)}<span class="chev">▶</span>${g.label}</td>${cells(col=>g.kids.reduce((a,id)=>a+finLeaf(col.outlet,id,col.period),0),false)}</tr>`;
           if(!gopen) return;
-          g.kids.forEach(id=>{ if(!cols.some(c=>finLeaf(c,id))) return;
-            body+=`<tr class="finleaf"><td class="lab">${ind(2)}${FIN_LEAF[id]}</td>${cells(c=>finLeaf(c,id),false,true)}</tr>`; });
+          g.kids.forEach(id=>{ if(!cols.some(col=>finLeaf(col.outlet,id,col.period))) return;
+            body+=`<tr class="finleaf"><td class="lab">${ind(2)}${FIN_LEAF[id]}</td>${cells(col=>finLeaf(col.outlet,id,col.period),false,true)}</tr>`; });
         });
       }
     }
   });
 
-  const c=CV[showComb?'comb':cols[0]];
-  const aggLabel=showComb?`${sel.length} outlets`:sel[0].label;
+  const focus=cols[multiP?0:(showComb?cols.length-1:0)];
+  const c=CV[focus.id];
+  const outletScope=showComb?`${sel.length} outlets`:sel[0].label;
+  const aggLabel=multiP?`${focus.label} &middot; ${outletScope}`:outletScope;
   const mlab = finSelMonths.length===12 ? 'full year'
              : finSelMonths.length<=3 ? finSelMonths.map(i=>finMonthLabels()[i]).join(', ')
              : `${finSelMonths.length} months`;
   const allocNote = finInclOwnerAlloc ? '' : ' &middot; excl. owner-allocated exp.';
   const zlab=t=>`<span class="zlab" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">${t}</span>`;
-  const seg=`<div class="segmented" id="finPeriodSeg">${FIN_PERIODS.map(p=>`<button data-p="${p.k}" class="${p.k===finPeriod?'on':''}">${p.label}</button>`).join('')}</div>`;
+  const seg=`<div class="segmented" id="finPeriodSeg">${FIN_PERIODS.map(p=>`<button data-p="${p.k}" class="${finSelPeriods.includes(p.k)?'on':''}">${p.label}</button>`).join('')}</div>`;
   const oseg=`<div class="segmented" id="finOutletSeg">${FIN_OUTLETS.map(o=>`<button data-o="${o.k}" class="${finSelOutlets.includes(o.k)?'on':''}">${o.label}</button>`).join('')}<button data-o="__all" class="${finSelOutlets.length===FIN_OUTLETS.length?'on':''}">All</button></div>`;
   const aseg=`<div class="segmented" id="finAllocSeg"><button data-a="inc" class="${finInclOwnerAlloc?'on':''}">Include</button><button data-a="exc" class="${!finInclOwnerAlloc?'on':''}">Exclude</button></div>`;
   const mseg=`<div class="segmented" id="finMonthSeg">${finMonthLabels().map((lab,i)=>`<button data-m="${i}" class="${finSelMonths.includes(i)?'on':''}">${lab}</button>`).join('')}<button data-m="__all" class="${finSelMonths.length===12?'on':''}">Full yr</button></div>`;
   const kpi=(lab,val,meta,cls)=>`<div class="kpi"><div class="lab">${lab}</div><div class="val ${cls||''}">${val}</div><div class="meta">${meta}</div></div>`;
   el.innerHTML=`
     <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>Financials</b></div>
-    <h1 class="pagetitle serif">Financials<span class="sub">${per.label} &middot; ${mlab} &middot; full detail P&amp;L</span></h1>
+    <h1 class="pagetitle serif">Financials<span class="sub">${periodsLabel} &middot; ${mlab} &middot; full detail P&amp;L</span></h1>
     <div class="alloc-toolbar" style="flex-wrap:wrap;gap:10px 18px">
-      ${zlab('Period')}${seg}
+      ${zlab(multiP?'Periods (compare)':'Period')}${seg}
       ${zlab('Outlets')}${oseg}
       ${zlab("Owner's allocated exp.")}${aseg}
       <div class="grow"></div></div>
@@ -1814,8 +1827,8 @@ function renderFin(){
       ${kpi('Total Labor', pct(c.labor/c.rev), `${usdK(c.labor)} all-in`)}
       ${kpi('Net Operating Profit', pct(c.net/c.rev), `${finMoney(c.net)} before reserve`, c.net>=0?'pos':'neg')}
     </div>
-    <div class="block"><div class="head"><h3 class="serif">${per.label} &middot; full detail P&amp;L by outlet</h3>
-      <span class="note">every statement line &middot; $ and % of revenue per outlet &middot; Combined = four F&amp;B outlets &middot; click a row to expand</span></div>
+    <div class="block"><div class="head"><h3 class="serif">${periodsLabel} &middot; full detail P&amp;L ${multiP?'· comparing periods':'by outlet'}</h3>
+      <span class="note">every statement line &middot; $ and % of revenue per column &middot; ${multiP?`columns = selected periods (${outletScope})`:'Combined = total of selected outlets'} &middot; click a row to expand</span></div>
       <div class="pad" style="padding-top:0">
         <div class="fbsum-toolbar"><div class="expandctl">
           <button class="btn" id="finExpandAll">Expand all</button>
@@ -1837,7 +1850,12 @@ function renderFin(){
 }
 function wireFin(){
   const root=document.getElementById('view-fin');
-  root.querySelector('#finPeriodSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b&&b.dataset.p){ finPeriod=b.dataset.p; renderFin(); }});
+  root.querySelector('#finPeriodSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b||!b.dataset.p) return;
+    const k=b.dataset.p;
+    if(finSelPeriods.includes(k)){ if(finSelPeriods.length>1) finSelPeriods=finSelPeriods.filter(x=>x!==k); }
+    else { finSelPeriods=FIN_PERIODS.map(p=>p.k).filter(x=>finSelPeriods.includes(x)||x===k); }
+    renderFin();
+  });
   root.querySelector('#finOutletSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b||!b.dataset.o) return;
     const k=b.dataset.o;
     if(k==='__all'){ finSelOutlets=FIN_OUTLETS.map(o=>o.k); }
