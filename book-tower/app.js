@@ -1759,14 +1759,14 @@ function renderFin(){
       body+=`<tr class="grouprow${open?' open':''}" data-key="${node.k}"><td class="lab"><span class="chev">▶</span>${node.label}</td>${cells(c=>CV[c][node.k],false)}</tr>`;
       if(!open) return;
       if(node.kids){
-        node.kids.forEach(id=>{ if(!FIN_COLS.some(c=>finLeaf(c,id))) return;
+        node.kids.forEach(id=>{ if(!cols.some(c=>finLeaf(c,id))) return;
           body+=`<tr class="finleaf"><td class="lab">${ind(1)}${FIN_LEAF[id]}</td>${cells(c=>finLeaf(c,id),false,true)}</tr>`; });
       } else if(node.groups){
         node.groups.forEach(g=>{
           const gopen=!!finDetExpand[g.k];
           body+=`<tr class="grouprow${gopen?' open':''}" data-key="${g.k}"><td class="lab">${ind(1)}<span class="chev">▶</span>${g.label}</td>${cells(c=>g.kids.reduce((a,id)=>a+finLeaf(c,id),0),false)}</tr>`;
           if(!gopen) return;
-          g.kids.forEach(id=>{ if(!FIN_COLS.some(c=>finLeaf(c,id))) return;
+          g.kids.forEach(id=>{ if(!cols.some(c=>finLeaf(c,id))) return;
             body+=`<tr class="finleaf"><td class="lab">${ind(2)}${FIN_LEAF[id]}</td>${cells(c=>finLeaf(c,id),false,true)}</tr>`; });
         });
       }
