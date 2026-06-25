@@ -1,0 +1,5 @@
+# Link this repo in Netlify and it auto-deploys on every push to the production branch.
+# The site is the static book-tower/ folder — no build step.
+[build]
+  publish = "book-tower"
+  command = ""
