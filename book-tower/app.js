@@ -1630,15 +1630,9 @@ function wireTtm(){
 }
 
 /* ============================ FINANCIALS ============================ */
-// Full line-item P&L by outlet. Each leaf is [FY2025, FY2026, Trailing-12M] in dollars.
-// Prior years (2025) are reclassified to the 2026 treatment: Replacement Reserve and
-// Other (Income)/Expense sit BELOW Net Operating Profit, not inside Total Uncontrollable.
-const FIN_DETAIL = {
-  lsd:{r_food:[4479248,4092319,4319836], r_nonalc:[251683,235916,243654], r_liquor:[1439571,1308124,1405440], r_beer:[135899,129419,135917], r_wine:[1065388,958101,1023518], r_other:[50889,39434,42573], r_pdr:[0,0,0], r_room:[0,0,0], r_av:[0,0,0], r_parking:[0,0,0], r_service:[0,0,0], r_admin:[0,15951,15951], r_disc:[-174888,-141364,-162472], c_food:[1359093,1233000,1336427], c_nonalc:[68789,60719,69269], c_liquor:[256417,232988,252142], c_beer:[30320,28302,30055], c_wine:[311151,272899,297102], m_corp:[38773,20383,33027], m_ops:[141315,201495,168108], m_boh:[314034,326321,326260], m_foh:[345577,277980,327557], b_line:[494301,481563,485251], b_prep:[180335,143651,177532], b_pastry:[106006,75053,90079], b_dish:[154576,143379,157944], f_bar:[126372,107409,119953], f_support:[17021,14658,16959], f_barista:[30116,47223,37990], f_host:[84598,77984,86196], f_server:[164252,127153,158999], f_train:[10878,8398,13375], p_tax:[333506,334179,336037], p_insret:[46123,34941,43716], p_disability:[0,20123,11106], p_medical:[73188,66195,80975], p_workers:[23046,20105,20245], p_other:[22130,23143,13723], bonus:[52348,38481,44979], o_delivery:[90,206,110], o_opsupplies:[20875,16236,8876], o_menus:[1724,1927,2212], o_paper:[64496,67633,81676], o_flowers:[4280,4267,2431], o_fuel:[0,0,0], o_uniform:[6157,1145,4190], o_banquet:[90,0,0], o_bar:[3683,8665,3816], o_kitchen:[27862,39691,29508], o_tableware:[8829,9484,12461], o_glassware:[15432,20060,16121], o_flatware:[11917,11989,9401], o_cleaning:[51358,50084,54413], o_equiprent:[25763,28414,30704], o_office:[13876,11700,18318], o_linen:[41832,37960,43074], o_contractclean:[67762,69224,67469], o_pest:[7505,3271,6575], o_landscape:[10618,6120,12599], me_music:[48670,39385,44409], mk_shared:[60307,50184,57117], mk_mealstravel:[0,3610,3432], mk_discount:[0,0,0], mk_giftcards:[606,869,516], mk_collateral:[0,0,0], mk_website:[4744,1894,2642], mk_jobad:[5608,9919,8953], mk_paidad:[11632,6195,10280], mk_signage:[0,0,0], mk_loyalty:[0,0,0], mk_events:[0,300,75], mk_agency:[0,0,0], mk_database:[1000,2673,1000], mk_email:[322,4743,2349], mk_photo:[16290,7378,10735], mk_pr:[48019,41300,41321], mk_research:[234,752,508], mk_reservation:[2684,1808,2686], mk_admktfees:[0,24191,10920], g_collection:[0,0,0], g_professional:[30560,12507,33329], g_accounting:[136190,154334,151452], g_contractlabor:[0,0,0], g_bank:[8245,5186,7570], g_cash:[0,0,0], g_computer:[17854,15783,20148], g_dues:[23284,18661,21655], g_phone:[2232,7834,4030], g_security:[0,0,0], g_storage:[4108,2670,2430], g_travel:[9151,3245,9683], g_meals:[2282,2733,1379], g_deposit:[24845,15821,20807], g_training:[0,0,0], g_legal:[17979,836,1567], rm_building:[84440,53152,75812], rm_furniture:[9993,11440,9299], u_electric:[0,5502,2612], u_gas:[0,15787,7844], u_trash:[0,712,353], u_water:[0,2034,979], u_unsplit:[34421,0,20183], oc_rent:[0,0,0], oc_cam:[0,0,0], oc_retax:[25560,4171,19082], ug_creditcard:[210668,175100,194454], ug_building:[11880,0,6931], ug_liability:[65063,81517,73827], ug_licenses:[2464,6446,5745], mf_base:[365146,333314,352641], olf:[542318,482127,521326], bt_local:[0,0,0], reserve:[146059,132621,140351], oth_income:[-32215,-19399,-11138]},
-  hs:{r_food:[2615278,2790451,2834217], r_nonalc:[61360,78173,68922], r_liquor:[782862,822521,775135], r_beer:[110890,124951,113918], r_wine:[390758,421496,395616], r_other:[8074,12856,13519], r_pdr:[0,0,0], r_room:[0,0,0], r_av:[0,0,0], r_parking:[0,0,0], r_service:[0,0,0], r_admin:[0,3760,3760], r_disc:[-98804,-97716,-97175], c_food:[793354,798606,843356], c_nonalc:[12146,22768,17407], c_liquor:[137636,152823,139238], c_beer:[21967,26840,23069], c_wine:[113312,124687,115343], m_corp:[36032,11458,26952], m_ops:[141182,137560,151846], m_boh:[219634,277302,230552], m_foh:[168253,137593,145673], b_line:[347283,342603,378989], b_prep:[84810,65727,80890], b_pastry:[25097,34912,32945], b_dish:[65946,49586,63758], f_bar:[78496,82529,79293], f_support:[7196,1948,3905], f_barista:[0,0,0], f_host:[58815,58686,62573], f_server:[83053,77047,89645], f_train:[5833,10743,9956], p_tax:[181200,182290,185042], p_insret:[17569,11495,15676], p_disability:[0,10607,5483], p_medical:[38402,28239,42813], p_workers:[5892,8377,7428], p_other:[21128,27062,21057], bonus:[20979,20952,19459], o_delivery:[5377,3159,3760], o_opsupplies:[17250,18272,13403], o_menus:[3161,1504,865], o_paper:[36525,29082,46210], o_flowers:[2332,2420,1790], o_fuel:[0,70,70], o_uniform:[2316,4163,3528], o_banquet:[0,0,0], o_bar:[2882,2569,2493], o_kitchen:[56448,60495,59687], o_tableware:[4340,1348,3311], o_glassware:[6223,5854,6877], o_flatware:[339,410,0], o_cleaning:[23118,22673,25768], o_equiprent:[9585,15119,11088], o_office:[4284,5516,7609], o_linen:[22831,23948,24774], o_contractclean:[66595,71468,65370], o_pest:[3384,3428,2988], o_landscape:[3504,3356,3670], me_music:[19834,38800,23162], mk_shared:[63236,36939,54671], mk_mealstravel:[0,770,672], mk_discount:[0,0,0], mk_giftcards:[90,869,0], mk_collateral:[0,0,0], mk_website:[4159,761,2009], mk_jobad:[2593,4527,4057], mk_paidad:[13716,7101,15436], mk_signage:[0,30,0], mk_loyalty:[0,0,0], mk_events:[0,0,0], mk_agency:[0,0,0], mk_database:[417,1722,1224], mk_email:[1198,3231,2467], mk_photo:[16290,7378,10735], mk_pr:[51930,43983,40070], mk_research:[144,167,0], mk_reservation:[1449,4401,1946], mk_admktfees:[0,9322,4309], g_collection:[0,0,0], g_professional:[33808,15654,35431], g_accounting:[96077,111940,107335], g_contractlabor:[0,0,0], g_bank:[6627,4415,6530], g_cash:[0,0,0], g_computer:[17958,22364,20571], g_dues:[9922,7102,5156], g_phone:[2227,8009,4005], g_security:[0,105,0], g_storage:[3193,2496,1515], g_travel:[5687,4635,4797], g_meals:[1645,1123,732], g_deposit:[22628,3587,17718], g_training:[0,18,0], g_legal:[12245,334,1320], rm_building:[67229,43644,58586], rm_furniture:[5012,9171,6934], u_electric:[0,1165,1166], u_gas:[0,3982,3982], u_trash:[0,171,172], u_water:[0,452,452], u_unsplit:[33982,0,19782], oc_rent:[0,0,0], oc_cam:[0,0,0], oc_retax:[25560,4171,19081], ug_creditcard:[117546,113191,121256], ug_building:[11880,0,6931], ug_liability:[48997,41499,49772], ug_licenses:[2464,5691,5420], mf_base:[194723,208180,205751], olf:[289756,302301,304753], bt_local:[0,0,0], reserve:[77889,82993,82021], oth_income:[-1918,-11599,-4586]},
-  kamp:{r_food:[677382,638451,709240], r_nonalc:[53838,49185,46811], r_liquor:[1327367,1424435,1356863], r_beer:[79796,94700,80435], r_wine:[226244,240044,221134], r_other:[132370,87751,110595], r_pdr:[0,0,0], r_room:[0,0,0], r_av:[0,0,0], r_parking:[0,0,0], r_service:[0,0,0], r_admin:[0,26810,26811], r_disc:[-38245,-40597,-38923], c_food:[105300,100856,107232], c_nonalc:[14172,14803,14497], c_liquor:[229809,246566,231007], c_beer:[14749,17084,14281], c_wine:[57160,61205,55621], m_corp:[27159,8562,19491], m_ops:[116343,96844,126861], m_boh:[19991,74397,41271], m_foh:[141210,108235,160438], b_line:[104087,79964,91396], b_prep:[2159,0,2159], b_pastry:[19832,30335,31043], b_dish:[31959,13201,20893], f_bar:[87123,61970,80968], f_support:[451,6160,2930], f_barista:[0,0,0], f_host:[149094,133742,135466], f_server:[59502,35536,62504], f_train:[1433,13751,4908], p_tax:[107931,101237,110584], p_insret:[10764,5111,8603], p_disability:[0,6440,3709], p_medical:[23681,16833,29038], p_workers:[5341,4709,3876], p_other:[13844,20670,18499], bonus:[13825,12459,12843], o_delivery:[53,104,73], o_opsupplies:[3803,6415,4484], o_menus:[146,209,0], o_paper:[1259,759,1026], o_flowers:[4961,3689,2577], o_fuel:[0,532,118], o_uniform:[1366,-92,698], o_banquet:[0,0,0], o_bar:[1870,1176,1930], o_kitchen:[10788,6118,9258], o_tableware:[2517,2401,864], o_glassware:[10524,5850,9319], o_flatware:[0,117,0], o_cleaning:[6863,2983,5664], o_equiprent:[4995,8111,6819], o_office:[7461,2558,7682], o_linen:[4594,4218,5260], o_contractclean:[32655,39266,35758], o_pest:[3250,2158,2542], o_landscape:[2336,1520,1890], me_music:[32524,9053,25447], mk_shared:[39107,41792,39321], mk_mealstravel:[0,576,576], mk_discount:[0,0,0], mk_giftcards:[45,618,0], mk_collateral:[0,0,0], mk_website:[1750,588,1837], mk_jobad:[2067,3789,3414], mk_paidad:[10302,4296,11070], mk_signage:[0,119,0], mk_loyalty:[0,0,0], mk_events:[0,0,0], mk_agency:[0,0,0], mk_database:[0,1935,1224], mk_email:[91,2662,1746], mk_photo:[11910,6135,9197], mk_pr:[23727,19443,21661], mk_research:[144,287,0], mk_reservation:[1200,1205,301], mk_admktfees:[0,6787,2776], g_collection:[0,0,0], g_professional:[28343,10547,29688], g_accounting:[66765,79597,82334], g_contractlabor:[0,0,0], g_bank:[5567,3149,4844], g_cash:[0,0,0], g_computer:[10108,25817,15975], g_dues:[8170,6491,3650], g_phone:[1471,6576,3231], g_security:[0,149,0], g_storage:[2299,2368,1515], g_travel:[687,3581,2112], g_meals:[539,807,386], g_deposit:[16670,1024,11879], g_training:[0,71,0], g_legal:[8720,501,0], rm_building:[32191,17817,24863], rm_furniture:[2483,9416,2325], u_electric:[0,777,776], u_gas:[0,2655,2655], u_trash:[0,114,114], u_water:[0,302,302], u_unsplit:[23094,0,13395], oc_rent:[0,0,0], oc_cam:[0,0,0], oc_retax:[17040,4171,14111], ug_creditcard:[50755,60393,50050], ug_building:[7920,0,4621], ug_liability:[41944,33508,44370], ug_licenses:[2082,4789,4271], mf_base:[123140,126219,125826], olf:[184003,182717,186731], bt_local:[0,0,0], reserve:[49256,48814,50252], oth_income:[-8389,-8183,-8701]},
-  anth:{r_food:[1802605,1977765,1831219], r_nonalc:[94105,81475,92939], r_liquor:[411190,501969,418437], r_beer:[142723,132303,153346], r_wine:[505732,444309,482504], r_other:[1049503,814299,760121], r_pdr:[0,52849,52849], r_room:[0,56718,56718], r_av:[0,4632,4632], r_parking:[0,8025,8025], r_service:[0,182927,182926], r_admin:[0,0,0], r_disc:[-4996,-886,-3583], c_food:[356994,386361,372936], c_nonalc:[16399,16781,16370], c_liquor:[64056,78940,62919], c_beer:[10813,12511,12998], c_wine:[88688,83701,85801], m_corp:[47597,7595,37370], m_ops:[169838,161362,189883], m_boh:[145461,144831,133358], m_foh:[514217,476084,538467], b_line:[151942,115370,142529], b_prep:[0,0,0], b_pastry:[55590,39352,50755], b_dish:[58377,59872,60389], f_bar:[47699,49194,55772], f_support:[0,0,0], f_barista:[0,0,0], f_host:[14597,829,11704], f_server:[337185,330691,332739], f_train:[120,0,120], p_tax:[133835,122635,134899], p_insret:[35102,24854,32332], p_disability:[0,13853,6727], p_medical:[34920,37367,27236], p_workers:[8691,10607,10180], p_other:[30181,19129,18778], bonus:[143254,129416,125295], o_delivery:[0,81,20], o_opsupplies:[13810,15103,5509], o_menus:[322,723,23], o_paper:[15642,18675,18874], o_flowers:[10426,7896,9731], o_fuel:[0,438,118], o_uniform:[953,1280,388], o_banquet:[0,0,0], o_bar:[1570,1242,1174], o_kitchen:[15532,16879,13385], o_tableware:[6085,9625,11504], o_glassware:[19696,18398,20716], o_flatware:[5599,3622,5599], o_cleaning:[16768,22091,17379], o_equiprent:[19498,21494,26301], o_office:[4683,5171,6154], o_linen:[47791,56485,51696], o_contractclean:[67199,65593,67347], o_pest:[3371,3391,2965], o_landscape:[3211,2489,2698], me_music:[69684,25834,57901], mk_shared:[59322,44441,56674], mk_mealstravel:[0,2967,1396], mk_discount:[0,0,0], mk_giftcards:[45,0,0], mk_collateral:[0,0,0], mk_website:[1750,587,1837], mk_jobad:[1930,7201,3423], mk_paidad:[71020,41828,56986], mk_signage:[0,164,0], mk_loyalty:[0,0,0], mk_events:[0,0,0], mk_agency:[0,0,0], mk_database:[292,4018,1224], mk_email:[1140,1444,974], mk_photo:[13110,6630,9397], mk_pr:[31965,34808,22808], mk_research:[0,2225,0], mk_reservation:[3000,7467,5095], mk_admktfees:[0,35011,16219], g_collection:[0,0,0], g_professional:[38469,17637,45871], g_accounting:[78454,114713,98221], g_contractlabor:[64045,3383,38777], g_bank:[5458,2479,4797], g_cash:[0,0,0], g_computer:[8849,15107,15103], g_dues:[21276,11831,17233], g_phone:[1471,2465,2190], g_security:[0,218,0], g_storage:[2299,2360,1515], g_travel:[23190,3218,24023], g_meals:[3431,1333,2452], g_deposit:[21672,2488,13344], g_training:[0,34,0], g_legal:[12364,1667,5132], rm_building:[34564,37865,29757], rm_furniture:[2893,23990,2268], u_electric:[0,777,776], u_gas:[0,2655,2655], u_trash:[0,114,114], u_water:[0,302,302], u_unsplit:[23558,0,13859], oc_rent:[0,0,0], oc_cam:[0,0,0], oc_retax:[17040,4171,14112], ug_creditcard:[117070,107606,104700], ug_building:[7920,0,4622], ug_liability:[34951,34996,39626], ug_licenses:[2082,3378,4271], mf_base:[200078,211450,201960], olf:[299317,304718,298418], bt_local:[0,0,0], reserve:[80031,84065,80269], oth_income:[-8389,-5182,-8407]},
-};
+// Full line-item monthly P&L lives in fin-data.js (const FIN_M): FIN_M[outlet][leaf] = {y25:[12],y26:[12],bud:[12]}
+// (months Jan..Dec). Trailing-12M is derived = 2025 Jun-Dec + 2026 Jan-May. Prior years are reclassified to
+// the 2026 treatment: Replacement Reserve and Other (Income)/Expense sit BELOW Net Operating Profit.
 const FIN_OUTLETS = [
   {k:'lsd',  label:'Le Supreme'},
   {k:'hs',   label:'Hiroki-San'},
@@ -1646,20 +1640,37 @@ const FIN_OUTLETS = [
   {k:'anth', label:'Anthology'},
 ];
 const FIN_PERIODS = [
-  {k:'2025', label:'FY 2025'},
-  {k:'2026', label:'FY 2026'},
-  {k:'ttm',  label:'Trailing 12M'},
+  {k:'2025',   label:'FY 2025'},
+  {k:'2026',   label:'FY 2026'},
+  {k:'ttm',    label:'Trailing 12M'},
+  {k:'budget', label:'Budget 2026'},
 ];
 const FIN_PERIOD_SUB = {
-  '2025':'Full-year 2025 actuals',
-  '2026':'Full-year 2026 (Jan–May actual + Jun–Dec forecast)',
-  'ttm' :'Jun 2025 (P6) – May 2026 actuals',
+  '2025'  :'Full-year 2025 actuals',
+  '2026'  :'Full-year 2026 (Jan–May actual + Jun–Dec forecast)',
+  'ttm'   :'Jun 2025 (P6) – May 2026 actuals',
+  'budget':'2026 operating budget',
 };
 let finPeriod = 'ttm';
 const finMoney = v => v<0 ? '−'+usd(-v) : usd(v);
 
-const FIN_PI = {'2025':0,'2026':1,'ttm':2};
-let finSelOutlets = FIN_OUTLETS.map(o=>o.k);   // multi-select; Combined = total of the selected (shown only when 2+)
+// month-level data: FIN_M[outlet][leaf] = {y25:[12],y26:[12],bud:[12]} (Jan..Dec). TTM derived.
+const FIN_MONTHS_STD = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const FIN_MONTHS_TTM = ["Jun'25","Jul'25","Aug'25","Sep'25","Oct'25","Nov'25","Dec'25","Jan'26","Feb'26","Mar'26","Apr'26","May'26"];
+const finMonthLabels = () => finPeriod==='ttm' ? FIN_MONTHS_TTM : FIN_MONTHS_STD;
+let finSelMonths = [0,1,2,3,4,5,6,7,8,9,10,11];   // month indices included (default = full year)
+let finSelOutlets = FIN_OUTLETS.map(o=>o.k);      // Combined = total of the selected (shown only when 2+)
+// Owner's allocated expenses — toggle to include/exclude
+const FIN_OWNER_ALLOC = ['u_electric','u_gas','u_trash','u_water','u_unsplit','g_deposit','ug_building','oc_retax'];
+let finInclOwnerAlloc = true;
+function finMonthlyArr(o,id){
+  const r=FIN_M[o]&&FIN_M[o][id];
+  if(!r) return [0,0,0,0,0,0,0,0,0,0,0,0];
+  if(finPeriod==='2025')  return r.y25;
+  if(finPeriod==='2026')  return r.y26;
+  if(finPeriod==='budget')return r.bud;
+  return r.y25.slice(5,12).concat(r.y26.slice(0,5));   // ttm: 2025 Jun-Dec + 2026 Jan-May
+}
 const FIN_LEAF = {
   r_food:'Food Sales', r_nonalc:'Non-Alcoholic Beverage', r_liquor:'Liquor', r_beer:'Beer', r_wine:'Wine',
   r_other:'Other Operating Income', r_pdr:'PDR &amp; Catering', r_room:'Room Rental Fee', r_av:'Audio / Visual Fee',
@@ -1717,8 +1728,11 @@ let finDetExpand = {};
 
 function finLeafIds(node){ if(node.kids) return node.kids; if(node.groups) return node.groups.reduce((a,g)=>a.concat(g.kids),[]); return []; }
 function finLeaf(col,id){
+  if(!finInclOwnerAlloc && FIN_OWNER_ALLOC.includes(id)) return 0;
   if(col==='comb') return finSelOutlets.reduce((a,k)=>a+finLeaf(k,id),0);
-  const row=FIN_DETAIL[col][id]; return row?(row[FIN_PI[finPeriod]]||0):0;
+  const arr=finMonthlyArr(col,id);
+  let s=0; for(const m of finSelMonths) s+=arr[m]||0;
+  return s;
 }
 function finColVals(col){
   const sum=ids=>ids.reduce((a,id)=>a+finLeaf(col,id),0);
@@ -1775,18 +1789,27 @@ function renderFin(){
 
   const c=CV[showComb?'comb':cols[0]];
   const aggLabel=showComb?`${sel.length} outlets`:sel[0].label;
+  const mlab = finSelMonths.length===12 ? 'full year'
+             : finSelMonths.length<=3 ? finSelMonths.map(i=>finMonthLabels()[i]).join(', ')
+             : `${finSelMonths.length} months`;
+  const allocNote = finInclOwnerAlloc ? '' : ' &middot; excl. owner-allocated exp.';
+  const zlab=t=>`<span class="zlab" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">${t}</span>`;
   const seg=`<div class="segmented" id="finPeriodSeg">${FIN_PERIODS.map(p=>`<button data-p="${p.k}" class="${p.k===finPeriod?'on':''}">${p.label}</button>`).join('')}</div>`;
   const oseg=`<div class="segmented" id="finOutletSeg">${FIN_OUTLETS.map(o=>`<button data-o="${o.k}" class="${finSelOutlets.includes(o.k)?'on':''}">${o.label}</button>`).join('')}<button data-o="__all" class="${finSelOutlets.length===FIN_OUTLETS.length?'on':''}">All</button></div>`;
+  const aseg=`<div class="segmented" id="finAllocSeg"><button data-a="inc" class="${finInclOwnerAlloc?'on':''}">Include</button><button data-a="exc" class="${!finInclOwnerAlloc?'on':''}">Exclude</button></div>`;
+  const mseg=`<div class="segmented" id="finMonthSeg">${finMonthLabels().map((lab,i)=>`<button data-m="${i}" class="${finSelMonths.includes(i)?'on':''}">${lab}</button>`).join('')}<button data-m="__all" class="${finSelMonths.length===12?'on':''}">Full yr</button></div>`;
   const kpi=(lab,val,meta,cls)=>`<div class="kpi"><div class="lab">${lab}</div><div class="val ${cls||''}">${val}</div><div class="meta">${meta}</div></div>`;
   el.innerHTML=`
     <div class="breadcrumb">Intel <span>&rsaquo;</span> Reports <span>&rsaquo;</span> <b>Financials</b></div>
-    <h1 class="pagetitle serif">Financials<span class="sub">${per.label} &middot; full detail P&amp;L by outlet</span></h1>
+    <h1 class="pagetitle serif">Financials<span class="sub">${per.label} &middot; ${mlab} &middot; full detail P&amp;L</span></h1>
     <div class="alloc-toolbar" style="flex-wrap:wrap;gap:10px 18px">
-      <span class="zlab" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Period</span>${seg}
-      <span class="zlab" style="font-size:10px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted)">Outlets</span>${oseg}
+      ${zlab('Period')}${seg}
+      ${zlab('Outlets')}${oseg}
+      ${zlab("Owner's allocated exp.")}${aseg}
       <div class="grow"></div></div>
+    <div class="alloc-toolbar" style="flex-wrap:wrap;gap:8px 10px;margin-top:6px">${zlab('Months')}${mseg}</div>
     <div class="kpis">
-      ${kpi('Total Revenue', usdK(c.rev), `${aggLabel} &middot; ${FIN_PERIOD_SUB[finPeriod]}`)}
+      ${kpi('Total Revenue', usdK(c.rev), `${aggLabel} &middot; ${mlab}${allocNote}`)}
       ${kpi('Prime Cost', pct(c.prime/c.rev), `${usdK(c.prime)} &middot; COGS ${pct(c.cogs/c.rev)} + labor ${pct(c.labor/c.rev)}`)}
       ${kpi('Total Labor', pct(c.labor/c.rev), `${usdK(c.labor)} all-in`)}
       ${kpi('Net Operating Profit', pct(c.net/c.rev), `${finMoney(c.net)} before reserve`, c.net>=0?'pos':'neg')}
@@ -1799,14 +1822,17 @@ function renderFin(){
           <button class="btn" id="finCollapseAll">Collapse all</button>
         </div></div>
         <div class="fbsum-scroll"><table class="fbsum">${head}<tbody>${body}</tbody></table></div></div></div>
-    <div class="foot"><b>Full detail P&amp;L — three periods, four F&amp;B outlets, every statement line.</b>
-      <b>FY 2025</b> = full-year 2025 actuals. <b>FY 2026</b> = full-year 2026 (January–May actual + June–December forecast).
-      <b>Trailing 12M</b> = June 2025 (Period 6) through May 2026, summed line-by-line from the monthly P&amp;L columns.
-      Click any section or sub-group to drill into its lines; zero lines are hidden for the selected period.
+    <div class="foot"><b>Full detail P&amp;L — four periods, four F&amp;B outlets, monthly, every statement line.</b>
+      <b>FY 2025</b> = full-year 2025 actuals. <b>FY 2026</b> = full-year 2026 (Jan–May actual + Jun–Dec forecast).
+      <b>Trailing 12M</b> = Jun 2025 (P6) – May 2026. <b>Budget 2026</b> = the 2026 operating budget.
+      <b>Months</b> filter sums only the selected months (single, several, or full year); <b>Outlets</b> filter shows any
+      combination, with Combined = total of those selected. <b>Owner&rsquo;s allocated exp.</b> toggles Utilities,
+      Security &amp; Deposit Services, Building Insurance and RE Tax in or out of every total.
+      Click any section or sub-group to drill into its lines; zero lines are hidden for the current view.
       <b>Prior years are reclassified to the 2026 treatment:</b> Replacement Reserve and Other (Income)/Expense sit
-      <i>below</i> Net Operating Profit, not inside Total Uncontrollable — so <b>Net Operating Profit</b> (= gross profit − labor −
-      controllable − uncontrollable) is comparable across all three periods, and <b>Net Cash Flow</b> (after reserve &amp; non-operating)
-      ties to each statement&rsquo;s stated bottom line. ROOST (rooms) is excluded — these are the F&amp;B outlet P&amp;Ls.</div>`;
+      <i>below</i> Net Operating Profit, so <b>Net Operating Profit</b> (= gross profit − labor − controllable − uncontrollable)
+      is comparable across periods and <b>Net Cash Flow</b> ties to each statement&rsquo;s stated bottom line.
+      ROOST (rooms) is excluded — these are the F&amp;B outlet P&amp;Ls.</div>`;
   wireFin();
 }
 function wireFin(){
@@ -1819,6 +1845,16 @@ function wireFin(){
     else { finSelOutlets=FIN_OUTLETS.map(o=>o.k).filter(x=>finSelOutlets.includes(x)||x===k); }
     renderFin();
   });
+  root.querySelector('#finMonthSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(!b||b.dataset.m===undefined) return;
+    const m=b.dataset.m;
+    if(m==='__all'){ finSelMonths=[0,1,2,3,4,5,6,7,8,9,10,11]; }
+    else { const i=+m;
+      if(finSelMonths.includes(i)){ if(finSelMonths.length>1) finSelMonths=finSelMonths.filter(x=>x!==i); }
+      else { finSelMonths=finSelMonths.concat(i).sort((a,b)=>a-b); }
+    }
+    renderFin();
+  });
+  root.querySelector('#finAllocSeg').addEventListener('click', e=>{ const b=e.target.closest('button'); if(b&&b.dataset.a){ finInclOwnerAlloc=(b.dataset.a==='inc'); renderFin(); }});
   root.querySelector('#finExpandAll').addEventListener('click', ()=>{ FIN_TOGGLE_KEYS.forEach(k=>finDetExpand[k]=true); renderFin(); });
   root.querySelector('#finCollapseAll').addEventListener('click', ()=>{ finDetExpand={}; renderFin(); });
   root.querySelectorAll('tr.grouprow[data-key]').forEach(r=> r.addEventListener('click', ()=>{ const k=r.dataset.key; finDetExpand[k]=!finDetExpand[k]; renderFin(); }));
