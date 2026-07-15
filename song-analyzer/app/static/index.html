@@ -3,26 +3,26 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Artist Radio Fit Analyzer</title>
+<title>Song Analyzer</title>
 <style>
   :root {
     --bg: #0d0f14; --panel: #161a22; --panel2: #1d2230;
     --text: #e8eaf0; --muted: #9aa3b5; --accent: #7c5cff; --accent2: #38d9a9;
-    --border: #2a3040; --warn: #ffb454;
+    --border: #2a3040; --warn: #ffb454; --crit: #ff7b7b; --good: #38d9a9;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     background: var(--bg); color: var(--text); min-height: 100vh;
   }
-  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+  .wrap { max-width: 900px; margin: 0 auto; padding: 40px 20px 80px; }
   header h1 { font-size: 1.7rem; letter-spacing: -0.02em; }
   header h1 span { color: var(--accent); }
-  header p { color: var(--muted); margin-top: 8px; max-width: 640px; line-height: 1.5; }
+  header p { color: var(--muted); margin-top: 8px; max-width: 680px; line-height: 1.5; }
 
   .drop {
     margin-top: 28px; border: 2px dashed var(--border); border-radius: 14px;
-    padding: 48px 24px; text-align: center; cursor: pointer;
+    padding: 44px 24px; text-align: center; cursor: pointer;
     transition: border-color .15s, background .15s;
   }
   .drop:hover, .drop.over { border-color: var(--accent); background: var(--panel); }
@@ -31,7 +31,7 @@
   #file { display: none; }
 
   .status { margin-top: 18px; color: var(--muted); font-size: .9rem; min-height: 1.2em; }
-  .status.error { color: #ff7b7b; }
+  .status.error { color: var(--crit); }
 
   .report { margin-top: 28px; display: none; }
   .headline {
@@ -40,20 +40,46 @@
     display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
   }
   .grade-badge {
-    width: 84px; height: 84px; border-radius: 50%; flex: 0 0 auto;
+    width: 92px; height: 92px; border-radius: 50%; flex: 0 0 auto;
     display: flex; align-items: center; justify-content: center;
-    font-size: 2rem; font-weight: 700; background: var(--accent); color: #fff;
+    font-size: 2.1rem; font-weight: 700; background: var(--accent); color: #fff;
   }
-  .headline h2 { font-size: 1.15rem; line-height: 1.4; }
+  .headline h2 { font-size: 1.2rem; line-height: 1.4; }
   .headline .sub { color: var(--muted); font-size: .85rem; margin-top: 6px; }
 
   h3.section { margin: 30px 0 12px; font-size: .8rem; text-transform: uppercase;
     letter-spacing: .12em; color: var(--muted); }
 
-  .features { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+  .pillars { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+  .pillar { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+  .pillar .label { font-size: .75rem; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .pillar .row { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; }
+  .pillar .g { font-size: 1.5rem; font-weight: 700; color: var(--accent2); }
+  .pillar .s { color: var(--muted); font-size: .85rem; }
+  .pillar .bar { height: 5px; background: var(--panel2); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+  .pillar .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+
+  .fb { border-left: 3px solid var(--border); background: var(--panel);
+    border-radius: 0 10px 10px 0; padding: 12px 14px; margin-bottom: 10px;
+    font-size: .88rem; line-height: 1.55; }
+  .fb .tag { font-size: .68rem; text-transform: uppercase; letter-spacing: .08em;
+    font-weight: 700; margin-right: 8px; }
+  .fb.critical { border-color: var(--crit); } .fb.critical .tag { color: var(--crit); }
+  .fb.improve  { border-color: var(--warn); } .fb.improve .tag { color: var(--warn); }
+  .fb.tip      { border-color: var(--accent); } .fb.tip .tag { color: var(--accent); }
+  .fb.strength { border-color: var(--good); } .fb.strength .tag { color: var(--good); }
+  .fb .pillar-name { color: var(--muted); font-size: .72rem; margin-left: 6px; }
+
+  .features { display: grid; grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); gap: 10px; }
   .feat { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
-  .feat .k { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
-  .feat .v { font-size: 1.15rem; font-weight: 600; margin-top: 4px; }
+  .feat .k { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
+  .feat .v { font-size: 1.1rem; font-weight: 600; margin-top: 4px; }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { background: var(--panel); border: 1px solid var(--border); border-radius: 999px;
+    padding: 7px 14px; font-size: .82rem; color: var(--muted); }
+  .chip b { color: var(--text); }
+  .chip.hot { border-color: var(--accent2); color: var(--text); }
 
   .match { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
     padding: 18px; margin-bottom: 12px; }
@@ -74,15 +100,23 @@
   .disclaimer { margin-top: 26px; padding: 14px 16px; border-left: 3px solid var(--warn);
     background: var(--panel); border-radius: 0 10px 10px 0; color: var(--muted);
     font-size: .82rem; line-height: 1.55; }
+
+  .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .tier { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 18px; }
+  .tier.featured { border-color: var(--accent); }
+  .tier .t-name { font-weight: 700; font-size: 1.02rem; }
+  .tier .t-model { color: var(--accent); font-size: .72rem; text-transform: uppercase; letter-spacing: .08em; margin-top: 3px; }
+  .tier .t-price { margin-top: 10px; font-size: 1.05rem; font-weight: 600; color: var(--accent2); }
+  .tier ul { margin: 12px 0 0 16px; color: var(--muted); font-size: .83rem; line-height: 1.6; }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>Artist Radio <span>Fit Analyzer</span></h1>
-    <p>Upload a track. We extract its sonic fingerprint, grade it against the catalogs of
-    major artists, and generate a compliant placement playbook to get it in front of the
-    listeners who feed those artists' radio algorithms.</p>
+    <h1>Song <span>Analyzer</span></h1>
+    <p>Upload a track. Our engine grades it on production quality, catchiness, streaming
+    readiness, popularity reach, and scalability — then tells you exactly what to fix and
+    which major-artist audiences to target to perform better on streaming services.</p>
   </header>
 
   <div class="drop" id="drop">
@@ -101,6 +135,15 @@
       </div>
     </div>
 
+    <h3 class="section">Score breakdown</h3>
+    <div class="pillars" id="pillars"></div>
+
+    <h3 class="section">What to improve</h3>
+    <div id="feedback"></div>
+
+    <h3 class="section">Listening-context fit</h3>
+    <div class="chips" id="contexts"></div>
+
     <h3 class="section">Sonic fingerprint</h3>
     <div class="features" id="features"></div>
 
@@ -109,6 +152,9 @@
 
     <div class="disclaimer" id="disclaimer"></div>
   </div>
+
+  <h3 class="section" style="margin-top:44px">Plans</h3>
+  <div class="tiers" id="tiers"></div>
 </div>
 
 <script>
@@ -150,14 +196,58 @@ const FEATURE_LABELS = {
   danceability: 'Danceability', brightness: 'Brightness', acousticness: 'Acousticness',
   valence: 'Valence', dynamics: 'Dynamics', density: 'Density'
 };
+const STRUCTURE_LABELS = {
+  duration_total: ['Length', v => Math.floor(v/60) + ':' + String(Math.round(v%60)).padStart(2,'0')],
+  loudness_lufs: ['Loudness', v => v + ' LUFS'],
+  intro_length: ['Intro', v => v + 's'],
+  hook_arrival: ['Hook arrives', v => v + 's'],
+  repetition: ['Repetition', v => Math.round(v*100) + '%'],
+  stereo_width: ['Stereo width', v => Math.round(v*100) + '%'],
+};
 
 function render(data) {
   document.getElementById('gradeBadge').textContent = data.overall_grade;
-  document.getElementById('headline').textContent = data.headline;
+  document.getElementById('headline').textContent =
+    `Overall ${data.overall_score}/100 — ${data.audience.headline}`;
   document.getElementById('filename').textContent = data.filename || '';
+
+  const pillars = document.getElementById('pillars');
+  pillars.innerHTML = '';
+  for (const p of data.pillars) {
+    pillars.insertAdjacentHTML('beforeend', `
+      <div class="pillar">
+        <div class="label">${escapeHtml(p.label)}</div>
+        <div class="row"><span class="g">${escapeHtml(p.grade)}</span><span class="s">${p.score}/100</span></div>
+        <div class="bar"><i style="width:${p.score}%"></i></div>
+      </div>`);
+  }
+
+  const fb = document.getElementById('feedback');
+  fb.innerHTML = '';
+  const TAGS = { critical: 'Fix first', improve: 'Improve', tip: 'Tip', strength: 'Strength' };
+  for (const item of data.feedback) {
+    fb.insertAdjacentHTML('beforeend', `
+      <div class="fb ${item.severity}">
+        <span class="tag">${TAGS[item.severity] || item.severity}</span>
+        ${escapeHtml(item.message)}
+        <span class="pillar-name">· ${escapeHtml(item.pillar)}</span>
+      </div>`);
+  }
+
+  const ctx = document.getElementById('contexts');
+  ctx.innerHTML = '';
+  for (const c of data.contexts) {
+    ctx.insertAdjacentHTML('beforeend',
+      `<div class="chip ${c.fit >= 60 ? 'hot' : ''}"><b>${escapeHtml(c.context)}</b> · ${c.fit}%</div>`);
+  }
 
   const feats = document.getElementById('features');
   feats.innerHTML = '';
+  for (const [k, spec] of Object.entries(STRUCTURE_LABELS)) {
+    const [label, fmt] = spec;
+    feats.insertAdjacentHTML('beforeend',
+      `<div class="feat"><div class="k">${label}</div><div class="v">${fmt(data.structure[k])}</div></div>`);
+  }
   for (const [k, label] of Object.entries(FEATURE_LABELS)) {
     let v = data.features[k];
     if (typeof v === 'number' && k !== 'tempo') v = Math.round(v * 100) + '%';
@@ -167,7 +257,7 @@ function render(data) {
 
   const matches = document.getElementById('matches');
   matches.innerHTML = '';
-  for (const m of data.matches) {
+  for (const m of data.audience.matches) {
     let playbook = '';
     if (m.playbook) {
       const steps = m.playbook.map(s =>
@@ -187,9 +277,29 @@ function render(data) {
       </div>`);
   }
 
-  document.getElementById('disclaimer').textContent = data.disclaimer;
+  document.getElementById('disclaimer').textContent = data.audience.disclaimer;
   document.getElementById('report').style.display = 'block';
 }
+
+async function loadTiers() {
+  try {
+    const res = await fetch('/api/tiers');
+    const data = await res.json();
+    const el = document.getElementById('tiers');
+    el.innerHTML = '';
+    data.tiers.forEach((t, i) => {
+      const items = t.includes.map(x => `<li>${escapeHtml(x)}</li>`).join('');
+      el.insertAdjacentHTML('beforeend', `
+        <div class="tier ${i === 1 ? 'featured' : ''}">
+          <div class="t-name">${escapeHtml(t.name)}</div>
+          <div class="t-model">${escapeHtml(t.model)}</div>
+          <div class="t-price">${escapeHtml(t.price)}</div>
+          <ul>${items}</ul>
+        </div>`);
+    });
+  } catch (e) { /* pricing is non-critical for the report flow */ }
+}
+loadTiers();
 
 function escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c =>
