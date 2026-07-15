@@ -239,7 +239,63 @@ def test_derived_profile_override(tmp_path=None):
         path.unlink()
 
 
+def _fake_report(score: float, criticals: int = 0) -> dict:
+    return {
+        "overall_score": score,
+        "overall_grade": grade_for(score),
+        "pillars": [{"key": k, "score": score} for k in
+                    ("quality", "catchiness", "streaming", "reach", "scalability")],
+        "feedback": ([{"severity": "critical", "message": "clipping"}] * criticals
+                     + [{"severity": "improve", "message": "fix the intro"}]),
+        "audience": {"matches": [{"artist": "Drake", "score": 61.0}]},
+        "features": {"key": "C", "mode": "major", "tempo": 120.0},
+        "structure": {"duration_total": 200.0, "loudness_lufs": -8.0, "has_chorus": True},
+    }
+
+
+def test_triage_summary_buckets():
+    from reporting import triage_summary
+    assert triage_summary(_fake_report(80), "a.wav")["bucket"] == "priority"
+    # A critical flag keeps even a strong track out of the priority bucket.
+    crit = triage_summary(_fake_report(80, criticals=1), "b.wav")
+    assert crit["bucket"] == "review"
+    assert crit["top_issue"] == "clipping"
+    assert crit["critical_flags"] == 1
+    assert triage_summary(_fake_report(60), "c.wav")["bucket"] == "review"
+    assert triage_summary(_fake_report(40), "d.wav")["bucket"] == "pass"
+    row = triage_summary(_fake_report(80), "a.wav")
+    assert row["nearest_artist"] == "Drake"
+    assert row["key"] == "C major"
+
+
+def test_b2b_api_key_gate():
+    import b2b
+    from fastapi import HTTPException
+    saved = os.environ.pop("SONG_ANALYZER_API_KEYS", None)
+    try:
+        try:
+            b2b._require_api_key("anything")
+            raise AssertionError("unconfigured API must return 503")
+        except HTTPException as exc:
+            assert exc.status_code == 503
+        os.environ["SONG_ANALYZER_API_KEYS"] = "k1, k2"
+        b2b._require_api_key("k1")
+        b2b._require_api_key("k2")
+        try:
+            b2b._require_api_key("wrong")
+            raise AssertionError("bad key must return 401")
+        except HTTPException as exc:
+            assert exc.status_code == 401
+    finally:
+        if saved is None:
+            os.environ.pop("SONG_ANALYZER_API_KEYS", None)
+        else:
+            os.environ["SONG_ANALYZER_API_KEYS"] = saved
+
+
 if __name__ == "__main__":
+    test_triage_summary_buckets()
+    test_b2b_api_key_gate()
     test_structure_segmentation_on_verse_chorus_song()
     test_analyze_extracts_sane_features()
     test_structure_metrics_are_sane()

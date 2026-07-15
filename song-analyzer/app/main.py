@@ -18,16 +18,13 @@ from pathlib import Path
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import FileResponse, JSONResponse
 
-from analyzer import analyze_file
-from grading import grade_track
-from scoring import rank_matches
-
-MAX_UPLOAD_BYTES = 60 * 1024 * 1024  # 60 MB
-ALLOWED_EXTENSIONS = {".mp3", ".wav", ".flac", ".ogg", ".m4a", ".aac", ".aiff", ".aif"}
+import b2b
+from reporting import ALLOWED_EXTENSIONS, MAX_UPLOAD_BYTES, full_report
 
 STATIC_DIR = Path(__file__).parent / "static"
 
-app = FastAPI(title="Song Analyzer", version="0.2.0")
+app = FastAPI(title="Song Analyzer", version="0.3.0")
+app.include_router(b2b.router)
 
 # Service tiers. Prices are placeholders pending market testing; the royalty
 # tier requires a signed participation agreement drafted by an entertainment
@@ -103,7 +100,7 @@ async def analyze(file: UploadFile = File(...)) -> JSONResponse:
         with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
             tmp.write(data)
             tmp_path = tmp.name
-        features, structure = analyze_file(tmp_path)
+        report = full_report(tmp_path)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc))
     except Exception:
@@ -115,10 +112,5 @@ async def analyze(file: UploadFile = File(...)) -> JSONResponse:
         if tmp_path and os.path.exists(tmp_path):
             os.unlink(tmp_path)
 
-    audience = rank_matches(features)
-    report = grade_track(features, structure, audience["matches"])
     report["filename"] = file.filename
-    report["features"] = features.to_dict()
-    report["structure"] = structure.to_dict()
-    report["audience"] = audience
     return JSONResponse(report)

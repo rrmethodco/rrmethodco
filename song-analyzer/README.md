@@ -141,6 +141,31 @@ Only derived statistics are stored — no audio is copied or redistributed.
 Feature extraction from recordings you have lawful access to is standard
 music-information-retrieval practice; don't torrent a training corpus.
 
+## B2B: the analyzer as infrastructure
+
+The same engine sells to companies with audio volume — distributors triaging
+weekly intake, label A&R screening demo inboxes, sync libraries doing catalog
+QC. Full strategy (segments, pricing, competitive map, GTM sequencing) lives
+in [docs/b2b-strategy.md](docs/b2b-strategy.md). What's live:
+
+- **`POST /api/v1/analyze`** — full graded report JSON for one track.
+- **`POST /api/v1/triage`** — batch upload (≤10 files synchronous) returning
+  ranked one-row summaries with `priority` / `review` / `pass` buckets, flag
+  counts, top issue, and nearest-artist audience. Auth via `X-API-Key`
+  (set `SONG_ANALYZER_API_KEYS=key1,key2`); interactive OpenAPI docs at `/docs`.
+- **`tools/triage_catalog.py`** — catalog-scale CLI that runs inside the
+  customer's infrastructure (audio never leaves their machines) and writes a
+  ranked CSV + JSON. This is the zero-integration pilot: run it on a folder,
+  open the spreadsheet.
+
+```bash
+SONG_ANALYZER_API_KEYS=demo-key uvicorn main:app --port 8000  # from app/
+curl -X POST localhost:8000/api/v1/triage -H "X-API-Key: demo-key" \
+  -F "files=@track1.wav" -F "files=@track2.mp3"
+
+python tools/triage_catalog.py path/to/catalog -o intake_week_28
+```
+
 ## Running the MVP
 
 ```bash
