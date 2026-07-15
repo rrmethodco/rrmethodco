@@ -3,13 +3,15 @@
 Each profile describes the typical sonic footprint of an artist's catalog on
 the same 0-1 scales produced by analyzer.py, plus a tempo center/spread.
 
-These are editorial seed values for the MVP. In production these centroids
-should be derived from analyzed reference catalogs (30-50 representative
-tracks per artist run through the same analyzer), refreshed as artists
-release new material.
+The list below holds editorial seed values. When reference catalogs have been
+analyzed with research/ingest_references.py, the derived centroids in
+data/artist_profiles.json override the seeds (and can add new artists) — see
+_apply_derived_profiles at the bottom of this module.
 """
 
+import json
 from dataclasses import dataclass, field
+from pathlib import Path
 
 
 @dataclass
@@ -180,3 +182,38 @@ ARTIST_PROFILES: list[ArtistProfile] = [
         audience="Emotional dance/electronic; festival-driven, DJ-set discovery.",
     ),
 ]
+
+_NUMERIC_FIELDS = (
+    "tempo_center", "tempo_spread", "energy", "danceability", "brightness",
+    "acousticness", "valence", "density", "minor_share",
+)
+
+
+def _apply_derived_profiles(seeds: list[ArtistProfile]) -> list[ArtistProfile]:
+    """Override seeds with data-derived centroids from ingest_references.py."""
+    path = Path(__file__).parent / "data" / "artist_profiles.json"
+    if not path.exists():
+        return seeds
+    try:
+        derived = json.loads(path.read_text()).get("derived_profiles", {})
+    except (json.JSONDecodeError, OSError):
+        return seeds
+
+    by_name = {p.name: p for p in seeds}
+    for name, values in derived.items():
+        numeric = {k: float(values[k]) for k in _NUMERIC_FIELDS if k in values}
+        if name in by_name:
+            existing = by_name[name]
+            for k, v in numeric.items():
+                setattr(existing, k, v)
+        elif len(numeric) == len(_NUMERIC_FIELDS):
+            by_name[name] = ArtistProfile(
+                name=name,
+                genres=list(values.get("genres", ["unknown"])),
+                audience=str(values.get("audience", "")),
+                **numeric,
+            )
+    return list(by_name.values())
+
+
+ARTIST_PROFILES = _apply_derived_profiles(ARTIST_PROFILES)

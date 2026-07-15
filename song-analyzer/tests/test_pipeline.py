@@ -135,6 +135,55 @@ def test_grade_bands():
     assert grade_for(10) == "F"
 
 
+def test_hit_benchmarks_loaded_and_used():
+    from benchmarks import hit_benchmarks, hit_range
+    stats = hit_benchmarks()
+    assert stats is not None, "app/data/benchmarks.json should ship with the repo"
+    assert stats["duration_s"]["n"] > 1000
+    lo, hi = hit_range("tempo")
+    assert 60 < lo < hi < 200
+    # Grading must pick the empirical ranges up, not the fallbacks.
+    from grading import DURATION_RANGE, TEMPO_RANGE
+    assert DURATION_RANGE == (stats["duration_s"]["p25"], stats["duration_s"]["p75"])
+    assert TEMPO_RANGE == (stats["tempo"]["p25"], stats["tempo"]["p75"])
+
+
+def test_derived_profile_override(tmp_path=None):
+    import json
+    import profiles as profiles_mod
+    seed = profiles_mod.ARTIST_PROFILES[0]
+    derived = {
+        "derived_profiles": {
+            seed.name: {"tempo_center": 87.5, "energy": 0.512},
+            "Brand New Artist": {
+                "genres": ["testcore"], "audience": "test audience",
+                "tempo_center": 120.0, "tempo_spread": 20.0, "energy": 0.5,
+                "danceability": 0.5, "brightness": 0.5, "acousticness": 0.5,
+                "valence": 0.5, "density": 0.5, "minor_share": 0.5,
+            },
+        }
+    }
+    path = profiles_mod.Path(profiles_mod.__file__).parent / "data" / "artist_profiles.json"
+    assert not path.exists(), "test expects no derived profiles checked in"
+    path.write_text(json.dumps(derived))
+    try:
+        merged = profiles_mod._apply_derived_profiles(
+            [profiles_mod.ArtistProfile(**{
+                **{k: getattr(seed, k) for k in (
+                    "name", "genres", "tempo_center", "tempo_spread", "energy",
+                    "danceability", "brightness", "acousticness", "valence",
+                    "density", "minor_share", "audience")},
+            })]
+        )
+        by_name = {p.name: p for p in merged}
+        assert by_name[seed.name].tempo_center == 87.5
+        assert by_name[seed.name].energy == 0.512
+        assert "Brand New Artist" in by_name
+        assert by_name["Brand New Artist"].genres == ["testcore"]
+    finally:
+        path.unlink()
+
+
 if __name__ == "__main__":
     test_analyze_extracts_sane_features()
     test_structure_metrics_are_sane()
@@ -142,4 +191,6 @@ if __name__ == "__main__":
     test_scoring_and_ranking()
     test_perfect_profile_match_scores_high()
     test_grade_bands()
+    test_hit_benchmarks_loaded_and_used()
+    test_derived_profile_override()
     print("all tests passed")

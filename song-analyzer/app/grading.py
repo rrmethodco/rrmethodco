@@ -15,10 +15,18 @@ qualitatively — no invented statistics.
 import math
 
 from analyzer import StructureMetrics, TrackFeatures
+from benchmarks import corpus_metrics, hit_range
 from scoring import grade_for
 
-# Streaming platforms normalize playback around -14 LUFS.
-LOUDNESS_TARGET = -14.0
+# Empirically, charting masters are hot: the hit-benchmark loudness range
+# (derived from ~3k hit-level tracks) sits around -7 to -4.3 dB even though
+# platforms normalize playback to ~-14 LUFS. We grade against the observed
+# hit range, widened toward quiet since normalization makes under-mastering
+# mostly a perception issue while over-limiting costs punch.
+_LOUD_LO, _LOUD_HI = hit_range("loudness", "p10", "p90", default=(-16.0, -9.5))
+LOUDNESS_RANGE = (_LOUD_LO - 3.0, _LOUD_HI)
+DURATION_RANGE = hit_range("duration_s", default=(140.0, 215.0))
+TEMPO_RANGE = hit_range("tempo", default=(88.0, 142.0))
 
 PILLAR_WEIGHTS = {
     "quality": 0.20,
@@ -66,7 +74,7 @@ def _range_credit(value: float, lo: float, hi: float, falloff: float) -> float:
 # --------------------------------------------------------------------------
 
 def score_quality(f: TrackFeatures, s: StructureMetrics) -> float:
-    loudness = _range_credit(s.loudness_lufs, -16.0, -9.5, 4.0)
+    loudness = _range_credit(s.loudness_lufs, *LOUDNESS_RANGE, 4.0)
     clipping = 1.0 if s.clipping_ratio < 0.0005 else _credit(s.clipping_ratio, 0.01)
     balance = (
         _range_credit(s.band_low, 0.20, 0.45, 0.12)
@@ -85,17 +93,24 @@ def score_catchiness(f: TrackFeatures, s: StructureMetrics) -> float:
     prominence = min(1.0, s.hook_prominence * 2.0)
     groove = f.danceability
     steadiness = s.tempo_stability
-    tempo_zone = _range_credit(f.tempo, 88.0, 142.0, 30.0)
+    tempo_zone = _range_credit(f.tempo, TEMPO_RANGE[0], TEMPO_RANGE[1], 30.0)
     score = 100 * (0.35 * hook_repeat + 0.20 * prominence + 0.20 * groove
                    + 0.15 * steadiness + 0.10 * tempo_zone)
     return round(score, 1)
 
 
 def score_streaming(f: TrackFeatures, s: StructureMetrics) -> float:
-    intro = _range_credit(s.intro_length, 0.0, 12.0, 12.0)
-    hook_timing = _range_credit(s.hook_arrival, 0.0, 35.0, 25.0)
-    duration = _range_credit(s.duration_total, 140.0, 215.0, 60.0)
-    loudness = _range_credit(s.loudness_lufs, -16.0, -9.5, 4.0)
+    # When a reference-audio corpus has been ingested, its structure stats
+    # replace the hand-tuned intro/hook expectations.
+    corpus = corpus_metrics()
+    intro_edge, hook_edge = 12.0, 35.0
+    if corpus:
+        intro_edge = corpus.get("intro_length", {}).get("p75", intro_edge)
+        hook_edge = corpus.get("hook_arrival", {}).get("p75", hook_edge)
+    intro = _range_credit(s.intro_length, 0.0, intro_edge, max(8.0, intro_edge))
+    hook_timing = _range_credit(s.hook_arrival, 0.0, hook_edge, max(20.0, hook_edge * 0.7))
+    duration = _range_credit(s.duration_total, *DURATION_RANGE, 60.0)
+    loudness = _range_credit(s.loudness_lufs, *LOUDNESS_RANGE, 4.0)
     score = 100 * (0.30 * intro + 0.30 * hook_timing + 0.25 * duration + 0.15 * loudness)
     return round(score, 1)
 
@@ -145,16 +160,19 @@ def build_feedback(
     fb: list[dict] = []
 
     # --- Production quality ---
-    if s.loudness_lufs < -16.5:
+    loud_lo, loud_hi = LOUDNESS_RANGE
+    if s.loudness_lufs < loud_lo - 0.5:
         fb.append(_fb("quality", "improve",
-            f"The master sits at {s.loudness_lufs} LUFS — quieter than the ~-14 LUFS "
-            f"streaming normalization target. It will sound smaller next to other "
-            f"tracks in a playlist. Bring the master up without crushing dynamics."))
-    elif s.loudness_lufs > -8.5:
+            f"The master sits at {s.loudness_lufs} LUFS. Charting masters we've "
+            f"studied land roughly between {loud_lo:.0f} and {loud_hi:.0f} dB — this "
+            f"track will sound smaller next to them in a playlist even after "
+            f"normalization. Bring the master up without crushing dynamics."))
+    elif s.loudness_lufs > loud_hi + 1.0:
         fb.append(_fb("quality", "improve",
-            f"The master is very hot ({s.loudness_lufs} LUFS). Platforms will turn it "
-            f"down to ~-14 LUFS, so the extra limiting buys no loudness — it only "
-            f"costs punch. Back off the limiter and keep more dynamic range."))
+            f"The master is hotter ({s.loudness_lufs} LUFS) than the charting range "
+            f"we've measured (~{loud_lo:.0f} to {loud_hi:.0f} dB). Platforms "
+            f"normalize playback to ~-14 LUFS, so limiting past the hit range buys "
+            f"no loudness — it only costs punch."))
     if s.clipping_ratio >= 0.0005:
         fb.append(_fb("quality", "critical",
             f"Digital clipping detected on {s.clipping_ratio:.2%} of samples. Re-export "
@@ -220,11 +238,13 @@ def build_feedback(
             f"Your most-repeated section first arrives around {s.hook_arrival:.0f}s. "
             f"Consider restructuring so the hook (or a preview of it) lands inside "
             f"the first 30-40 seconds."))
-    if s.duration_total > 260:
+    dur_lo, dur_hi = DURATION_RANGE
+    if s.duration_total > dur_hi + 45:
         fb.append(_fb("streaming", "improve",
-            f"At {s.duration_total/60:.1f} minutes the track is long for playlist "
-            f"rotation. A tighter radio edit (~3:00-3:30) typically completes more "
-            f"often, and completion rate feeds the algorithm."))
+            f"At {s.duration_total/60:.1f} minutes the track runs well past the "
+            f"charting sweet spot we've measured ({dur_lo/60:.0f}:{dur_lo%60:02.0f}-"
+            f"{dur_hi/60:.0f}:{dur_hi%60:02.0f}). A tighter radio edit typically "
+            f"completes more often, and completion rate feeds the algorithm."))
     elif s.duration_total < 120:
         fb.append(_fb("streaming", "tip",
             f"The track is short ({s.duration_total:.0f}s). That's fine for "

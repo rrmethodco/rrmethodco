@@ -75,6 +75,48 @@ launch):**
 - Never condition the royalty share on "guaranteed placement" — see the
   placement thesis above.
 
+## Calibration: the analyzer studies charting songs
+
+The grading engine is calibrated against what famous, high-performing songs
+actually look like, on two levels:
+
+**1. Public chart metadata (ships with the repo).**
+`research/derive_benchmarks.py` studies ~33k tracks with Spotify audio
+features and popularity scores (TidyTuesday `spotify_songs.csv` snapshot),
+treats popularity ≥ 75 as hit-level (~3k tracks), and writes percentile
+distributions to `app/data/benchmarks.json`. The graders read it at import:
+
+- Duration is graded against the hit sweet spot (p25–p75 ≈ **3:06–3:55**,
+  median 3:28) instead of a hand-picked range.
+- Loudness is graded against measured hit masters (p10–p90 ≈ **−12 to
+  −3.3 dB**) — empirically, charting masters run much hotter than the −14
+  LUFS normalization target, so we stopped penalizing hot masters the way
+  mastering folklore suggests.
+- Tempo is scored against the hit tempo band (**97–136 BPM**).
+- Per-genre distributions (pop, rap, rock, latin, r&b, edm) are stored for
+  future genre-conditional grading.
+
+**2. Reference audio you supply (`research/ingest_references.py`).**
+Public metadata can't measure intros, hook timing, or repetition — only real
+audio can. Point the ingester at a folder of charting songs you have lawful
+access to (purchased/licensed copies), organized one subfolder per artist:
+
+```bash
+python research/ingest_references.py refs/ --corpus-metrics
+```
+
+It batch-analyzes everything through the same DSP pipeline and writes:
+- `app/data/artist_profiles.json` — data-derived sonic centroids per artist
+  (≥3 tracks each), which automatically override the hand-curated seed
+  profiles and can add new artists.
+- `app/data/corpus_metrics.json` — corpus distributions of intro length,
+  hook arrival, repetition, stereo width, etc. The streaming-readiness
+  grader automatically prefers these over its defaults.
+
+Only derived statistics are stored — no audio is copied or redistributed.
+Feature extraction from recordings you have lawful access to is standard
+music-information-retrieval practice; don't torrent a training corpus.
+
 ## Running the MVP
 
 ```bash
