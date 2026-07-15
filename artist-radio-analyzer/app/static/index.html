@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Artist Radio Fit Analyzer</title>
+<style>
+  :root {
+    --bg: #0d0f14; --panel: #161a22; --panel2: #1d2230;
+    --text: #e8eaf0; --muted: #9aa3b5; --accent: #7c5cff; --accent2: #38d9a9;
+    --border: #2a3040; --warn: #ffb454;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg); color: var(--text); min-height: 100vh;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 20px 80px; }
+  header h1 { font-size: 1.7rem; letter-spacing: -0.02em; }
+  header h1 span { color: var(--accent); }
+  header p { color: var(--muted); margin-top: 8px; max-width: 640px; line-height: 1.5; }
+
+  .drop {
+    margin-top: 28px; border: 2px dashed var(--border); border-radius: 14px;
+    padding: 48px 24px; text-align: center; cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  .drop:hover, .drop.over { border-color: var(--accent); background: var(--panel); }
+  .drop strong { display: block; font-size: 1.05rem; }
+  .drop em { color: var(--muted); font-style: normal; font-size: .85rem; display: block; margin-top: 6px; }
+  #file { display: none; }
+
+  .status { margin-top: 18px; color: var(--muted); font-size: .9rem; min-height: 1.2em; }
+  .status.error { color: #ff7b7b; }
+
+  .report { margin-top: 28px; display: none; }
+  .headline {
+    background: linear-gradient(135deg, var(--panel), var(--panel2));
+    border: 1px solid var(--border); border-radius: 14px; padding: 24px;
+    display: flex; align-items: center; gap: 22px; flex-wrap: wrap;
+  }
+  .grade-badge {
+    width: 84px; height: 84px; border-radius: 50%; flex: 0 0 auto;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: 700; background: var(--accent); color: #fff;
+  }
+  .headline h2 { font-size: 1.15rem; line-height: 1.4; }
+  .headline .sub { color: var(--muted); font-size: .85rem; margin-top: 6px; }
+
+  h3.section { margin: 30px 0 12px; font-size: .8rem; text-transform: uppercase;
+    letter-spacing: .12em; color: var(--muted); }
+
+  .features { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 10px; }
+  .feat { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+  .feat .k { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+  .feat .v { font-size: 1.15rem; font-weight: 600; margin-top: 4px; }
+
+  .match { background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 18px; margin-bottom: 12px; }
+  .match-top { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .match-top .name { font-size: 1.05rem; font-weight: 600; }
+  .match-top .genres { color: var(--muted); font-size: .8rem; }
+  .match-top .score { margin-left: auto; font-weight: 700; color: var(--accent2); }
+  .bar { height: 6px; background: var(--panel2); border-radius: 3px; margin-top: 10px; overflow: hidden; }
+  .bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+  .audience { color: var(--muted); font-size: .85rem; margin-top: 10px; line-height: 1.45; }
+
+  details { margin-top: 12px; }
+  summary { cursor: pointer; color: var(--accent); font-size: .85rem; }
+  .play-step { margin-top: 10px; padding: 10px 12px; background: var(--panel2);
+    border-radius: 8px; font-size: .85rem; line-height: 1.5; }
+  .play-step b { color: var(--accent2); display: block; margin-bottom: 3px; }
+
+  .disclaimer { margin-top: 26px; padding: 14px 16px; border-left: 3px solid var(--warn);
+    background: var(--panel); border-radius: 0 10px 10px 0; color: var(--muted);
+    font-size: .82rem; line-height: 1.55; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Artist Radio <span>Fit Analyzer</span></h1>
+    <p>Upload a track. We extract its sonic fingerprint, grade it against the catalogs of
+    major artists, and generate a compliant placement playbook to get it in front of the
+    listeners who feed those artists' radio algorithms.</p>
+  </header>
+
+  <div class="drop" id="drop">
+    <strong>Drop your track here or click to browse</strong>
+    <em>MP3, WAV, FLAC, M4A, OGG, AIFF · up to 60 MB</em>
+    <input type="file" id="file" accept=".mp3,.wav,.flac,.ogg,.m4a,.aac,.aiff,.aif">
+  </div>
+  <div class="status" id="status"></div>
+
+  <div class="report" id="report">
+    <div class="headline">
+      <div class="grade-badge" id="gradeBadge">–</div>
+      <div>
+        <h2 id="headline"></h2>
+        <div class="sub" id="filename"></div>
+      </div>
+    </div>
+
+    <h3 class="section">Sonic fingerprint</h3>
+    <div class="features" id="features"></div>
+
+    <h3 class="section">Top audience matches</h3>
+    <div id="matches"></div>
+
+    <div class="disclaimer" id="disclaimer"></div>
+  </div>
+</div>
+
+<script>
+const drop = document.getElementById('drop');
+const fileInput = document.getElementById('file');
+const statusEl = document.getElementById('status');
+
+drop.addEventListener('click', () => fileInput.click());
+drop.addEventListener('dragover', e => { e.preventDefault(); drop.classList.add('over'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('over'));
+drop.addEventListener('drop', e => {
+  e.preventDefault(); drop.classList.remove('over');
+  if (e.dataTransfer.files.length) upload(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) upload(fileInput.files[0]);
+});
+
+async function upload(file) {
+  statusEl.className = 'status';
+  statusEl.textContent = 'Analyzing "' + file.name + '"… this takes a few seconds.';
+  document.getElementById('report').style.display = 'none';
+  const form = new FormData();
+  form.append('file', file);
+  try {
+    const res = await fetch('/api/analyze', { method: 'POST', body: form });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.detail || 'Analysis failed.');
+    render(data);
+    statusEl.textContent = '';
+  } catch (err) {
+    statusEl.className = 'status error';
+    statusEl.textContent = err.message;
+  }
+}
+
+const FEATURE_LABELS = {
+  tempo: 'Tempo (BPM)', key: 'Key', mode: 'Mode', energy: 'Energy',
+  danceability: 'Danceability', brightness: 'Brightness', acousticness: 'Acousticness',
+  valence: 'Valence', dynamics: 'Dynamics', density: 'Density'
+};
+
+function render(data) {
+  document.getElementById('gradeBadge').textContent = data.overall_grade;
+  document.getElementById('headline').textContent = data.headline;
+  document.getElementById('filename').textContent = data.filename || '';
+
+  const feats = document.getElementById('features');
+  feats.innerHTML = '';
+  for (const [k, label] of Object.entries(FEATURE_LABELS)) {
+    let v = data.features[k];
+    if (typeof v === 'number' && k !== 'tempo') v = Math.round(v * 100) + '%';
+    feats.insertAdjacentHTML('beforeend',
+      `<div class="feat"><div class="k">${label}</div><div class="v">${v}</div></div>`);
+  }
+
+  const matches = document.getElementById('matches');
+  matches.innerHTML = '';
+  for (const m of data.matches) {
+    let playbook = '';
+    if (m.playbook) {
+      const steps = m.playbook.map(s =>
+        `<div class="play-step"><b>${escapeHtml(s.channel)}</b>${escapeHtml(s.action)}</div>`).join('');
+      playbook = `<details><summary>Placement playbook for ${escapeHtml(m.artist)}'s audience</summary>${steps}</details>`;
+    }
+    matches.insertAdjacentHTML('beforeend', `
+      <div class="match">
+        <div class="match-top">
+          <span class="name">${escapeHtml(m.artist)}</span>
+          <span class="genres">${m.genres.map(escapeHtml).join(' · ')}</span>
+          <span class="score">${m.score} · ${m.grade}</span>
+        </div>
+        <div class="bar"><i style="width:${m.score}%"></i></div>
+        <div class="audience">${escapeHtml(m.audience)}</div>
+        ${playbook}
+      </div>`);
+  }
+
+  document.getElementById('disclaimer').textContent = data.disclaimer;
+  document.getElementById('report').style.display = 'block';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+</script>
+</body>
+</html>
