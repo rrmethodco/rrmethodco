@@ -10,11 +10,22 @@ compared directly against curated artist profiles in profiles.py. Structure
 metrics feed the proprietary grading pillars in grading.py.
 """
 
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 
 import librosa
 import numpy as np
 import pyloudnorm
+
+from structure import (
+    detect_key_change,
+    ending_metrics,
+    energy_arc,
+    estimate_key_mode,
+    segment_sections,
+    syncopation,
+    timbral_variety,
+    vocal_presence,
+)
 
 # Analysis settings: 22.05kHz mono is plenty for feature extraction and keeps
 # analysis under a few seconds per track. The fingerprint uses up to 90s from
@@ -23,17 +34,6 @@ SAMPLE_RATE = 22050
 MAX_ANALYSIS_SECONDS = 90
 MAX_STRUCTURE_SECONDS = 360
 LOUDNESS_SR = 44100  # pyloudnorm's K-weighting filters expect a full-band rate
-
-KEY_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-
-# Krumhansl-Schmuckler key profiles for major/minor mode estimation.
-MAJOR_PROFILE = np.array(
-    [6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88]
-)
-MINOR_PROFILE = np.array(
-    [6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17]
-)
-
 
 @dataclass
 class TrackFeatures:
@@ -48,6 +48,7 @@ class TrackFeatures:
     dynamics: float       # 0-1, dynamic range (compressed <-> dynamic)
     density: float        # 0-1, onset/event density (sparse <-> busy)
     duration: float       # seconds of audio analyzed
+    key_confidence: float = 1.0  # 0-1, separation of the winning key estimate
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -56,7 +57,7 @@ class TrackFeatures:
 
 @dataclass
 class StructureMetrics:
-    """Production and arrangement metrics feeding the grading pillars."""
+    """Production, arrangement, and structure metrics feeding the pillars."""
     duration_total: float     # full track length in seconds
     loudness_lufs: float      # integrated loudness (streaming target ~ -14)
     clipping_ratio: float     # fraction of samples at/near digital full scale
@@ -69,6 +70,27 @@ class StructureMetrics:
     repetition: float         # 0-1, how much material recurs (hook/chorus weight)
     hook_prominence: float    # 0-1, energy of repeated material vs track average
     tempo_stability: float    # 0-1, steadiness of the tempo over time
+    # --- structure & arrangement ---
+    sections: list = field(default_factory=list)  # [{start,end,label,energy}]
+    n_sections: int = 0
+    has_chorus: bool = False
+    first_chorus_time: float = -1.0   # seconds; -1 when no chorus detected
+    chorus_ratio: float = 0.0         # share of runtime spent in chorus
+    avg_section_seconds: float = 0.0
+    energy_build: float = 0.5         # 0-1, does energy climb toward a climax
+    climax_position: float = 0.5      # 0-1, where the loudest moment sits
+    energy_curve: list = field(default_factory=list)  # 8-point normalized arc
+    fade_out_seconds: float = 0.0
+    hard_ending: bool = True
+    # --- tonality & feel ---
+    key_change: bool = False
+    second_key: str | None = None     # e.g. "D major" when key_change is True
+    syncopation: float = 0.0          # 0-1, off-grid onset share
+    vocal_presence: float = 0.0       # 0-1, harmonic mid-band proxy
+    timbral_variety: float = 0.0      # 0-1, palette variation over time
+    # --- master ---
+    true_peak_db: float = -70.0       # dBFS sample peak (approx, no oversampling)
+    loudness_range_db: float = 0.0    # short-term loudness spread
 
     def to_dict(self) -> dict:
         d = asdict(self)
@@ -77,18 +99,6 @@ class StructureMetrics:
 
 def _clip01(x: float) -> float:
     return float(np.clip(x, 0.0, 1.0))
-
-
-def _estimate_key_mode(chroma: np.ndarray) -> tuple[str, str]:
-    profile = chroma.mean(axis=1)
-    best_score, best_key, best_mode = -np.inf, 0, "major"
-    for shift in range(12):
-        rotated = np.roll(profile, -shift)
-        for mode, template in (("major", MAJOR_PROFILE), ("minor", MINOR_PROFILE)):
-            score = np.corrcoef(rotated, template)[0, 1]
-            if score > best_score:
-                best_score, best_key, best_mode = score, shift, mode
-    return KEY_NAMES[best_key], best_mode
 
 
 def analyze_file(path: str) -> tuple[TrackFeatures, StructureMetrics]:
@@ -148,7 +158,7 @@ def _fingerprint(y: np.ndarray, sr: int) -> TrackFeatures:
 
     # --- Tonality ---
     chroma = librosa.feature.chroma_cqt(y=y_harm, sr=sr)
-    key, mode = _estimate_key_mode(chroma)
+    key, mode, key_confidence = estimate_key_mode(chroma)
 
     # Valence proxy: major mode, brightness, and tempo all push positive.
     mode_term = 0.62 if mode == "major" else 0.38
@@ -167,15 +177,17 @@ def _fingerprint(y: np.ndarray, sr: int) -> TrackFeatures:
         dynamics=dynamics,
         density=density,
         duration=round(len(y) / sr, 1),
+        key_confidence=key_confidence,
     )
 
 
-def _loudness_and_stereo(path: str) -> tuple[float, float, float]:
-    """Integrated LUFS, clipping ratio, and stereo width from a full-band load."""
+def _loudness_and_stereo(path: str) -> dict:
+    """Master metrics from a full-band load: loudness, peaks, width, range."""
     y2, sr2 = librosa.load(path, sr=LOUDNESS_SR, mono=False, duration=120.0)
     if y2.ndim == 1:
         stereo_width = 0.0
         samples = y2
+        mono_mix = y2
         meter_input = y2
     else:
         left, right = y2[0], y2[1]
@@ -185,9 +197,12 @@ def _loudness_and_stereo(path: str) -> tuple[float, float, float]:
         side_rms = float(np.sqrt(np.mean(side**2)))
         stereo_width = _clip01(side_rms / mid_rms * 2.0)
         samples = y2.flatten()
+        mono_mix = mid
         meter_input = y2.T  # pyloudnorm expects (samples, channels)
 
     clipping_ratio = float(np.mean(np.abs(samples) >= 0.985))
+    peak = float(np.max(np.abs(samples))) + 1e-12
+    true_peak_db = round(20.0 * np.log10(peak), 2)
 
     meter = pyloudnorm.Meter(LOUDNESS_SR)
     try:
@@ -196,13 +211,32 @@ def _loudness_and_stereo(path: str) -> tuple[float, float, float]:
             lufs = -70.0
     except Exception:
         lufs = -70.0
-    return lufs, clipping_ratio, stereo_width
+
+    # Short-term (3s) loudness spread — an LRA-style dynamics-of-the-master
+    # measure, computed as p95 - p10 of windowed RMS in dB.
+    win = 3 * LOUDNESS_SR
+    n_windows = max(1, len(mono_mix) // win)
+    window_rms = np.array([
+        np.sqrt(np.mean(mono_mix[i * win:(i + 1) * win] ** 2) + 1e-12)
+        for i in range(n_windows)
+    ])
+    window_db = 20.0 * np.log10(window_rms + 1e-12)
+    loudness_range_db = float(np.percentile(window_db, 95) - np.percentile(window_db, 10)) \
+        if len(window_db) > 3 else 0.0
+
+    return {
+        "loudness_lufs": lufs,
+        "clipping_ratio": clipping_ratio,
+        "stereo_width": stereo_width,
+        "true_peak_db": true_peak_db,
+        "loudness_range_db": round(loudness_range_db, 1),
+    }
 
 
 def _analyze_structure(
     path: str, y: np.ndarray, sr: int, duration_total: float
 ) -> StructureMetrics:
-    lufs, clipping_ratio, stereo_width = _loudness_and_stereo(path)
+    master = _loudness_and_stereo(path)
 
     # Spectral energy balance across low / mid / high bands.
     spec = np.abs(librosa.stft(y, n_fft=2048)) ** 2
@@ -258,11 +292,21 @@ def _analyze_structure(
     else:
         tempo_stability = 0.5
 
+    # --- Song structure, energy arc, ending, tonality, feel ---
+    analyzed_duration = len(y) / sr
+    section_info = segment_sections(y, sr, beats, rms, analyzed_duration)
+    arc = energy_arc(rms, times)
+    ending = ending_metrics(rms, times)
+
+    y_harm_full = librosa.effects.harmonic(y)
+    chroma_full = librosa.feature.chroma_cqt(y=y_harm_full, sr=sr)
+    key_change, second_key = detect_key_change(chroma_full)
+
     return StructureMetrics(
         duration_total=round(duration_total, 1),
-        loudness_lufs=round(lufs, 1),
-        clipping_ratio=round(clipping_ratio, 4),
-        stereo_width=stereo_width,
+        loudness_lufs=round(master["loudness_lufs"], 1),
+        clipping_ratio=round(master["clipping_ratio"], 4),
+        stereo_width=master["stereo_width"],
         band_low=band_low,
         band_mid=band_mid,
         band_high=band_high,
@@ -271,4 +315,22 @@ def _analyze_structure(
         repetition=repetition,
         hook_prominence=hook_prominence,
         tempo_stability=tempo_stability,
+        sections=section_info["sections"],
+        n_sections=section_info["n_sections"],
+        has_chorus=section_info["has_chorus"],
+        first_chorus_time=section_info["first_chorus_time"],
+        chorus_ratio=section_info["chorus_ratio"],
+        avg_section_seconds=section_info["avg_section_seconds"],
+        energy_build=arc["energy_build"],
+        climax_position=arc["climax_position"],
+        energy_curve=arc["energy_curve"],
+        fade_out_seconds=ending["fade_out_seconds"],
+        hard_ending=ending["hard_ending"],
+        key_change=key_change,
+        second_key=second_key,
+        syncopation=syncopation(onset_env, beats, sr),
+        vocal_presence=vocal_presence(y_harm_full, sr),
+        timbral_variety=timbral_variety(y, sr),
+        true_peak_db=master["true_peak_db"],
+        loudness_range_db=master["loudness_range_db"],
     )

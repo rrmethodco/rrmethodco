@@ -75,6 +75,23 @@
   .feat .k { font-size: .68rem; color: var(--muted); text-transform: uppercase; letter-spacing: .07em; }
   .feat .v { font-size: 1.1rem; font-weight: 600; margin-top: 4px; }
 
+  .timeline { display: flex; height: 46px; border-radius: 8px; overflow: hidden;
+    border: 1px solid var(--border); }
+  .tl-seg { position: relative; display: flex; align-items: flex-end; justify-content: center;
+    min-width: 2px; }
+  .tl-seg .fill { position: absolute; left: 0; right: 0; bottom: 0; opacity: .85; }
+  .tl-seg span { position: relative; font-size: .62rem; color: #fff; padding-bottom: 3px;
+    text-transform: uppercase; letter-spacing: .04em; overflow: hidden; white-space: nowrap; }
+  .tl-chorus .fill { background: var(--accent); }
+  .tl-verse  .fill { background: #3b4664; }
+  .tl-intro .fill, .tl-outro .fill { background: #262c3d; }
+  .tl-bridge .fill { background: var(--warn); opacity: .6; }
+  .tl-meta { display: flex; justify-content: space-between; color: var(--muted);
+    font-size: .72rem; margin-top: 6px; }
+  .arc { margin-top: 14px; }
+  .arc svg { width: 100%; height: 54px; display: block; }
+  .arc .cap { color: var(--muted); font-size: .72rem; margin-top: 4px; }
+
   .chips { display: flex; flex-wrap: wrap; gap: 8px; }
   .chip { background: var(--panel); border: 1px solid var(--border); border-radius: 999px;
     padding: 7px 14px; font-size: .82rem; color: var(--muted); }
@@ -138,6 +155,14 @@
     <h3 class="section">Score breakdown</h3>
     <div class="pillars" id="pillars"></div>
 
+    <h3 class="section">Song structure <span style="text-transform:none;letter-spacing:0">(detected — heuristic)</span></h3>
+    <div class="timeline" id="timeline"></div>
+    <div class="tl-meta" id="timelineMeta"></div>
+    <div class="arc">
+      <svg id="arcSvg" viewBox="0 0 800 54" preserveAspectRatio="none"></svg>
+      <div class="cap">Energy arc across the track</div>
+    </div>
+
     <h3 class="section">What to improve</h3>
     <div id="feedback"></div>
 
@@ -196,13 +221,26 @@ const FEATURE_LABELS = {
   danceability: 'Danceability', brightness: 'Brightness', acousticness: 'Acousticness',
   valence: 'Valence', dynamics: 'Dynamics', density: 'Density'
 };
+const mmss = v => Math.floor(v/60) + ':' + String(Math.round(v%60)).padStart(2,'0');
+const pct = v => Math.round(v*100) + '%';
 const STRUCTURE_LABELS = {
-  duration_total: ['Length', v => Math.floor(v/60) + ':' + String(Math.round(v%60)).padStart(2,'0')],
+  duration_total: ['Length', mmss],
   loudness_lufs: ['Loudness', v => v + ' LUFS'],
+  true_peak_db: ['True peak', v => v + ' dB'],
+  loudness_range_db: ['Loudness range', v => v + ' dB'],
   intro_length: ['Intro', v => v + 's'],
-  hook_arrival: ['Hook arrives', v => v + 's'],
-  repetition: ['Repetition', v => Math.round(v*100) + '%'],
-  stereo_width: ['Stereo width', v => Math.round(v*100) + '%'],
+  first_chorus_time: ['First chorus', (v, s) => s.has_chorus && v >= 0 ? mmss(v) : 'none found'],
+  chorus_ratio: ['Chorus share', pct],
+  n_sections: ['Sections', v => v],
+  energy_build: ['Energy build', pct],
+  climax_position: ['Climax at', (v, s) => mmss(v * s.duration_total)],
+  fade_out_seconds: ['Ending', (v, s) => s.hard_ending ? 'cold (good)' : 'fade ' + v + 's'],
+  key_change: ['Modulation', (v, s) => v ? '→ ' + s.second_key : 'none'],
+  syncopation: ['Syncopation', pct],
+  vocal_presence: ['Vocal presence', pct],
+  timbral_variety: ['Timbral variety', pct],
+  repetition: ['Repetition', pct],
+  stereo_width: ['Stereo width', pct],
 };
 
 function render(data) {
@@ -241,12 +279,14 @@ function render(data) {
       `<div class="chip ${c.fit >= 60 ? 'hot' : ''}"><b>${escapeHtml(c.context)}</b> · ${c.fit}%</div>`);
   }
 
+  renderStructure(data.structure);
+
   const feats = document.getElementById('features');
   feats.innerHTML = '';
   for (const [k, spec] of Object.entries(STRUCTURE_LABELS)) {
     const [label, fmt] = spec;
     feats.insertAdjacentHTML('beforeend',
-      `<div class="feat"><div class="k">${label}</div><div class="v">${fmt(data.structure[k])}</div></div>`);
+      `<div class="feat"><div class="k">${label}</div><div class="v">${fmt(data.structure[k], data.structure)}</div></div>`);
   }
   for (const [k, label] of Object.entries(FEATURE_LABELS)) {
     let v = data.features[k];
@@ -279,6 +319,40 @@ function render(data) {
 
   document.getElementById('disclaimer').textContent = data.audience.disclaimer;
   document.getElementById('report').style.display = 'block';
+}
+
+function renderStructure(s) {
+  const tl = document.getElementById('timeline');
+  const meta = document.getElementById('timelineMeta');
+  tl.innerHTML = '';
+  const secs = s.sections || [];
+  const total = secs.length ? secs[secs.length - 1].end : 0;
+  if (!secs.length || total <= 0) {
+    tl.innerHTML = '<div class="tl-seg tl-verse" style="flex:1"><div class="fill" style="height:40%"></div><span>structure not detected</span></div>';
+    meta.textContent = '';
+  } else {
+    for (const sec of secs) {
+      const w = ((sec.end - sec.start) / total * 100).toFixed(2);
+      const h = Math.max(18, Math.round(sec.energy * 100));
+      tl.insertAdjacentHTML('beforeend',
+        `<div class="tl-seg tl-${sec.label}" style="flex:0 0 ${w}%" title="${sec.label} · ${mmss(sec.start)}–${mmss(sec.end)}">
+           <div class="fill" style="height:${h}%"></div><span>${sec.label}</span>
+         </div>`);
+    }
+    meta.innerHTML = `<span>0:00</span><span>${s.n_sections} sections · block height = section energy</span><span>${mmss(total)}</span>`;
+  }
+
+  const svg = document.getElementById('arcSvg');
+  const curve = s.energy_curve || [];
+  if (curve.length > 1) {
+    const pts = curve.map((v, i) =>
+      `${(i / (curve.length - 1)) * 800},${52 - v * 48}`).join(' ');
+    svg.innerHTML =
+      `<polyline points="${pts}" fill="none" stroke="#7c5cff" stroke-width="3" stroke-linecap="round"/>` +
+      `<polyline points="0,52 ${pts} 800,52" fill="rgba(124,92,255,.15)" stroke="none"/>`;
+  } else {
+    svg.innerHTML = '';
+  }
 }
 
 async function loadTiers() {

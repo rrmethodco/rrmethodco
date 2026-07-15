@@ -49,6 +49,61 @@ def _analyzed(**kwargs):
         os.unlink(path)
 
 
+def synth_structured_song(bpm: float = 102.0) -> str:
+    """Verse/chorus arrangement (intro V C V C V C C) for structure tests."""
+    def section(chord_freqs, seconds, level):
+        t = np.linspace(0, seconds, int(SR * seconds), endpoint=False)
+        chord = sum(0.11 * np.sin(2 * np.pi * f * t) for f in chord_freqs)
+        click = np.exp(-np.linspace(0, 8, int(SR * 0.05))) * np.sin(
+            2 * np.pi * 75 * np.linspace(0, 0.05, int(SR * 0.05)))
+        pulses = np.zeros_like(t)
+        for b in np.arange(0, seconds, 60.0 / bpm):
+            i = int(b * SR)
+            pulses[i: i + len(click)] += click[: len(pulses) - i]
+        rng = np.random.default_rng(3)
+        return level * (chord + 0.9 * pulses + 0.015 * rng.standard_normal(len(t)))
+
+    verse = section((220.0, 261.63, 329.63), 20, 0.7)    # A minor
+    chorus = section((261.63, 329.63, 392.0), 18, 1.0)   # C major, louder
+    intro = section((220.0,), 8, 0.35)
+    audio = np.concatenate(
+        [intro, verse, chorus, verse, chorus, verse * 0.9, chorus, chorus])
+    audio /= np.abs(audio).max() * 1.15
+    fd, path = tempfile.mkstemp(suffix=".wav")
+    os.close(fd)
+    sf.write(path, audio.astype(np.float32), SR)
+    return path
+
+
+def test_structure_segmentation_on_verse_chorus_song():
+    path = synth_structured_song()
+    try:
+        _, s = analyze_file(path)
+    finally:
+        os.unlink(path)
+    assert s.n_sections >= 3
+    assert s.sections, "sections should be populated"
+    for sec in s.sections:
+        assert sec["label"] in ("intro", "verse", "chorus", "bridge", "outro")
+        assert 0 <= sec["start"] < sec["end"]
+        assert 0.0 <= sec["energy"] <= 1.0
+        assert sec["end"] - sec["start"] >= 2.0, "boundary slivers should be merged"
+    assert s.has_chorus
+    # Ground truth: intro (8s) + verse (20s) puts the first chorus near 28s.
+    assert 20 <= s.first_chorus_time <= 40, s.first_chorus_time
+    assert 0.2 <= s.chorus_ratio <= 0.75
+    assert len(s.energy_curve) == 8
+    assert s.hard_ending and s.fade_out_seconds < 5
+    # Am verse / C major chorus are relative keys — must NOT read as modulation.
+    assert not s.key_change
+    for dim in ("syncopation", "vocal_presence", "timbral_variety", "energy_build",
+                "climax_position"):
+        v = getattr(s, dim)
+        assert 0.0 <= v <= 1.0, f"{dim}={v} out of range"
+    assert s.true_peak_db <= 0.0
+    assert s.loudness_range_db >= 0.0
+
+
 def test_analyze_extracts_sane_features():
     f, s = _analyzed()
     assert 40 <= f.tempo <= 240
@@ -185,6 +240,7 @@ def test_derived_profile_override(tmp_path=None):
 
 
 if __name__ == "__main__":
+    test_structure_segmentation_on_verse_chorus_song()
     test_analyze_extracts_sane_features()
     test_structure_metrics_are_sane()
     test_grading_report_shape()

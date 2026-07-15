@@ -83,19 +83,32 @@ def score_quality(f: TrackFeatures, s: StructureMetrics) -> float:
     ) / 3.0
     width = _range_credit(s.stereo_width, 0.15, 0.75, 0.20)
     dynamics = _range_credit(f.dynamics, 0.15, 0.75, 0.15)
-    score = 100 * (0.30 * loudness + 0.20 * clipping + 0.25 * balance
-                   + 0.10 * width + 0.15 * dynamics)
+    # Mastering convention: leave ~1 dB of true-peak headroom to survive
+    # lossy transcoding; a slammed 0 dBFS peak loses credit.
+    headroom = _range_credit(s.true_peak_db, -12.0, -0.8, 0.8)
+    # A competitive master still moves: 4-12 dB of short-term loudness spread.
+    lra = _range_credit(s.loudness_range_db, 4.0, 12.0, 4.0)
+    score = 100 * (0.24 * loudness + 0.14 * clipping + 0.22 * balance
+                   + 0.10 * width + 0.12 * dynamics + 0.08 * headroom + 0.10 * lra)
     return round(score, 1)
 
 
 def score_catchiness(f: TrackFeatures, s: StructureMetrics) -> float:
     hook_repeat = _range_credit(s.repetition, 0.45, 0.85, 0.20)
+    # Structural chorus: hits typically spend ~20-45% of runtime in chorus.
+    if s.has_chorus:
+        chorus = _range_credit(s.chorus_ratio, 0.20, 0.45, 0.15)
+    else:
+        chorus = 0.3  # no detected chorus: possible but rarely catchy
     prominence = min(1.0, s.hook_prominence * 2.0)
     groove = f.danceability
     steadiness = s.tempo_stability
     tempo_zone = _range_credit(f.tempo, TEMPO_RANGE[0], TEMPO_RANGE[1], 30.0)
-    score = 100 * (0.35 * hook_repeat + 0.20 * prominence + 0.20 * groove
-                   + 0.15 * steadiness + 0.10 * tempo_zone)
+    # A little rhythmic tension is ear candy; none is stiff, too much is work.
+    feel = _range_credit(s.syncopation, 0.12, 0.55, 0.25)
+    score = 100 * (0.24 * hook_repeat + 0.18 * chorus + 0.14 * prominence
+                   + 0.18 * groove + 0.10 * steadiness + 0.10 * tempo_zone
+                   + 0.06 * feel)
     return round(score, 1)
 
 
@@ -108,10 +121,18 @@ def score_streaming(f: TrackFeatures, s: StructureMetrics) -> float:
         intro_edge = corpus.get("intro_length", {}).get("p75", intro_edge)
         hook_edge = corpus.get("hook_arrival", {}).get("p75", hook_edge)
     intro = _range_credit(s.intro_length, 0.0, intro_edge, max(8.0, intro_edge))
-    hook_timing = _range_credit(s.hook_arrival, 0.0, hook_edge, max(20.0, hook_edge * 0.7))
+    # Prefer the structural first-chorus time when segmentation found one;
+    # fall back to the recurrence-based hook estimate.
+    hook_time = s.first_chorus_time if s.has_chorus and s.first_chorus_time >= 0 \
+        else s.hook_arrival
+    hook_timing = _range_credit(hook_time, 0.0, hook_edge, max(20.0, hook_edge * 0.7))
     duration = _range_credit(s.duration_total, *DURATION_RANGE, 60.0)
     loudness = _range_credit(s.loudness_lufs, *LOUDNESS_RANGE, 4.0)
-    score = 100 * (0.30 * intro + 0.30 * hook_timing + 0.25 * duration + 0.15 * loudness)
+    # Streaming-era endings are cold: long fade-outs invite early skips that
+    # hurt completion rate.
+    ending = 1.0 if s.hard_ending else _range_credit(s.fade_out_seconds, 0.0, 6.0, 6.0)
+    score = 100 * (0.26 * intro + 0.26 * hook_timing + 0.22 * duration
+                   + 0.14 * loudness + 0.12 * ending)
     return round(score, 1)
 
 
@@ -204,6 +225,71 @@ def build_feedback(
             "Dynamic range is very compressed. Sections should breathe — automate a "
             "lift into the chorus so the hook lands harder."))
 
+    # --- Master details ---
+    if s.true_peak_db > -0.3:
+        fb.append(_fb("quality", "improve",
+            f"Sample peaks hit {s.true_peak_db} dBFS. Leave ~1 dB of true-peak "
+            f"headroom so the master survives lossy transcoding (AAC/Ogg) without "
+            f"inter-sample distortion."))
+    if 0 < s.loudness_range_db < 3.5:
+        fb.append(_fb("quality", "improve",
+            f"Short-term loudness range is only {s.loudness_range_db} dB — the track "
+            f"sits at one intensity the whole way. Hits typically breathe 4-12 dB "
+            f"between their quietest and loudest passages."))
+
+    # --- Song structure ---
+    if not s.has_chorus and s.n_sections >= 3:
+        fb.append(_fb("catchiness", "improve",
+            "Section analysis couldn't find a distinct repeated chorus — no section "
+            "family both repeats and lifts above the rest. If the song has a chorus, "
+            "differentiate it harder (energy, instrumentation, melody); if it "
+            "doesn't, know that you're trading reach for form."))
+    elif s.has_chorus and s.chorus_ratio < 0.15:
+        fb.append(_fb("catchiness", "tip",
+            f"The chorus only occupies {s.chorus_ratio:.0%} of the runtime. Hits "
+            f"typically spend 20-45% of the track in chorus — consider a double "
+            f"chorus or a final-chorus extension."))
+    if s.has_chorus and s.first_chorus_time > 50:
+        fb.append(_fb("streaming", "improve",
+            f"The first chorus lands at {s.first_chorus_time:.0f}s. Modern "
+            f"arrangements front-load it — aim to reach the chorus (or a hook "
+            f"preview) inside 30-45 seconds."))
+    if s.energy_build < 0.35:
+        fb.append(_fb("catchiness", "improve",
+            "The energy arc is flat or declining — the track never builds toward a "
+            "peak. Stage the arrangement (drop elements out, then stack them back) "
+            "so there's somewhere for the listener to be taken."))
+    elif s.climax_position < 0.30:
+        fb.append(_fb("catchiness", "tip",
+            "The loudest moment arrives in the first third of the track, which can "
+            "make the back half feel like an afterglow. Consider saving one 'biggest' "
+            "moment for the final chorus."))
+    if not s.hard_ending and s.fade_out_seconds > 8:
+        fb.append(_fb("streaming", "improve",
+            f"The track fades out over ~{s.fade_out_seconds:.0f}s. Fade-outs invite "
+            f"early skips that count against completion rate — streaming-era hits "
+            f"overwhelmingly end cold. Write an ending."))
+    if s.key_change and s.second_key:
+        fb.append(_fb("catchiness", "strength",
+            f"Key modulation detected (into {s.second_key}) — a lift like that is "
+            f"rare in modern releases and can be a signature moment; make sure the "
+            f"arrangement spotlights it."))
+    if f.key_confidence < 0.4:
+        fb.append(_fb("quality", "tip",
+            "The tonal center reads ambiguous to key detection. If that's stylistic, "
+            "fine — but check that layered elements aren't clashing harmonically."))
+    if s.vocal_presence < 0.30:
+        fb.append(_fb("reach", "tip",
+            "The mix reads instrumental-forward (low melodic mid-band presence). "
+            "Vocal-forward tracks travel further on mainstream playlists — if "
+            "there's a vocal, bring it up; if not, target instrumental/mood "
+            "playlists deliberately."))
+    if s.timbral_variety < 0.12:
+        fb.append(_fb("catchiness", "tip",
+            "The sound palette barely changes across the track. Introduce at least "
+            "one new texture per section (a counter-melody, a percussion layer, an "
+            "octave lift) to reward continued listening."))
+
     # --- Catchiness ---
     if s.repetition < 0.40:
         fb.append(_fb("catchiness", "improve",
@@ -233,7 +319,7 @@ def build_feedback(
             f"cluster in the first seconds of a track, and a skip before 30s means "
             f"no royalty and a negative algorithmic signal — get a vocal or hook "
             f"element in within roughly 10 seconds."))
-    if s.hook_arrival > 45:
+    if not s.has_chorus and s.hook_arrival > 45:
         fb.append(_fb("streaming", "improve",
             f"Your most-repeated section first arrives around {s.hook_arrival:.0f}s. "
             f"Consider restructuring so the hook (or a preview of it) lands inside "

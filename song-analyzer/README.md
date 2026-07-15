@@ -24,9 +24,33 @@ The report then generates prioritized feedback (`Fix first` → `Improve` →
 cluster in the first seconds and a skip before 30s pays no royalty; get a
 hook element in within ~10 seconds."*
 
-All analysis is our own DSP pipeline (librosa + pyloudnorm). We deliberately
-don't depend on Spotify's Audio Features API, which was deprecated for new
-third-party apps in November 2024. That makes the analyzer proprietary IP.
+### The KPI set
+
+Beyond the pillar inputs above, every report extracts:
+
+- **Tonality** — key, major/minor mode, key-detection confidence
+  (Krumhansl-Schmuckler), and true modulation detection (relative-key shifts
+  like A minor → C major are correctly ignored).
+- **Song structure** — full section map (intro / verse / chorus / bridge /
+  outro) from beat-synchronous chroma+MFCC segmentation and section-family
+  clustering; section count, first-chorus timestamp, chorus share of runtime,
+  average section length. Rendered as a timeline in the report.
+- **Energy arc** — 8-point energy curve, build score (does it climb?), climax
+  position in the timeline.
+- **Ending** — fade-out length vs cold ending (streaming-era hits end cold).
+- **Rhythm feel** — tempo, tempo stability, danceability/groove, syncopation
+  (off-grid onset share).
+- **Master forensics** — integrated LUFS, true-peak headroom, short-term
+  loudness range (LRA-style), clipping ratio, stereo width, low/mid/high
+  spectral balance, dynamic range.
+- **Texture** — vocal presence (harmonic mid-band proxy), timbral variety,
+  brightness, acousticness, event density, valence.
+
+All analysis is our own DSP pipeline (librosa + pyloudnorm + scipy). We
+deliberately don't depend on Spotify's Audio Features API, which was
+deprecated for new third-party apps in November 2024. That makes the analyzer
+proprietary IP. Section labels are heuristic (the analyzer's best structural
+reading, not ground truth) and are labeled as such in the report.
 
 ## The placement thesis (read this before selling)
 
@@ -137,12 +161,15 @@ API:
 
 ```
 app/
-  analyzer.py   # librosa/pyloudnorm DSP: sonic fingerprint + structure metrics
-  profiles.py   # curated major-artist sonic profiles (MVP seed data)
+  analyzer.py   # DSP entry: sonic fingerprint + production/structure metrics
+  structure.py  # section segmentation & labeling, energy arc, tonality, feel
+  benchmarks.py # loads hit-song benchmark data for the graders
+  profiles.py   # major-artist sonic profiles (seeds + data-derived overrides)
   grading.py    # five-pillar proprietary grading + feedback engine
   scoring.py    # artist-audience similarity, fit grades, placement playbooks
   main.py       # FastAPI: analyze endpoint, tiers endpoint, static UI
   static/       # single-page upload/report UI (no build step)
+research/       # benchmark derivation + reference-audio ingestion pipelines
 tests/          # pipeline tests using synthesized audio
 ```
 
